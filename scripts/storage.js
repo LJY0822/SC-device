@@ -701,14 +701,19 @@ const Storage = {
     return rows;
   },
   
-  async dbDelete(storeName, id) {
+  // options.tombstone === false 时不记删除墓碑（导入端复现对方删除、内部清理时使用）
+  async dbDelete(storeName, id, options = {}) {
     const tx = this.db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       const request = store.delete(id);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
+    // 增量同步：留一条删除墓碑，另一端靠它复现删除
+    if (options.tombstone !== false && typeof SCSync !== 'undefined' && SCSync.noteDelete) {
+      await SCSync.noteDelete(storeName, id);
+    }
   },
   
   async dbClear(storeName) {

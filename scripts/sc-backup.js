@@ -105,6 +105,18 @@ Settings.importData = async file => {
   if (!file) return;
   try {
     const input=JSON.parse(await Storage.readImportFileText(file));
+    // 增量同步包：合并变化，不清空本机数据；与「完整备份替换」走完全不同的分支
+    if (input && input.exportMode === 'delta') {
+      if (typeof SCSync === 'undefined') throw new Error('增量同步模块未加载，请在设置里强制刷新后再试');
+      const counts=Object.entries(input.data || {})
+        .map(([k, rows]) => `${k} ${Array.isArray(rows) ? rows.length : 0}`).join('、') || '无';
+      const tombs=Array.isArray(input.tombstones) ? input.tombstones.length : 0;
+      if (!await SCBackup.confirm(`这是增量同步包，只把其中的变化合并进本机，不会清空现有数据。包含：${counts}${tombs ? `；删除项 ${tombs}` : ''}。继续？`)) return;
+      const r=await SCSync.applyDelta(input);
+      alert(`增量合并完成：新增 ${r.added} 项、更新 ${r.updated} 项、删除 ${r.removed} 项`);
+      location.reload();
+      return;
+    }
     const {data}=SCBackup.validate(input);
     if (!await SCBackup.confirm(`将用 ${data.characters.length} 个角色、${data.sessions.length} 个会话、${data.messages.length} 条消息、${data.album.length} 项相册内容替换本设备旧数据。请先导出旧数据留底。继续？`)) return;
     await SCBackup.importAll(input); location.reload();

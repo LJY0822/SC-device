@@ -1087,6 +1087,14 @@
             <span class="yd-settings-row__label">导入数据</span>
             <span class="yd-settings-row__chevron" aria-hidden="true"></span>
           </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-sync">
+            <span class="yd-settings-row__icon yd-settings-row__icon--refresh" aria-hidden="true"></span>
+            <span class="yd-settings-row__main">
+              <span class="yd-settings-row__title">增量同步</span>
+              <span class="yd-settings-row__subtitle">只传变化的聊天与媒体</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
           <a href="javascript:void(0)" class="yd-settings-row" id="settings-force-refresh-app">
             <span class="yd-settings-row__icon yd-settings-row__icon--refresh" aria-hidden="true"></span>
             <span class="yd-settings-row__label">强制刷新</span>
@@ -1111,6 +1119,7 @@
         </div>
 
         <input type="file" id="import-file" accept=".json,.gz,application/json,application/gzip" style="display:none" aria-hidden="true">
+        <input type="file" id="sc-sync-file" accept=".json,.gz,application/json,application/gzip" style="display:none" aria-hidden="true">
         <input type="file" id="wallpaper-file" accept="image/png,image/jpeg,image/webp" style="display:none" aria-hidden="true">
       </div>
     </div>
@@ -2644,6 +2653,7 @@
   <script src="scripts/sc-ui.js"></script>
   <script src="scripts/sc-chat.js"></script>
   <script src="scripts/sc-backup.js"></script>
+  <script src="scripts/sc-sync.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 </html>

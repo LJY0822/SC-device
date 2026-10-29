@@ -382,6 +382,34 @@ const Settings = {
       this.importData(e.target.files[0]);
     });
 
+    // 增量同步：一个入口管导出/导入，只传上次同步后的变化
+    const syncRow = document.getElementById('settings-sync');
+    if (syncRow) {
+      syncRow.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await SCSync.openPanel();
+        } catch (err) {
+          this.showToast?.(`增量同步面板打开失败：${err.message}`);
+        }
+      });
+    }
+    const syncFileInput = document.getElementById('sc-sync-file');
+    if (syncFileInput) {
+      syncFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        try {
+          const r = await SCSync.importFile(file);
+          alert(`增量合并完成：新增 ${r.added} 项、更新 ${r.updated} 项、删除 ${r.removed} 项`);
+          location.reload();
+        } catch (err) {
+          alert(`增量导入失败：${err.message}`);
+        }
+      });
+    }
+
     // 安装到主屏幕（PWA）
     const installRow = document.getElementById('settings-install-app');
     if (installRow) {
