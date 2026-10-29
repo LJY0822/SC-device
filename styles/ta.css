@@ -1,0 +1,1528 @@
+/* ta 的手机（iPhone 1:1 预览 + iOS 内部 UI） */
+
+.yd-ta-switch {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111;
+}
+
+.yd-ta-switch:active {
+  opacity: 0.72;
+}
+
+.yd-ta-switch .yd-forum-switch-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* 顶部栏右侧刷新：对齐论坛底部刷新按钮的风格 */
+#ta-phone-refresh{
+  /* 与左侧返回按钮保持一致：复用 .yd-header-btn--circle 基础外观 */
+  color: inherit;
+}
+
+#ta-phone-refresh svg{
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+#ta-phone-refresh.is-loading{
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+#ta-phone-refresh.is-loading svg {
+  animation: yd-ta-spin 0.9s linear infinite;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+#ta-exp-switch-top{
+  /* 与左侧返回按钮保持一致：复用 .yd-header-btn--circle 基础外观 */
+  color: inherit;
+}
+
+#ta-exp-switch-top svg{
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* 查日记：顶部右侧角色切换按钮图标 */
+#ta-diary-switch-top{
+  /* 复用与 exp 一致的基础色 */
+  color: inherit;
+}
+
+#ta-diary-switch-top svg{
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+@keyframes yd-ta-spin{
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#page-ta-phone > .yd-page-content.yd-ta-phone {
+  overflow: hidden;
+}
+
+.yd-ta-phone {
+  padding: 0 16px;
+  height: 100%;
+  background: #F6F6F6;
+  overflow: hidden;
+}
+
+.yd-ta-phone__wrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.yd-ta-phone-gate {
+  width: 100%;
+  max-width: min(86vw, 360px);
+  padding: 12px 0;
+}
+
+.yd-ta-phone-gate[hidden] {
+  display: none !important;
+}
+
+.yd-ta-phone-gate__card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  padding: 20px 18px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.yd-ta-phone-gate__title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.yd-ta-phone-gate__sub {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8e8e93;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.yd-ta-phone-gate__btn {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #8fc3ff, #60A5FA);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(96, 165, 250, 0.28);
+}
+
+.yd-ta-phone-gate__btn:active {
+  opacity: 0.9;
+}
+
+#ta-phone-device[hidden] {
+  display: none !important;
+}
+
+#ta-phone-refresh:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* iPhone 外观：更接近真机的黑色边框 + 圆角 */
+.yd-ta-phone__device {
+  width: auto;
+  height: 100%;
+  aspect-ratio: 9 / 19.5;
+  max-width: min(86vw, 360px);
+  max-height: 100%;
+  box-sizing: border-box;
+  border-radius: 42px;
+  background: radial-gradient(80% 120% at 30% 10%, rgba(255,255,255,0.18), rgba(255,255,255,0) 60%),
+              linear-gradient(180deg, #101114, #0B0C0E);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 22px 60px rgba(0,0,0,0.30);
+  padding: 10px;
+  position: relative;
+}
+
+.yd-ta-phone__bezel {
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 34px;
+  background: #000;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.yd-ta-phone__screen {
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #F9FAFB, #F3F4F6);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 状态栏（装饰） */
+.yd-ta-phone__statusbar{
+  height: 28px;
+  padding: 10px 14px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.86);
+  pointer-events: none;
+  user-select: none;
+}
+
+.yd-ta-phone__sb-right{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.yd-ta-phone__sb-signal,
+.yd-ta-phone__sb-wifi{
+  width: 14px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.18);
+}
+
+.yd-ta-phone__sb-battery{
+  width: 22px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.30);
+  position: relative;
+}
+
+.yd-ta-phone__sb-battery::before{
+  content:'';
+  position:absolute;
+  left:2px;
+  top:2px;
+  bottom:2px;
+  width: 12px;
+  border-radius: 2px;
+  background: rgba(0,0,0,0.55);
+}
+
+.yd-ta-phone__sb-battery::after{
+  content:'';
+  position:absolute;
+  right:-3px;
+  top:3px;
+  width:2px;
+  height:4px;
+  border-radius: 1px;
+  background: rgba(0,0,0,0.30);
+}
+
+/* 内容区：Tab 面板切换 */
+.yd-ta-phone__content{
+  flex: 1;
+  box-sizing: border-box;
+  padding: 8px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.yd-ta-phone__panel{
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 12px 12px 92px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.yd-ta-phone__panel[aria-hidden="true"]{
+  display: none;
+}
+
+/* TabBar（iOS 半透明） */
+.yd-ta-phone__tabbar{
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 18px;
+  height: 62px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  z-index: 5;
+}
+
+/* 会话详情时隐藏底部 dock */
+#ta-phone-tabbar[hidden]{
+  display: none !important;
+}
+
+/* 会话详情时隐藏 HomeIndicator */
+#page-ta-phone .yd-ta-phone__home[hidden]{
+  display: none !important;
+}
+
+.yd-ta-tab{
+  border: none;
+  background: transparent;
+  height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  color: rgba(0,0,0,0.55);
+}
+
+.yd-ta-tab[aria-selected="true"]{
+  color: #111;
+}
+
+.yd-ta-tab__txt{
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.yd-ta-tab__ico{
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.10);
+}
+
+.yd-ta-tab__ico--browser{
+  background: rgba(96,165,250,0.20);
+}
+
+.yd-ta-tab__ico--shop{
+  background: rgba(255,107,0,0.18);
+}
+
+/* Tab 主题色（互换：聊天=绿色，购物车=橙色） */
+#page-ta-phone button[data-tab="chat"] .yd-ta-tab__ico{
+  background: rgba(34,197,94,0.18);
+}
+
+#page-ta-phone button[data-tab="chat"][aria-selected="true"] .yd-ta-tab__ico{
+  background: rgba(34,197,94,0.22);
+}
+
+#page-ta-phone button[data-tab="shop"][aria-selected="true"] .yd-ta-tab__ico{
+  background: rgba(255,107,0,0.22);
+}
+
+/* Tab 简单 SVG 图标颜色（与互换后的主题一致） */
+#page-ta-phone button[data-tab="chat"] .yd-ta-tab__ico svg{
+  color: #16A34A;
+}
+
+#page-ta-phone button[data-tab="browser"] .yd-ta-tab__ico--browser svg{
+  color: #60A5FA;
+}
+
+#page-ta-phone button[data-tab="shop"] .yd-ta-tab__ico--shop svg{
+  color: #FF6B00;
+}
+
+.yd-ta-phone__home{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 6px;
+  width: 124px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.20);
+  z-index: 6;
+}
+
+/* ===== 聊天（微信风格） ===== */
+.yd-ta-chat__search{
+  padding: 2px 2px 10px;
+}
+
+.yd-ta-chat__searchbar{
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: rgba(0,0,0,0.55);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.yd-ta-chat__searchicon{
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(0,0,0,0.20);
+}
+
+.yd-ta-chat__list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-ta-chat-row{
+  border: none;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 10px 10px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.yd-ta-chat-row:active{ opacity: 0.82; }
+
+.yd-ta-chat-row__avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(34,197,94,0.22), rgba(34,197,94,0.12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.yd-ta-chat-row__main{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.yd-ta-chat-row__title{
+  font-size: 14px;
+  font-weight: 900;
+  color: #111;
+}
+
+.yd-ta-chat-row__preview{
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-ta-chat-row__meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.yd-ta-chat-row__time{
+  font-size: 11px;
+  color: rgba(0,0,0,0.40);
+  font-weight: 800;
+}
+
+.yd-ta-chat-row__badge{
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #EF4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.yd-ta-chat-row__dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #EF4444;
+}
+
+/* 会话页 */
+.yd-ta-thread{
+  position: absolute;
+  inset: 0;
+  background: #F2F3F5;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.yd-ta-thread[hidden]{
+  display: none !important;
+}
+
+.yd-ta-thread__top{
+  height: 46px;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.yd-ta-thread__back{
+  border: none;
+  background: transparent;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+}
+
+.yd-ta-thread__back::before{
+  content:'';
+  position:absolute;
+  left: 16px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid rgba(0,0,0,0.70);
+  border-bottom: 2px solid rgba(0,0,0,0.70);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.yd-ta-thread__title{
+  text-align: center;
+  font-weight: 900;
+  font-size: 14px;
+  color: #111;
+}
+
+.yd-ta-thread__more{
+  border: none;
+  background: transparent;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 22px;
+  color: rgba(0,0,0,0.55);
+}
+
+.yd-ta-thread__msgs{
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+}
+
+.yd-ta-bubble{
+  max-width: 78%;
+  display: flex;
+}
+
+.yd-ta-bubble--left{ justify-content: flex-start; }
+.yd-ta-bubble--right{ justify-content: flex-end; align-self: flex-end; }
+
+.yd-ta-bubble__text{
+  border-radius: 16px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+}
+
+.yd-ta-bubble--left .yd-ta-bubble__text{
+  background: rgba(255,255,255,0.95);
+  color: #111;
+}
+
+.yd-ta-bubble--right .yd-ta-bubble__text{
+  background: rgba(52,199,89,0.92);
+  color: #fff;
+}
+
+.yd-ta-thread__composer{
+  padding: 10px 10px 12px;
+  background: rgba(255,255,255,0.92);
+  border-top: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yd-ta-thread__plus{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(0,0,0,0.65);
+}
+
+.yd-ta-thread__input{
+  flex: 1;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.06);
+}
+
+.yd-ta-thread__send{
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(52,199,89,0.92);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ===== 浏览器（Safari 首页风格） ===== */
+.yd-ta-browser__addr{
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  color: rgba(0,0,0,0.55);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.yd-ta-browser__lock{
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.22);
+}
+
+.yd-ta-browser__tabs{
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 2px solid rgba(0,0,0,0.22);
+}
+
+.yd-ta-browser__grid{
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.yd-ta-site{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.yd-ta-browser__chip{
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: rgba(0,0,0,0.70);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  user-select: none;
+}
+
+.yd-ta-browser__chip:active{
+  opacity: 0.82;
+}
+
+.yd-ta-site__ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(96,165,250,0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: rgba(0,0,0,0.75);
+}
+
+.yd-ta-site__name{
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+}
+
+.yd-ta-browser__recent{
+  margin-top: 16px;
+}
+
+.yd-ta-browser__recent-title{
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.75);
+  margin-bottom: 10px;
+}
+
+.yd-ta-recent-row{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.yd-ta-recent-row__t{
+  font-size: 13px;
+  font-weight: 900;
+  color: #111;
+}
+
+.yd-ta-recent-row__s{
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.45);
+}
+
+/* ===== 心愿单 / 已购订单（iOS 分段控件） ===== */
+.yd-ta-shop__seg{
+  height: 36px;
+  border-radius: 12px;
+  padding: 3px;
+  background: rgba(0,0,0,0.08);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.yd-ta-seg-btn{
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.55);
+  cursor: pointer;
+}
+
+.yd-ta-seg-btn[aria-selected="true"]{
+  background: rgba(255,255,255,0.92);
+  color: #111;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+}
+
+.yd-ta-shop__body{ margin-top: 12px; }
+
+.yd-ta-shop__panel[aria-hidden="true"]{ display:none; }
+
+.yd-ta-card{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.yd-ta-card__ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(255,107,0,0.16);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 22px;
+}
+
+.yd-ta-card__t{
+  font-size: 14px;
+  font-weight: 900;
+  color:#111;
+}
+
+.yd-ta-card__s{
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+}
+
+.yd-ta-card__r{
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.yd-ta-card__p{
+  font-size: 13px;
+  font-weight: 900;
+  color:#111;
+}
+
+.yd-ta-card__btn{
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.96);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  color: #16A34A;
+}
+
+.yd-ta-order-row{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.yd-ta-order-row__ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(255,107,0,0.16);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 20px;
+}
+
+.yd-ta-order-row__t{
+  font-size: 14px;
+  font-weight: 900;
+  color:#111;
+}
+
+.yd-ta-order-row__s{
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(0,0,0,0.55);
+}
+
+.yd-ta-order-row__r{
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.yd-ta-order-row__p{
+  font-size: 13px;
+  font-weight: 900;
+  color:#111;
+}
+
+.yd-ta-order-row__st{
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.55);
+}
+
+/* ta 的经历 */
+.yd-ta-exp-page{
+  background:
+    radial-gradient(1200px 300px at 10% -10%, rgba(255, 247, 222, 0.55), transparent 60%),
+    radial-gradient(1200px 380px at 90% -20%, rgba(255, 235, 196, 0.45), transparent 62%),
+    #f4f1ea;
+  padding: 14px;
+}
+
+#page-ta-experience .yd-page-header.yd-settings-nav{
+  background:
+    radial-gradient(1200px 300px at 10% -10%, rgba(255, 247, 222, 0.55), transparent 60%),
+    radial-gradient(1200px 380px at 90% -20%, rgba(255, 235, 196, 0.45), transparent 62%),
+    #f4f1ea;
+  border-bottom-color: rgba(123, 97, 64, 0.14);
+}
+
+/* ===== 查日记（活页纸 + 富文本渲染） ===== */
+#page-ta-diary .yd-page-content.yd-ta-diary-content{
+  background: transparent;
+  padding: 0;
+  overflow: auto;
+  position: relative;
+  min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+#page-ta-diary .yd-diary-bg{
+  /* 固定视口：避免随页面滚动导致“壁纸滑动” */
+  position: fixed;
+  inset: 0;
+  background-image: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#page-ta-diary .yd-diary-shell{
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px);
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom) + 92px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+#page-ta-diary .yd-diary-sheet{
+  background-color: #fcfaf2; /* 象牙纸色 */
+  width: min(86vw, 720px);
+  max-width: 420px;
+  min-height: calc(100vh - 56px - 18px - 18px - env(safe-area-inset-bottom) - 92px);
+  min-height: calc(100dvh - 56px - 18px - 18px - env(safe-area-inset-bottom) - 92px);
+  position: relative;
+  padding: 0;
+  box-shadow: 10px 10px 30px rgba(0,0,0,0.2);
+  box-sizing: border-box;
+  background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+  background-size: 100% 30px; /* 模拟横线 */
+  line-height: 30px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#page-ta-diary .yd-diary-sheet::after{
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-left: 20px dotted #d7ccc8;
+  opacity: 0.95;
+}
+
+#page-ta-diary .yd-diary-title{
+  font-family: "STKaiti", "楷体", serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #2e1a1a;
+  margin: 0 0 12px;
+  padding-top: 10px;
+}
+
+#page-ta-diary .yd-diary-meta{
+  display: flex;
+  justify-content: space-between;
+  color: #8d6e63;
+  font-size: 13px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+  padding-bottom: 14px;
+  gap: 12px;
+}
+
+#page-ta-diary .yd-diary-toolbar{
+  margin-bottom: 18px;
+}
+
+#page-ta-diary .yd-diary-btn{
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: #8d6e63;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(141,110,99,0.28);
+}
+
+#page-ta-diary .yd-diary-btn:active{
+  opacity: 0.92;
+  transform: translateY(1px);
+}
+
+#page-ta-diary .yd-diary-rich-wrap{
+  padding: 12px; /* 去掉大内边距后，保留轻量阅读边距 */
+}
+
+#page-ta-diary .yd-diary-rich{
+  font-family: "STKaiti", "楷体", serif;
+  font-size: 18px;
+  color: #444;
+  text-align: justify;
+  line-height: 1.85;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#page-ta-diary .yd-diary-rich p{
+  margin: 0 0 18px;
+}
+
+
+
+#page-ta-diary .yd-diary-empty{
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(68,68,68,0.65);
+  text-align: center;
+  padding: 24px 8px;
+}
+
+#page-ta-diary .yd-diary-stamp{
+  position: absolute;
+  bottom: 38px;
+  right: 28px;
+  opacity: 0.6;
+  transform: rotate(5deg);
+  pointer-events: none;
+}
+
+#page-ta-diary .yd-diary-stamp__inner{
+  width: 84px;
+  height: 84px;
+  border: 3px double #a52a2a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a52a2a;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.25;
+  transform: rotate(-15deg);
+  text-align: center;
+}
+
+/* ===== 查日记顶部栏透明模糊 ===== */
+#page-ta-diary .yd-page-header.yd-settings-nav{
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-bottom: 1px solid rgba(255,255,255,0.22);
+  position: relative;
+  z-index: 3;
+}
+
+/* ===== 查日记底部栏（固定） ===== */
+#page-ta-diary .yd-diary-bottombar{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: calc(92px + env(safe-area-inset-bottom));
+  z-index: 3;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-top: 1px solid rgba(255,255,255,0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+#page-ta-diary .yd-diary-bottombar__row{
+  display: grid;
+  gap: 8px;
+}
+
+#page-ta-diary .yd-diary-bottombar__row--top{
+  grid-template-columns: 1fr 1.3fr 1fr;
+}
+
+#page-ta-diary .yd-diary-bottombar__row--bottom{
+  grid-template-columns: repeat(3, 1fr);
+}
+
+#page-ta-diary .yd-diary-bottombar__time{
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.36);
+  color: rgba(17,17,17,0.82);
+  font-weight: 900;
+  font-size: 12px;
+  text-align: center;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+#page-ta-diary .yd-diary-bottombar__btn{
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.36);
+  color: rgba(17,17,17,0.82);
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  height: 40px;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+#page-ta-diary .yd-diary-bottombar__btn--icon{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+#page-ta-diary .yd-diary-bottombar__btn--icon svg{
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+#page-ta-diary #ta-diary-refresh.is-loading svg{
+  animation: yd-ta-spin 0.9s linear infinite;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+#page-ta-diary .yd-diary-bottombar__btn:active{
+  transform: translateY(1px);
+  background: rgba(255,255,255,0.46);
+}
+
+/* 若用户设置了“整图背景”，只保留中间富文本区域 */
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-sheet{
+  background-color: transparent;
+  box-shadow: none;
+  background-image: none;
+  border-radius: 16px;
+  padding: 26px 22px 72px;
+  overflow: visible;
+}
+
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-sheet::after{
+  display: none;
+}
+
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-title,
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-meta,
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-toolbar,
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-stamp{
+  display: none !important;
+}
+
+#page-ta-diary.yd-diary-page--bg-image .yd-diary-rich-wrap{
+  padding-right: 0;
+}
+
+/* ===== 查日记：手机端紧凑布局（防止样式挤压） ===== */
+@media (max-width: 430px){
+  #page-ta-diary .yd-diary-shell{
+    min-height: calc(100vh - 56px);
+    min-height: calc(100dvh - 56px);
+    padding: 10px 8px calc(10px + env(safe-area-inset-bottom) + 86px);
+  }
+
+  #page-ta-diary .yd-diary-sheet{
+    width: 100%;
+    max-width: none;
+    min-height: calc(100vh - 56px - 10px - 10px - env(safe-area-inset-bottom) - 86px);
+    min-height: calc(100dvh - 56px - 10px - 10px - env(safe-area-inset-bottom) - 86px);
+    border-radius: 8px;
+    line-height: 1.7;
+  }
+
+  #page-ta-diary .yd-diary-sheet::after{
+    left: 8px;
+    border-left-width: 10px;
+    opacity: 0.6;
+  }
+
+  #page-ta-diary .yd-diary-title{
+    font-size: 24px;
+    margin: 0 0 8px;
+    padding: 8px 8px 0 14px;
+  }
+
+  #page-ta-diary .yd-diary-meta{
+    font-size: 12px;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 0 8px 10px 14px;
+  }
+
+  #page-ta-diary .yd-diary-rich{
+    font-size: 16px;
+    line-height: 1.72;
+  }
+
+  #page-ta-diary .yd-diary-rich-wrap{
+    padding: 8px 10px 10px;
+  }
+
+  #page-ta-diary .yd-diary-stamp{
+    right: 10px;
+    bottom: 18px;
+    opacity: 0.45;
+  }
+
+  #page-ta-diary .yd-diary-stamp__inner{
+    width: 64px;
+    height: 64px;
+    font-size: 10px;
+  }
+
+  #page-ta-diary .yd-diary-bottombar{
+    min-height: calc(90px + env(safe-area-inset-bottom));
+    gap: 5px;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+
+  #page-ta-diary .yd-diary-bottombar__row{
+    gap: 6px;
+  }
+
+  #page-ta-diary .yd-diary-bottombar__btn{
+    height: 38px;
+    font-size: 11px;
+  }
+
+  #page-ta-diary .yd-diary-bottombar__time{
+    height: 38px;
+    font-size: 11px;
+  }
+}
+
+
+.yd-ta-exp-gate__card{
+  background: rgba(255,255,255,0.96);
+  border-radius: 18px;
+  padding: 20px 18px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.yd-ta-exp-gate__title{
+  font-size: 17px;
+  font-weight: 900;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.yd-ta-exp-gate__sub{
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8e8e93;
+  margin-bottom: 16px;
+}
+
+.yd-ta-exp-gate__btn{
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff8a3d, #ff6b00);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.yd-ta-exp-list{
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 14px;
+}
+
+#ta-exp-list-inner{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  padding-left: 14px;
+}
+
+#ta-exp-list-inner::before{
+  content:'';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(123, 97, 64, 0.25), rgba(123, 97, 64, 0.05));
+  border-radius: 999px;
+}
+
+.yd-ta-exp-empty{
+  border-radius: 14px;
+  border: 1px dashed rgba(0,0,0,0.15);
+  color: rgba(0,0,0,0.5);
+  background: rgba(255,255,255,0.7);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  padding: 18px 12px;
+}
+
+.yd-ta-exp-item{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(251,245,232,0.96)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(120, 92, 60, 0.03) 0px,
+      rgba(120, 92, 60, 0.03) 1px,
+      transparent 1px,
+      transparent 9px
+    );
+  border: 1px solid rgba(123, 97, 64, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow:
+    0 8px 20px rgba(93, 67, 40, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+  position: relative;
+}
+
+.yd-ta-exp-item::before{
+  content:'';
+  position: absolute;
+  left: -12px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fff8ea;
+  border: 2px solid rgba(123, 97, 64, 0.62);
+}
+
+.yd-ta-exp-item.is-new{
+  border-color: rgba(204, 92, 46, 0.38);
+  box-shadow:
+    0 10px 24px rgba(204, 92, 46, 0.14),
+    inset 0 1px 0 rgba(255,255,255,0.58);
+}
+
+.yd-ta-exp-summary{
+  background: linear-gradient(180deg, rgba(255,253,246,0.98), rgba(250,244,231,0.94));
+  border: 1px solid rgba(123, 97, 64, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 8px 20px rgba(93, 67, 40, 0.08);
+}
+
+.yd-ta-exp-summary__title{
+  font-size: 13px;
+  font-weight: 900;
+  color: #3e2f1f;
+}
+
+.yd-ta-exp-summary__meta{
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(76, 57, 37, 0.68);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.yd-ta-exp-loc-shift{
+  margin: 2px 4px 2px 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(88, 66, 43, 0.64);
+  padding-left: 2px;
+}
+
+.yd-ta-exp-item__time{
+  font-size: 12px;
+  color: #8a5a2b;
+  font-weight: 900;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.yd-ta-exp-item__time-text{
+  flex: 1;
+}
+
+.yd-ta-exp-item__loc{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(75, 56, 37, 0.72);
+}
+
+.yd-ta-exp-item__mood{
+  margin-top: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 245, 224, 0.95), rgba(255, 238, 204, 0.90));
+  border: 1px dashed rgba(171, 125, 75, 0.48);
+  border-radius: 10px;
+  padding: 10px 10px 10px 11px;
+  box-shadow: 0 4px 12px rgba(99, 71, 42, 0.07);
+  transform: rotate(-0.35deg);
+}
+
+.yd-ta-exp-item__mood-title{
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(140, 88, 39, 0.95);
+  letter-spacing: 0.2px;
+}
+
+.yd-ta-exp-item__mood-text{
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  color: rgba(66, 48, 31, 0.82);
+}
+
+.yd-ta-exp-item__event{
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #2f2318;
+  font-weight: 800;
+}
+
+.yd-ta-exp-day{
+  margin: 10px 2px 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(82, 61, 38, 0.52);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.yd-ta-exp-day::before,
+.yd-ta-exp-day::after{
+  content:'';
+  height: 1px;
+  background: rgba(117, 88, 55, 0.22);
+  flex: 1;
+}
+
+.yd-ta-exp-day > span{
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(247,239,223,0.96);
+  border: 1px solid rgba(123, 97, 64, 0.20);
+  color: rgba(90, 66, 41, 0.72);
+}
+
+.yd-ta-exp-item__new{
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(180deg, #d96a3f, #c14f2a);
+  border-radius: 999px;
+  padding: 3px 8px;
+  box-shadow: 0 3px 8px rgba(160, 70, 32, 0.28);
+}
+
+/* 经历页 updatebar：作为列表内容的一部分（不吸底、不独立悬浮） */
+#page-ta-experience .yd-moments-updatebar{
+  padding: 10px 0 0;
+  display: flex;
+  justify-content: center;
+}
+
+#page-ta-experience .yd-moments-updatebar__btn{
+  width: auto;
+  justify-content: center;
+}
+
+#page-ta-experience .yd-ta-exp-update-spinner{
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.18);
+  border-top-color: rgba(0,0,0,0.6);
+  animation: yd-ta-spin 0.8s linear infinite;
+}
+
+#page-ta-experience .yd-ta-exp-update-spinner[hidden]{
+  display: none !important;
+}
+

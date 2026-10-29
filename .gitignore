@@ -1,0 +1,14 @@
+# 本地构建产物（线上不需要）
+dist/
+
+# 内部文档与截图
+docs/
+
+# 本地开发与测试
+tests/
+tools/
+启动电脑版.cmd
+使用说明.md
+
+# WorkBuddy 工作区数据
+.workbuddy/

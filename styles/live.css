@@ -1,0 +1,350 @@
+.yd-live-page {
+  background: #000;
+}
+
+.yd-live-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(52px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  z-index: 5;
+  color: #fff;
+}
+
+.yd-live-back {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yd-live-topbar__title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.yd-live-feed {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+
+.yd-live-card {
+  height: 100vh;
+  position: relative;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: block;
+  padding: 0;
+}
+
+.yd-live-media {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.yd-live-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.yd-live-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.55));
+}
+
+.yd-live-info {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  color: #fff;
+  pointer-events: none;
+}
+
+.yd-live-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.yd-live-badge--on {
+  background: rgba(255,59,48,0.85);
+  border-color: rgba(255,59,48,0.85);
+}
+
+.yd-live-name {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.yd-live-title {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.35;
+}
+
+.yd-live-enter {
+  position: absolute;
+  left: 50%;
+  bottom: calc(118px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.yd-live-enter:active {
+  opacity: 0.8;
+}
+
+.yd-live-eq {
+  width: 18px;
+  height: 16px;
+  display: inline-flex;
+  gap: 3px;
+  align-items: flex-end;
+}
+
+.yd-live-eq span {
+  width: 4px;
+  border-radius: 3px;
+  background: #fff;
+  animation: ydEq 1.2s infinite ease-in-out;
+}
+.yd-live-eq span:nth-child(2) { animation-delay: .15s; }
+.yd-live-eq span:nth-child(3) { animation-delay: .3s; }
+
+@keyframes ydEq {
+  0%, 100% { height: 4px; opacity: .75; }
+  50% { height: 16px; opacity: 1; }
+}
+
+/* 直播间 */
+.yd-live-room {
+  background: #000;
+}
+
+.yd-live-room[hidden] {
+  display: none;
+}
+
+.yd-live-room__bg {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  background-size: cover;
+  background-position: center;
+}
+
+.yd-live-room__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.75));
+}
+
+.yd-live-room__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: env(safe-area-inset-top);
+  height: calc(56px + env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 12px;
+  padding-right: 12px;
+  z-index: 6;
+  color: #fff;
+}
+
+.yd-live-room__anchor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.yd-live-room__anchor-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.yd-live-room__anchor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.yd-live-room__anchor-name {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.yd-live-room__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yd-live-room__viewers {
+  display: flex;
+  align-items: center;
+}
+
+.yd-live-room__viewer {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.7);
+  margin-left: -8px;
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.yd-live-room__viewer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.yd-live-room__count {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.yd-live-room__close {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.yd-live-room__comments {
+  position: absolute;
+  left: 12px;
+  bottom: calc(64px + env(safe-area-inset-bottom));
+  width: min(76vw, 320px);
+  max-height: 44vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 6;
+}
+
+.yd-live-room__comment {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 6px 10px;
+  color: rgba(255,255,255,0.92);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.yd-live-room__comment b {
+  color: #93C5FD;
+}
+
+.yd-live-room__inputbar {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  gap: 8px;
+  z-index: 7;
+}
+
+.yd-live-room__input {
+  flex: 1;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  padding: 0 14px;
+  outline: none;
+}
+
+.yd-live-room__send {
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  padding: 0 14px;
+  font-weight: 900;
+}
+
+.yd-live-room__send:active {
+  opacity: 0.8;
+}
+

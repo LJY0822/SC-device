@@ -1,0 +1,623 @@
+/* 日历 */
+#page-calendar.yd-cal-page {
+  background: #fff;
+}
+
+/* 勿在此写 display:flex，否则会覆盖 .yd-page { display:none }，导致未激活时与主屏重叠 */
+.yd-cal-page {
+  flex-direction: column;
+}
+
+.yd-cal-header-add {
+  flex-shrink: 0;
+}
+
+/* 主内容区：占满剩余高度 */
+.yd-cal-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f2f2f7;
+}
+
+.yd-cal-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f2f2f7;
+}
+
+.yd-cal-month-wrap {
+  flex-shrink: 0;
+  background: #fff;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.yd-cal-month-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 8px;
+}
+
+.yd-cal-month-bar__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+}
+
+.yd-cal-nav-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: #f2f2f7;
+  color: #111;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.yd-cal-nav-btn:active {
+  opacity: 0.75;
+}
+
+.yd-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.yd-cal-weekdays span {
+  text-align: center;
+  font-size: 12px;
+  color: #8e8e93;
+  font-weight: 600;
+}
+
+.yd-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.yd-cal-cell {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.yd-cal-cell--pad {
+  pointer-events: none;
+}
+
+.yd-cal-cell__num {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+}
+
+.yd-cal-cell--today .yd-cal-cell__num {
+  color: #007aff;
+}
+
+.yd-cal-cell--today {
+  box-shadow: inset 0 0 0 2px #007aff;
+}
+
+.yd-cal-cell--selected {
+  background: rgba(0, 122, 255, 0.12);
+}
+
+.yd-cal-cell--period {
+  background: rgba(255, 105, 135, 0.35);
+}
+
+.yd-cal-cell--period-pred {
+  background: rgba(255, 105, 135, 0.18);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 105, 135, 0.65);
+}
+
+.yd-cal-cell--period-pred .yd-cal-cell__num {
+  color: #d6336c;
+}
+
+.yd-cal-cell__dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+  min-height: 4px;
+}
+
+.yd-cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.yd-cal-dot--birth {
+  background: #ff9f0a;
+}
+
+.yd-cal-dot--event {
+  background: #bf5af2;
+}
+
+.yd-cal-legend--inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  padding: 6px 0 0;
+  font-size: 11px;
+  color: #8e8e93;
+}
+
+.yd-cal-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.yd-cal-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.yd-cal-legend__swatch--period {
+  background: rgba(255, 105, 135, 0.45);
+}
+
+.yd-cal-legend__swatch--pred {
+  background: rgba(255, 105, 135, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(255, 105, 135, 0.5);
+}
+
+.yd-cal-legend__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.yd-cal-legend__dot--birth {
+  background: #ff9f0a;
+}
+
+.yd-cal-legend__dot--event {
+  background: #bf5af2;
+}
+
+.yd-cal-legend__today {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: #007aff;
+  cursor: pointer;
+}
+
+.yd-cal-legend__today:active {
+  opacity: 0.75;
+}
+
+/* 选中日：仅此区域滚动 */
+.yd-cal-day-drawer {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.yd-cal-day-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.yd-cal-recent-panel {
+  margin-top: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.yd-cal-recent-panel__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 10px;
+}
+
+.yd-cal-day-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.yd-cal-day-panel__title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111;
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-cal-day-add {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.yd-cal-day-add:active {
+  opacity: 0.85;
+}
+
+.yd-cal-event-row--period .yd-cal-event-row__title {
+  color: #d6336c;
+}
+
+.yd-cal-event-row--period-pred {
+  cursor: default;
+  background: rgba(255, 105, 135, 0.08);
+  border-style: dashed;
+}
+
+.yd-cal-day-events {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-cal-event-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  background: #f9f9fb;
+  cursor: pointer;
+  text-align: left;
+}
+
+.yd-cal-event-row:active {
+  opacity: 0.88;
+}
+
+.yd-cal-event-row__icon {
+  font-size: 20px;
+}
+
+.yd-cal-event-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-cal-event-row__title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+}
+
+.yd-cal-event-row__meta {
+  display: block;
+  font-size: 12px;
+  color: #8e8e93;
+  margin-top: 2px;
+}
+
+.yd-cal-field-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #8e8e93;
+  line-height: 1.35;
+}
+
+.yd-cal-remind-hint {
+  margin: -4px 0 12px;
+  padding: 0 2px;
+}
+
+.yd-cal-field__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.yd-cal-field__label-sub {
+  font-weight: 400;
+  color: #8e8e93;
+  font-size: 12px;
+}
+
+.yd-cal-birthday-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.yd-cal-birthday-pick__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f9f9fb;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.yd-cal-birthday-pick__row:has(input:checked) {
+  border-color: #007aff;
+  background: rgba(0, 122, 255, 0.08);
+}
+
+.yd-cal-char-link-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.yd-cal-char-link-head .yd-cal-field__label {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-cal-char-pick__all {
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #007aff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.yd-cal-char-pick__all--on {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.yd-cal-char-pick-box {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.yd-cal-char-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.yd-cal-char-pick__row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 12px 14px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.yd-cal-char-pick__row:last-child {
+  border-bottom: none;
+}
+
+.yd-cal-char-pick__row input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.yd-cal-char-pick__name {
+  flex: 1;
+  margin-left: 16px;
+  padding-right: 4px;
+}
+
+.yd-cal-char-pick-box .yd-cal-char-pick__hint {
+  padding: 14px;
+}
+
+.yd-cal-char-pick__hint {
+  font-size: 13px;
+  color: #8e8e93;
+  margin: 0;
+}
+
+.yd-cal-empty {
+  font-size: 13px;
+  color: #8e8e93;
+  text-align: center;
+  padding: 16px 8px;
+}
+
+.yd-cal-upcoming__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-cal-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: #f9f9fb;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.yd-cal-upcoming-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-cal-upcoming-row__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.yd-cal-upcoming-row__meta {
+  display: block;
+  font-size: 12px;
+  color: #8e8e93;
+  margin-top: 2px;
+}
+
+button.yd-cal-upcoming-row:active {
+  opacity: 0.88;
+}
+
+.yd-cal-upcoming-row__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* 事件编辑 sheet */
+#calendar-event-sheet.yd-modal {
+  align-items: flex-end;
+}
+
+.yd-cal-sheet-panel {
+  width: 100%;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.22s ease;
+  overflow-y: auto;
+}
+
+.yd-cal-sheet-panel--open {
+  transform: translateY(0);
+}
+
+.yd-cal-sheet-panel__title {
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.yd-cal-field {
+  margin-bottom: 12px;
+}
+
+.yd-cal-field label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.yd-cal-field .yd-input,
+.yd-cal-field select,
+.yd-cal-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.yd-cal-field textarea.yd-textarea {
+  min-height: 72px;
+  line-height: 1.45;
+}
+
+.yd-cal-repeat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.yd-cal-repeat-row__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #23262e;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#calendar-event-sheet .yd-toggle__control {
+  flex-shrink: 0;
+}
+
+.yd-cal-sheet-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.yd-cal-sheet-actions .yd-btn {
+  flex: 1;
+}

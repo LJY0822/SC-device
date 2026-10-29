@@ -1,0 +1,283 @@
+/* 相机页面：全屏取景 + 底部快门（模拟手机默认相机布局） */
+#page-camera {
+  background: #000;
+}
+
+#page-camera .yd-camera-screen {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部栏：只保留返回 */
+#page-camera .yd-camera-topbar {
+  padding-top: env(safe-area-inset-top);
+  height: calc(54px + env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  padding-right: 12px;
+  z-index: 2;
+}
+
+#page-camera .yd-camera-topbar__back {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#page-camera .yd-camera-topbar__back:active {
+  opacity: 0.7;
+}
+
+/* 取景区域（这里用预览图模拟） */
+#page-camera .yd-camera-view {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#page-camera .yd-camera-view__hint {
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+}
+
+#page-camera .yd-camera-view__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+/* 顶部胶囊按钮组 */
+#page-camera .yd-camera-chips {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+#page-camera .yd-camera-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(245,245,247,0.92);
+  color: #111;
+  font-size: 12px;
+  padding: 4px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#page-camera .yd-camera-chip__icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#page-camera .yd-camera-chip__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+#page-camera .yd-camera-chip:active {
+  opacity: 0.8;
+}
+
+/* 底部控制栏 */
+#page-camera .yd-camera-bottombar {
+  padding: 14px 18px calc(16px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.10));
+}
+
+#page-camera .yd-camera-sidebtn {
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.95);
+  font-size: 14px;
+  padding: 0 14px;
+  justify-self: start;
+}
+
+#page-camera .yd-camera-sidebtn--primary {
+  justify-self: end;
+  background: rgba(255,255,255,0.16);
+}
+
+#page-camera .yd-camera-sidebtn:disabled {
+  opacity: 0.35;
+}
+
+/* 快门按钮 */
+#page-camera .yd-camera-shutter {
+  width: 74px;
+  height: 74px;
+  border: none;
+  background: transparent;
+  position: relative;
+  padding: 0;
+}
+
+#page-camera .yd-camera-shutter__outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.85);
+}
+
+#page-camera .yd-camera-shutter__inner {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+}
+
+#page-camera .yd-camera-shutter:active .yd-camera-shutter__inner {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+
+/* 描述输入层（居中弹窗） */
+#page-camera .yd-camera-desc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+#page-camera .yd-camera-desc-sheet[hidden] {
+  display: none;
+}
+
+#page-camera .yd-camera-desc-sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+
+#page-camera .yd-camera-desc-sheet__panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 32px);
+  max-width: 360px;
+  padding: 16px 16px 14px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 16px;
+}
+
+#page-camera .yd-camera-desc-sheet__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+#page-camera .yd-camera-desc-sheet__section {
+  margin-top: 8px;
+}
+
+#page-camera .yd-camera-desc-sheet__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+#page-camera .yd-camera-desc-sheet__hint {
+  font-size: 12px;
+  color: #8E8E93;
+  margin-top: 4px;
+}
+
+#page-camera .yd-camera-participants {
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#page-camera .yd-camera-participant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+#page-camera .yd-camera-participant input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+#page-camera .yd-camera-participant-label {
+  color: #111;
+}
+
+/* 描述文本框：明显的边框和圆角，全宽 */
+#page-camera .yd-camera-desc-textarea {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* 时间/地点输入：紧凑的边框输入框 */
+#page-camera .yd-camera-desc-input {
+  width: 100%;
+  height: 38px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  font-size: 13px;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+#page-camera .yd-camera-desc-sheet__section {
+  margin-top: 6px;
+}
+
+#page-camera .yd-camera-desc-sheet__actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+#page-camera .yd-camera-desc-sheet__actions .yd-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+}
+

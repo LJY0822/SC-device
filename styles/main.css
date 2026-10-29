@@ -1,0 +1,150 @@
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 手机容器：用 fixed + inset 强制铺满视口，避免底部黑条 */
+.yd-phone {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 页面基础 */
+.yd-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+}
+
+.yd-page--active {
+  display: flex;
+  opacity: 1;
+}
+
+/* 左边缘滑动返回：跟手拖动/回弹/滑出动画 */
+.yd-page.yd-swipeback--dragging {
+  will-change: transform;
+  /* 轻微阴影让“页面被拖出来”的层次更真实 */
+  box-shadow: -12px 0 28px rgba(0,0,0,0.14);
+}
+
+.yd-page.yd-swipeback--animating {
+  transition: transform 220ms cubic-bezier(0.22, 0.95, 0.28, 1);
+}
+
+/* 左边缘返回手势提示：拖动时在左侧中部显示箭头 */
+.yd-swipeback-indicator {
+  position: fixed;
+  left: 12px;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.9);
+  color: rgba(17,17,17,0.78);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, -50%, 0) scale(0.96);
+  transition: opacity 120ms ease;
+  z-index: 30;
+}
+
+.yd-swipeback-indicator.is-visible {
+  opacity: 1;
+}
+
+.yd-swipeback-indicator svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* 页面淡入淡出（用于设置页进入/返回） */
+.yd-page--transition {
+  will-change: opacity;
+  transition: opacity 180ms ease;
+}
+
+.yd-page--entering {
+  opacity: 0;
+  z-index: 3;
+}
+
+.yd-page--leaving {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 通用按钮 - 已移至 layout.css */
+
+/* 通用表单 - 已移至 layout.css */
+
+/* 模态框 */
+.yd-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.yd-modal--active {
+  display: flex;
+}
+
+.yd-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.yd-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.yd-btn-close {
+  background: transparent;
+  color: #666;
+  font-size: 24px;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  box-shadow: none;
+}
+

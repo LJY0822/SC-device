@@ -1,0 +1,2651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>html,body{margin:0;background:#fff}</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>SC-个人通讯装置</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/homescreen.css">
+  <link rel="stylesheet" href="styles/chat.css">
+  <link rel="stylesheet" href="styles/notifications.css">
+  <link rel="stylesheet" href="styles/settings.css">
+  <link rel="stylesheet" href="styles/beautify.css">
+  <link rel="stylesheet" href="styles/character.css">
+  <link rel="stylesheet" href="styles/worldbook.css">
+  <link rel="stylesheet" href="styles/weather.css">
+  <link rel="stylesheet" href="styles/moments.css">
+  <link rel="stylesheet" href="styles/forum.css">
+  <link rel="stylesheet" href="styles/ta.css">
+  <link rel="stylesheet" href="styles/timer.css">
+  <link rel="stylesheet" href="styles/camera.css">
+  <link rel="stylesheet" href="styles/sc.css">
+</head>
+<body>
+  <!-- 手机模拟器容器 -->
+  <div id="yd-phone" class="yd-phone">
+    
+    <!-- 主屏幕 -->
+    <div id="page-homescreen" class="yd-page yd-page--active">
+      <!-- 壁纸层 -->
+      <div class="yd-wallpaper" id="wallpaper"></div>
+      
+      <!-- 主屏分页（左右滑动） -->
+      <div class="yd-homescreen-pager" id="homescreen-pager" aria-label="主屏幕">
+        <div class="yd-homescreen-pages" id="homescreen-pages"></div>
+        <div class="yd-homescreen-dots" id="homescreen-dots" aria-hidden="true"></div>
+      </div>
+      
+      <!-- Dock栏 -->
+      <div class="yd-dock" id="dock"></div>
+    </div>
+
+    <!-- 聊天列表页面 -->
+    <div id="page-chat-list" class="yd-page">
+      <!-- 顶部栏 -->
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="chat-list-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">聊天</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="chat-list-new" aria-label="新建">+</button>
+      </div>
+      
+      <!-- 会话列表 -->
+      <div class="yd-page-content" id="chat-list-content"></div>
+    </div>
+
+    <!-- 朋友圈页面 -->
+    <div id="page-moments" class="yd-page">
+      <div class="yd-page-header yd-settings-nav yd-moments-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="moments-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">朋友圈</div>
+        <button class="yd-header-btn yd-moments-camera" id="moments-new" aria-label="发表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h3l2-2h6l2 2h3v12H4V7z"></path>
+            <circle cx="12" cy="13" r="3.2"></circle>
+          </svg>
+        </button>
+      </div>
+      <div class="yd-page-content yd-moments-content">
+      <div class="yd-moments-cover">
+        <div class="yd-moments-cover__bg"></div>
+        <div class="yd-moments-cover__me">
+          <div class="yd-moments-cover__name" id="moments-me-name">我</div>
+          <div class="yd-moments-cover__avatar" id="moments-me-avatar">👤</div>
+        </div>
+      </div>
+        <div class="yd-moments-updatebar" id="moments-updatebar" hidden>
+          <button type="button" class="yd-moments-updatebar__btn" id="moments-refresh">
+            <span class="yd-moments-updatebar__text">有新内容更新</span>
+            <span class="yd-moments-updatebar__badge" id="moments-refresh-badge" hidden>1</span>
+          </button>
+        </div>
+        <div class="yd-moments-list" id="moments-list"></div>
+      </div>
+    </div>
+
+    <!-- 生图记录（桌面入口：汇总各条朋友圈的生图草稿/记录） -->
+    <div id="page-mis-records" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button type="button" class="yd-header-btn yd-header-btn--circle" id="mis-records-page-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">生图记录</div>
+        <button
+          type="button"
+          class="yd-header-btn yd-header-btn--circle yd-header-btn--add"
+          id="mis-records-page-new"
+          aria-label="新建生图"
+        >
+          +
+        </button>
+      </div>
+      <div class="yd-page-content mis-records-page">
+        <div id="mis-records-global-list" class="mis-records-list" role="list"></div>
+      </div>
+    </div>
+
+    <!-- 朋友圈生图制作（文生图 / 垫图 edits） -->
+    <div id="page-moments-image-studio" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="moments-image-studio-back" type="button" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">生图制作</div>
+        <button type="button" class="yd-header-btn yd-header-btn--circle yd-header-btn--circle-pill mis-records-open" id="mis-records-open" aria-label="生成记录管理">记录</button>
+      </div>
+      <div id="mis-records-overlay" class="mis-records-overlay" hidden aria-hidden="true">
+        <div class="mis-records-panel">
+          <div class="yd-page-header yd-settings-nav mis-records-panel__top">
+            <button type="button" class="yd-header-btn yd-header-btn--circle" id="mis-records-close" aria-label="返回">
+              <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="yd-page-header__center">生成记录管理</div>
+            <button type="button" class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="mis-records-new" aria-label="新建">+</button>
+          </div>
+          <div id="mis-records-list" class="mis-records-list" role="list"></div>
+        </div>
+      </div>
+      <div class="yd-page-content mis-page">
+        <div class="mis-section mis-section--first">
+          <label class="mis-section-title" for="mis-prompt">提示词（画面描述）</label>
+          <textarea id="mis-prompt" class="mis-textarea" rows="8" placeholder="描述想要的配图画面…"></textarea>
+        </div>
+
+        <div class="mis-section">
+          <div class="mis-section-title">参考图（垫图）</div>
+          <div class="mis-ref-zone">
+            <input type="file" id="mis-ref-files" class="mis-ref-input-hidden" accept="image/png,image/jpeg,image/webp" multiple tabindex="-1" aria-hidden="true" />
+            <div id="mis-ref-grid" class="mis-ref-grid"></div>
+          </div>
+        </div>
+
+        <div class="mis-section">
+          <div class="mis-section-title">生成参数</div>
+
+          <div class="mis-params-box">
+            <div class="mis-row">
+              <div class="mis-field">
+                <label class="mis-label" for="mis-n">生成张数</label>
+                <input type="number" id="mis-n" class="mis-input" min="1" max="10" value="1" />
+              </div>
+              <div class="mis-field" id="mis-size-field">
+                <label class="mis-label" for="mis-size">图片尺寸</label>
+                <select id="mis-size" class="mis-select">
+                  <option value="">（默认）</option>
+                  <option value="auto">auto</option>
+                  <option value="1024x1024">1024×1024</option>
+                  <option value="1536x1024">1536×1024</option>
+                  <option value="1024x1536">1024×1536</option>
+                  <option value="2048x2048">2048×2048</option>
+                  <option value="2048x1152">2048×1152</option>
+                  <option value="3840x2160">3840×2160</option>
+                  <option value="2160x3840">2160×3840</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mis-row" id="mis-quality-format-row">
+              <div class="mis-field" id="mis-quality-field">
+                <label class="mis-label" for="mis-quality">画质</label>
+                <select id="mis-quality" class="mis-select">
+                  <option value="">（默认）</option>
+                  <option value="auto">auto</option>
+                  <option value="low">low</option>
+                  <option value="medium">medium</option>
+                  <option value="high">high</option>
+                </select>
+              </div>
+              <div class="mis-field" id="mis-format-field">
+                <label class="mis-label" for="mis-format">图片格式</label>
+                <select id="mis-format" class="mis-select">
+                  <option value="">（默认）</option>
+                  <option value="png">png</option>
+                  <option value="jpeg">jpeg</option>
+                  <option value="webp">webp</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mis-row" id="mis-input-fidelity-row" hidden>
+              <div class="mis-field">
+                <label class="mis-label" for="mis-input-fidelity">垫图贴合度</label>
+                <select id="mis-input-fidelity" class="mis-select">
+                  <option value="">（默认）</option>
+                  <option value="low">low（更自由）</option>
+                  <option value="high">high（更贴近垫图）</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mis-row" id="mis-response-format-row">
+              <div class="mis-field">
+                <label class="mis-label" for="mis-response-format">返回格式</label>
+                <select id="mis-response-format" class="mis-select">
+                  <option value="">（默认）</option>
+                  <option value="b64_json">b64_json</option>
+                  <option value="url">url</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mis-result-panel" class="mis-result-panel" hidden>
+          <div class="mis-section-title">生成结果</div>
+          <div id="mis-result-runs-wrap" class="mis-result-runs-wrap" hidden>
+            <label class="mis-result-runs-label" for="mis-result-run-select">生成批次</label>
+            <select id="mis-result-run-select" class="mis-result-run-select" aria-label="选择生成批次"></select>
+          </div>
+          <div id="mis-result-grid" class="mis-result-grid"></div>
+        </div>
+
+        <div id="mis-result-lightbox" class="mis-result-lightbox" hidden aria-hidden="true" inert>
+          <button type="button" class="mis-result-lightbox__backdrop" id="mis-result-lightbox-backdrop" aria-label="关闭预览"></button>
+          <div class="mis-result-lightbox__inner">
+            <button type="button" class="mis-result-lightbox__close" id="mis-result-lightbox-close" aria-label="关闭">×</button>
+            <div class="mis-result-lightbox__zoom-viewport" id="mis-result-lightbox-zoom-viewport">
+              <div class="mis-result-lightbox__zoom-stage" id="mis-result-lightbox-zoom-stage">
+                <img id="mis-result-lightbox-img" class="mis-result-lightbox__img" alt="" draggable="false" />
+              </div>
+            </div>
+            <div class="mis-result-lightbox__actions">
+              <button type="button" class="yd-btn mis-result-lightbox__save" id="mis-result-lightbox-save" data-action="apply-moment">应用到朋友圈</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mis-actions mis-actions--page-bottom">
+          <button type="button" class="yd-btn mis-draft-btn" id="mis-draft">存草稿</button>
+          <button type="button" class="yd-btn mis-submit mis-submit--primary" id="mis-run">生成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 论坛页面（简版） -->
+    <div id="page-forum" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="forum-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-forum-title">
+          <div class="yd-forum-title__name">论坛</div>
+          <div class="yd-forum-title__status">
+            <span class="yd-forum-title__icon" id="forum-title-icon" aria-hidden="true">💬</span>
+            <span class="yd-forum-title__status-text" id="forum-title-text">默认</span>
+          </div>
+        </div>
+        <div class="yd-forum-header-actions">
+          <button class="yd-header-btn yd-header-btn--circle yd-forum-switch-btn" id="forum-switch" type="button" aria-label="切换论坛">
+            <svg class="yd-forum-switch-icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+              <path d="M96 416h832c0.32 0 0.576-0.192 0.896-0.192a30.656 30.656 0 0 0 30.976-30.976c-0.064-0.256 0.128-0.512 0.128-0.832a31.424 31.424 0 0 0-14.912-26.368l-188.48-188.48a30.72 30.72 0 1 0-43.456 43.456L852.544 352H96a32 32 0 0 0 0 64z m832 192H96c-0.32 0-0.576 0.192-0.896 0.192a30.528 30.528 0 0 0-30.976 30.976c0.064 0.256-0.128 0.512-0.128 0.832 0 11.264 6.144 20.672 14.912 26.368l188.48 188.48a30.72 30.72 0 1 0 43.456-43.456L171.456 672H928a32 32 0 0 0 0-64z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="yd-page-content yd-forum-content">
+        <div class="yd-forum-list" id="forum-list"></div>
+      </div>
+    <div class="yd-forum-bottom">
+      <button type="button" class="yd-forum-bottom__refresh" id="forum-refresh" aria-label="刷新帖子">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+          <path d="M21 3v7h-7"/>
+        </svg>
+      </button>
+      <button type="button" class="yd-forum-bottom__new" id="forum-new" aria-label="发布">
+        <span class="yd-forum-bottom__new-icon" aria-hidden="true">＋</span>
+        <span>发布</span>
+      </button>
+    </div>
+    </div>
+
+    <!-- 论坛帖子详情 -->
+    <div id="page-forum-thread" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="forum-thread-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">帖子</div>
+        <button class="yd-header-btn yd-header-btn--circle" id="forum-thread-share" aria-label="分享">
+          <svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+            <path d="M143.865 804.341c-15.104 0-28.156-11.033-30.476-26.21-1.056-6.86-24.388-169.313 83.291-294.69 73.525-85.582 188.41-131.583 341.819-136.95v-95.967a30.87 30.87 0 0 1 17.787-27.959c10.912-5.08 23.634-3.422 32.856 4.264l313.213 261.435a30.883 30.883 0 0 1 11.094 23.696 30.88 30.88 0 0 1-11.094 23.693l-313.18 261.513c-9.165 7.7-21.978 9.347-32.86 4.266a30.87 30.87 0 0 1-17.784-27.959l-0.032-96.54a1464.42 1464.42 0 0 0-32.076-0.35c-201.492 0-331.658 38.03-331.658 96.89 0 16.14-12.45 29.556-28.548 30.778-0.784 0.057-1.568 0.09-2.352 0.09z m362.558-189.495c38.95 0 64.694 1.464 64.694 1.464 16.338 0.932 29.12 14.454 29.12 30.823v60.366l234.17-195.538-234.172-195.464v60.336c0 17.047-13.805 30.869-30.869 30.869-149.792 0-259.28 38.858-325.418 115.487-41.18 47.706-59.207 103.34-66.652 149.596 77.022-45.927 210.596-57.939 329.127-57.939z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="yd-page-content yd-forum-thread">
+        <div id="forum-thread-post"></div>
+        <div class="yd-forum-thread__reply-meta" id="forum-thread-reply-meta"></div>
+        <button type="button" class="yd-forum-thread__load" id="forum-thread-load">加载评论</button>
+        <div class="yd-forum-thread__list" id="forum-thread-comments"></div>
+        <button type="button" class="yd-forum-thread__more" id="forum-thread-more" hidden>加载评论</button>
+      </div>
+      <div class="yd-forum-thread__composer">
+        <button type="button" class="yd-forum-thread__mode" id="forum-thread-mode" aria-label="选择评论方式">⋯</button>
+        <input class="yd-forum-thread__input" id="forum-thread-input" placeholder="写下你的评论…" />
+        <button type="button" class="yd-forum-thread__send" id="forum-thread-send">发送</button>
+      </div>
+      <button type="button" class="yd-forum-thread__to-bottom" id="forum-thread-to-bottom" hidden aria-label="到底部">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="7 8 12 13 17 8"></polyline>
+          <polyline points="7 13 12 18 17 13"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 直播页面（上下滑） -->
+    
+
+    <!-- 直播间（全屏） -->
+    <div id="page-live-room" class="yd-page yd-live-room" hidden>
+      <div class="yd-live-room__bg" id="live-room-bg"></div>
+
+      <div class="yd-live-room__header">
+        <div class="yd-live-room__anchor">
+          <div class="yd-live-room__anchor-avatar" id="live-room-anchor-avatar">👤</div>
+          <div class="yd-live-room__anchor-name" id="live-room-anchor-name">主播</div>
+        </div>
+        <div class="yd-live-room__right">
+          <div class="yd-live-room__viewers" id="live-room-viewers"></div>
+          <div class="yd-live-room__count" id="live-room-count">0</div>
+          <button class="yd-live-room__close" id="live-room-close" type="button" aria-label="关闭">×</button>
+        </div>
+      </div>
+
+      <div class="yd-live-room__comments" id="live-room-comments" aria-label="评论区"></div>
+
+      <div class="yd-live-room__inputbar">
+        <input class="yd-live-room__input" id="live-room-input" placeholder="说点什么…" />
+        <button class="yd-live-room__send" id="live-room-send" type="button">发送</button>
+      </div>
+    </div>
+
+    <!-- 组件列表页面 -->
+    
+
+    <!-- 晒图页面（照片流） -->
+    
+
+    <!-- 外卖页面 -->
+    
+
+    <!-- 商城页面 -->
+    
+
+    <!-- 购物App管理页（MVP） -->
+    
+
+    <!-- 我的钱包页面 -->
+    
+
+    <!-- 主动发消息页面 -->
+    <div id="page-timer" class="yd-page yd-timer-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="timer-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">主动发消息</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-timer-content">
+        <div class="yd-timer-card yd-timer-card--compact">
+          <label class="yd-timer-row yd-timer-row--toggle">
+            <span class="yd-timer-row__label">系统通知权限</span>
+            <span class="yd-toggle">
+              <input id="system-notify-enabled" type="checkbox" aria-label="系统通知权限" />
+              <span class="yd-toggle__slider" aria-hidden="true"></span>
+            </span>
+          </label>
+        </div>
+        <div class="yd-timer-card">
+          <label class="yd-timer-row yd-timer-row--toggle">
+            <span class="yd-timer-row__label">开启主动发消息</span>
+            <span class="yd-toggle">
+              <input id="proactive-enabled" type="checkbox" aria-label="开启主动发消息" />
+              <span class="yd-toggle__slider" aria-hidden="true"></span>
+            </span>
+          </label>
+          <div class="yd-timer-hint yd-timer-field-title"><strong>期望发消息的间隔</strong>（期望角色在间隔多少分钟后会给你主动发消息）</div>
+          <div class="yd-timer-row yd-timer-row--split">
+            <input id="proactive-min" class="yd-input yd-timer-input" type="number" min="0" step="1" placeholder="最短 0" value="30" />
+            <span class="yd-timer-hint yd-timer-hint--dash">—</span>
+            <input id="proactive-max" class="yd-input yd-timer-input" type="number" min="0" step="1" placeholder="最长 1" value="60" />
+          </div>
+          <div class="yd-timer-hint yd-timer-field-title"><strong>勿扰时间段</strong>（24 小时制，整点）</div>
+          <div class="yd-timer-row yd-timer-row--split">
+            <input id="proactive-dnd-start" class="yd-input yd-timer-input" type="number" min="0" max="23" step="1" placeholder="起 23" value="23" />
+            <span class="yd-timer-hint yd-timer-hint--dash">—</span>
+            <input id="proactive-dnd-end" class="yd-input yd-timer-input" type="number" min="0" max="23" step="1" placeholder="止 8" value="8" />
+          </div>
+          <p class="yd-timer-note" style="margin-top:6px;">ps:该期望值只做参考，角色会基于该期望值做参考，但实际主动发消息的间隔会以实际对话内容为准</p>
+          
+          <div class="yd-timer-status" id="proactive-status" aria-live="polite"></div>
+        </div>
+        <div class="yd-timer-list" id="timer-task-list" aria-label="主动发消息列表"></div>
+      </div>
+    </div>
+
+    <!-- 聊天对话页面 -->
+    <div id="page-chat" class="yd-page">
+      <!-- 背景图层 -->
+      <div class="yd-chat-background" id="chat-background"></div>
+      
+      <!-- 顶部栏 -->
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="chat-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <span class="yd-chat-back-unread-badge" id="chat-back-unread-badge" hidden>0</span>
+        <div class="yd-page-header__center yd-chat-title" id="chat-title">
+          <div class="yd-chat-title__name" id="chat-title-name">
+            <span class="yd-chat-title__name-wrap">
+              <span class="yd-chat-title__name-text" id="chat-title-name-text">聊天</span>
+              <span class="yd-chat-title__spark" aria-label="连续聊天天数">
+                <span class="yd-chat-title__spark-icon" aria-hidden="true">🔥</span>
+                <span class="yd-chat-title__spark-count" id="chat-title-spark-count">0</span>
+              </span>
+            </span>
+          </div>
+          <div class="yd-chat-title__status" aria-label="在线状态">
+            <span class="yd-chat-title__dot" aria-hidden="true"></span>
+            <span class="yd-chat-title__status-text">在线</span>
+            <span class="yd-chat-title__together-pill" aria-hidden="true">
+              <span class="yd-chat-title__together-icon">
+                <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                  <path d="M951.1 0L308.4 147.2v127.5h-0.5v481.6c-24.3-17.5-53.9-28.1-86.1-28.1C140.2 728.2 74 794.4 74 876s66.2 147.8 147.8 147.8S369.6 957.7 369.6 876c0-7.5-1.1-14.7-2.2-22h2.2V346.1l519.7-119V648c-24.3-17.5-53.9-28.1-86.1-28.1-81.6 0-147.8 66.2-147.8 147.8s66.2 147.8 147.8 147.8c81.6 0 147.8-66.2 147.8-147.8 0-7.5-1.1-14.7-2.2-22h2.2V0z" fill="currentColor"></path>
+                </svg>
+              </span>
+              <span class="yd-chat-title__together-marquee">
+                <span class="yd-chat-title__together-track">
+                  <span class="yd-chat-title__together-text">一起听歌中 · 正在听</span>
+                  <span class="yd-chat-title__together-text yd-chat-title__together-text--clone">一起听歌中 · 正在听</span>
+                </span>
+              </span>
+              <span class="yd-chat-title__together-waves" aria-hidden="true">
+                <span class="yd-chat-title__together-bar"></span>
+                <span class="yd-chat-title__together-bar"></span>
+                <span class="yd-chat-title__together-bar"></span>
+                <span class="yd-chat-title__together-bar"></span>
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="yd-page-header__right">
+          <button class="yd-header-btn yd-header-btn--capsule yd-header-btn--menu yd-chat-menu-pill" type="button" id="chat-menu" aria-label="会话设置与线上、线下模式切换">
+            <svg class="yd-chat-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="1"/>
+              <circle cx="19" cy="12" r="1"/>
+              <circle cx="5" cy="12" r="1"/>
+            </svg>
+            <span class="yd-chat-menu-pill__divider" aria-hidden="true"></span>
+            <span class="yd-chat-menu-pill__left">线下</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 消息列表 -->
+      <div class="yd-page-content yd-chat-messages" id="chat-messages">
+        <div class="yd-chat-scroll" id="chat-scroll"></div>
+      </div>
+      
+      <!-- 输入区 -->
+      <div class="yd-page-footer yd-chat-input-wrapper">
+        <div class="yd-chat-input-shell" aria-label="聊天输入框区域">
+        <div class="yd-chat-toolbar" id="chat-toolbar" aria-label="聊天工具栏">
+          <select class="yd-chat-toolbar__model-select" id="chat-model-select" aria-label="模型选择（隐藏）"></select>
+          <div class="yd-chat-toolbar__quote" id="chat-quote-bar" hidden>
+            <div class="yd-chat-toolbar__quote-text" id="chat-quote-text"></div>
+            <button class="yd-chat-toolbar__quote-close" id="chat-quote-close" type="button" aria-label="取消引用">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div class="yd-chat-toolbar__actions" aria-label="快捷消息类型">
+            <button class="yd-chat-toolbar__btn yd-chat-toolbar__btn--model" type="button" id="chat-model-btn" aria-label="模型选择">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="3" y1="4" x2="10" y2="4"></line>
+                <line x1="14" y1="4" x2="21" y2="4"></line>
+                <line x1="3" y1="12" x2="8" y2="12"></line>
+                <line x1="12" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="20" x2="12" y2="20"></line>
+                <line x1="16" y1="20" x2="21" y2="20"></line>
+                <line x1="14" y1="7" x2="14" y2="1"></line>
+                <line x1="8" y1="15" x2="8" y2="9"></line>
+                <line x1="16" y1="23" x2="16" y2="17"></line>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-redpacket" aria-label="红包">
+              <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <path d="M736 0H288C176.256 0 85.333 87.296 85.333 194.581V669.74c0 17.664 14.336 32 32 32s32-14.336 32-32V194.58C149.333 122.581 211.541 64 288 64h448c76.459 0 138.667 58.581 138.667 130.581v625.536C874.667 919.488 835.797 960 740.5 960H283.52c-96.555 0-134.187-39.21-134.187-139.883 0-17.664-14.336-32-32-32s-32 14.336-32 32C85.333 955.413 152.021 1024 283.52 1024h456.981c131.499 0 198.166-68.587 198.166-203.883V194.581C938.667 87.296 847.744 0 736 0z m48.292 176.625c-8.47-15.53-27.968-21.141-43.434-12.693-215.34 117.973-449.451 0.81-451.776-0.384-15.638-8.086-34.944-1.92-43.051 13.781-8.107 15.723-1.941 35.008 13.76 43.115 7.083 3.67 120.448 60.8 267.243 60.8 75.946 0 160.832-15.296 244.565-61.184 15.51-8.49 21.184-27.926 12.693-43.435z m-125.77 461.062c17.664 0 32-14.336 32-32s-14.336-32-32-32H571.61l88.277-132.757c9.792-14.72 5.803-34.581-8.917-44.373-14.72-9.792-34.56-5.782-44.374 8.917l-92.97 139.84-92.992-139.84c-9.792-14.677-29.654-18.688-44.374-8.917-14.72 9.792-18.71 29.653-8.917 44.373l88.277 132.757h-83.456c-17.664 0-32 14.336-32 32s14.336 32 32 32h111.168v53.91H372.164c-17.664 0-32 14.336-32 32s14.336 32 32 32h111.168v82.346c0 17.664 14.336 32 32 32s32-14.336 32-32v-82.346h111.19c17.664 0 32-14.336 32-32s-14.336-32-32-32h-111.19v-53.91h111.19z"></path>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-transfer" aria-label="转账">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-call" aria-label="语音通话">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-video" aria-label="视频通话">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-sticker" aria-label="表情包">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-image" aria-label="图片">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="3" ry="3"></rect>
+                <circle cx="9" cy="9" r="2"></circle>
+                <path d="M21 15l-4.5-4.5L9 18"></path>
+              </svg>
+            </button>
+            
+          </div>
+        </div>
+        <div class="yd-chat-offline-toolbar" id="chat-offline-toolbar" aria-label="线下工具栏" aria-hidden="true">
+          <div class="yd-chat-offline-toolbar__actions">
+            <button class="yd-chat-toolbar__btn yd-chat-toolbar__btn--model" type="button" id="chat-offline-model-btn" aria-label="模型设置" title="模型设置">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="3" y1="4" x2="10" y2="4"></line>
+                <line x1="14" y1="4" x2="21" y2="4"></line>
+                <line x1="3" y1="12" x2="8" y2="12"></line>
+                <line x1="12" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="20" x2="12" y2="20"></line>
+                <line x1="16" y1="20" x2="21" y2="20"></line>
+                <line x1="14" y1="7" x2="14" y2="1"></line>
+                <line x1="8" y1="15" x2="8" y2="9"></line>
+                <line x1="16" y1="23" x2="16" y2="17"></line>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-offline-regex-btn" aria-label="正则设置" title="正则设置">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path>
+                <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m14 7 3 3"></path>
+                  <path d="M5 6v4"></path>
+                  <path d="M19 14v4"></path>
+                  <path d="M10 2v2"></path>
+                  <path d="M7 8H3"></path>
+                  <path d="M21 16h-4"></path>
+                  <path d="M11 3H9"></path>
+                </g>
+              </svg>
+            </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-offline-worldbook-btn" aria-label="世界书" title="世界书">
+              <svg viewBox="0 0 1024 1024" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="M512 0C229.2 0 0 229.2 0 512s229.2 512 512 512 512-229.2 512-512S794.8 0 512 0zM337.6 924.8c-53.3-22.6-101.3-54.9-142.4-96-41.2-41.2-73.5-89.1-96-142.4C75.8 631.2 64 572.5 64 512c0-29 2.7-57.6 8.1-85.5 6.5 2.5 13.8 3.9 20.9 3.9 9.7 0 19.3-2.4 27.1-7.6 8-5.3 17.3-8.1 26.5-8.1 7.9 0 15.8 2.1 22.8 6.4 8.1 5 13.8 11.6 13.8 22.8 0 81.6 2.8 168.7 76.9 169.9 2.2 0 41.2 14.9 59.8 63.3 2.2 5.6 6.4 7.4 12.2 7.4 11.5 0 29-7.4 47.6-7.4 13.9 0 0 23.6 0 74.5C379.8 802 489 880.1 489 880.1c-0.6 32 0.9 58.5 3.3 79.4-53.5-2.2-105.5-13.9-154.7-34.7zm491.2-96c-41.2 41.2-89.1 73.5-142.4 96-24.4 10.3-49.4 18.4-75 24.1-1.5-0.3-3.2-0.4-5-0.4-3.5 0-7.5 0.5-12 1.7 15.5-65.5 22.9-102.4 54.9-130.2 44-38.2 9.7-80.4-24-80.4-1.9 0-3.9 0.1-5.8 0.4-1.5 0.2-2.8 0.3-4 0.3-22.2 0-7.5-34.9-31.1-36.9-24.8-2.1-57.3-51.4-93.4-68.5-19-9-37.5-33.2-67-34.5h-1.7c-18.6 0-42.3 11.1-54.4 11.1-4.8 0-7.8-1.8-7.8-6.7 0-57.1-5.9-97.7-6.8-113.8-0.4-5.5-2-7.1-1.1-7.1 1.2 0 7.2 3.2 27.8 3.7h0.5c18.6 0 9.7-38.5 28.1-40 0.8-0.1 1.6-0.1 2.4-0.1 16.4 0 47.5 11.8 63.8 11.8 3.4 0 6.1-0.5 7.9-1.7 0.2-0.1 0.4-0.2 0.7-0.2 8.8 0 43.4 86.3 62.8 86.3 8 0 13.4-14.7 13.4-56 0-17.1-9-46.9 0-63.3 35.1-64.2 67.9-116.7 65.1-124.1-0.9-2.3-11.3-4.4-25-4.4-11.7 0-25.7 1.5-38.3 5.6-9.4 3.1 2.8 17.7-10.2 20.8-8.7 2-17.2 2.9-25.2 2.9-38.2 0-65.8-20.3-53.3-39.8 15.9-23.9 72.8-10.6 77.9-58.6 2.3-22.2 4.3-47.2 5.8-68.5 0.5-7.7 6.7-13.7 14.4-14.2 37.2-2.7 41-47 6.2-75.3 37.5 5.4 74.1 15.6 109.2 30.5 53.3 22.6 101.3 54.9 142.4 96 37.4 37.4 67.4 80.3 89.6 127.8-5.7-3.5-11.6-5.2-17.4-5.2-28.3 0-54.2 38.4-38 82-133 102-98.9 173.4-55.5 214 12.8 12 25.4 27.4 36.4 42.7 10.6 14.6 17.2 31.5 21 49.2 1.4 6.4 6.4 9.6 13.7 9.6 11 0 27-7.3 43.1-21.7-22.2 50.3-53.4 95.8-92.7 135.1z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="yd-chat-sticker-strip" id="chat-sticker-strip" hidden aria-label="表情包快速选择">
+          <button class="yd-chat-sticker-strip__add" id="chat-sticker-add" type="button" aria-label="管理表情包">
+            <span class="yd-chat-sticker-strip__add-icon">+</span>
+          </button>
+          <div class="yd-chat-sticker-strip__scroll" id="chat-sticker-scroll"></div>
+        </div>
+        <div class="yd-chat-input-container">
+          <textarea class="yd-textarea yd-chat-input" id="chat-input" placeholder="输入消息..." rows="1"></textarea>
+          <button class="yd-chat-send-btn" id="chat-send">
+            <!-- 图标由 Chat._updateSendButtonState 动态切换 -->
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- 发红包底部弹窗 -->
+      <div class="chat-redpacket-modal" id="chat-redpacket-modal" aria-hidden="true">
+        <div class="chat-redpacket-mask" id="chat-redpacket-mask"></div>
+        <div class="chat-redpacket-panel" role="dialog" aria-label="发红包">
+          <div class="chat-redpacket-header">
+            <button class="chat-redpacket-close" id="chat-redpacket-cancel" type="button">取消</button>
+            <div class="chat-redpacket-header-title">发红包</div>
+          </div>
+          <div class="chat-redpacket-body">
+            <div class="chat-redpacket-card">
+              <div class="chat-redpacket-card-label">金额</div>
+              <input type="number"
+                     class="chat-redpacket-card-input"
+                     id="chat-redpacket-amount"
+                     placeholder="¥0.00"
+                     step="0.01"
+                     min="0.01"
+                     max="20000">
+            </div>
+
+            <div class="chat-redpacket-card">
+              <div class="chat-redpacket-card-label">说点什么</div>
+              <input type="text"
+                     class="chat-redpacket-card-input chat-redpacket-card-input-text"
+                     id="chat-redpacket-message"
+                     placeholder="恭喜发财"
+                     maxlength="30">
+            </div>
+
+            <div class="chat-redpacket-amount-display" id="chat-redpacket-amount-display">¥0.00</div>
+
+            <button class="chat-redpacket-send-button" id="chat-redpacket-send" type="button">
+              发送红包
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 转账底部弹窗 -->
+      <div class="chat-transfer-modal" id="chat-transfer-modal" aria-hidden="true">
+        <div class="chat-transfer-mask" id="chat-transfer-mask"></div>
+        <div class="chat-transfer-panel" role="dialog" aria-label="转账">
+          <div class="chat-transfer-header">
+            <button class="chat-transfer-close" id="chat-transfer-cancel" type="button">取消</button>
+            <div class="chat-transfer-title" id="chat-transfer-title">转账</div>
+          </div>
+          <div class="chat-transfer-body">
+            <div class="chat-transfer-card">
+              <div class="chat-transfer-label">转账金额</div>
+              <div class="chat-transfer-amount-row">
+                <span class="chat-transfer-amount-symbol">¥</span>
+                <input type="number" class="chat-transfer-amount-input" id="chat-transfer-amount" placeholder="0.00" step="0.01" min="0.01" max="100000000000">
+              </div>
+              <div class="chat-transfer-message-label">转账留言</div>
+              <input type="text" class="chat-transfer-message-input" id="chat-transfer-message" placeholder="转账留言" maxlength="30">
+            </div>
+            <button class="chat-transfer-send-button" id="chat-transfer-send" type="button">转账</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 红包/转账处理弹窗（领取/退还） -->
+      <div class="chat-money-action-modal" id="chat-money-action-modal" aria-hidden="true">
+        <div class="chat-money-action-mask" id="chat-money-action-mask"></div>
+        <div class="chat-money-action-panel" role="dialog" aria-label="红包转账处理">
+          <div class="chat-money-action-card" id="chat-money-action-card">
+            <button class="chat-money-action-card__close" id="chat-money-action-cancel" type="button" aria-label="关闭">×</button>
+            <!-- 参考你给的“红包”页面：上半圆 cap + 底部纹理 + 中下部圆形按钮 -->
+            <div class="chat-money-action-card__cap" id="chat-money-action-cap" aria-hidden="true"></div>
+            <div class="chat-money-action-card__body-pattern" id="chat-money-action-body-pattern" aria-hidden="true"></div>
+
+            <div class="chat-money-action-card__wishes" id="chat-money-action-wishes">
+              <div class="chat-money-action-card__wishes-top">
+                <div class="chat-money-action-card__icon" id="chat-money-action-top-icon" aria-hidden="true"></div>
+                <div class="chat-money-action-card__amount" id="chat-money-action-top-amount">¥0.00</div>
+              </div>
+              <div class="chat-money-action-card__text" id="chat-money-action-top-lines"></div>
+            </div>
+
+            <button class="chat-money-action-card__open-btn" id="chat-money-action-receive" type="button">
+              <div class="chat-money-action-card__open-btn-inner" aria-hidden="true"></div>
+              開
+            </button>
+
+            <div
+              class="chat-money-action-card__footer-tag"
+              id="chat-money-action-refund"
+              role="button"
+              tabindex="0"
+              aria-label="退还"
+            >退还</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 红包/转账已处理后的“打开视图”页（参考红底红包样式） -->
+      <div class="chat-money-packet-view-modal" id="chat-money-packet-view-modal" aria-hidden="true">
+        <div class="chat-money-packet-view-mask" id="chat-money-packet-view-mask"></div>
+        <div class="chat-money-packet-view-panel" role="dialog" aria-label="红包详情">
+          <div class="chat-money-packet-view" id="chat-money-packet-view">
+            <button class="chat-money-packet-view__close" id="chat-money-packet-view-close" type="button" aria-label="关闭">×</button>
+            <div class="chat-money-packet-view__cap" id="chat-money-packet-view-cap"></div>
+            <div class="chat-money-packet-view__body-pattern" id="chat-money-packet-view-body-pattern"></div>
+
+            <div class="chat-money-packet-view__wishes" id="chat-money-packet-view-wishes">
+              <div class="chat-money-packet-view__topline">
+                <div class="chat-money-packet-view__icon" id="chat-money-packet-view-icon" aria-hidden="true"></div>
+                <div class="chat-money-packet-view__from" id="chat-money-packet-view-from"></div>
+                <div class="chat-money-packet-view__amount" id="chat-money-packet-view-amount">¥0.00</div>
+              </div>
+              <div class="chat-money-packet-view__text" id="chat-money-packet-view-text"></div>
+            </div>
+
+            <button class="chat-money-packet-view__open-btn" id="chat-money-packet-view-open-btn" type="button">開</button>
+            <div class="chat-money-packet-view__footer-tag" id="chat-money-packet-view-footer-tag">退还</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 语音通话模拟界面 -->
+      <div class="voice-call-modal" id="voice-call-modal" aria-hidden="true">
+        <div class="voice-call-backdrop" id="voice-call-backdrop"></div>
+        <div class="voice-call-content">
+          <div class="voice-call-toast" id="voice-call-toast">提示</div>
+          <!-- 视频预览区域 -->
+          <div class="voice-call-video" id="voice-call-video" hidden>
+            <div class="voice-call-video-main">
+              <img id="voice-call-video-role" src="https://onlyai.com.cn/media/files/244b61c6-70fe-431f-a442-803bfca0271e.jpg" alt="角色视频">
+            </div>
+            <div class="voice-call-video-self">
+              <img class="voice-call-video-self-img" id="voice-call-video-self-img" alt="我的头像">
+              <div class="voice-call-video-self-fallback" id="voice-call-video-self-fallback">我</div>
+              <div class="voice-call-video-self-off" id="voice-call-video-self-off">视频已关闭</div>
+            </div>
+          </div>
+
+          <!-- 联系人名称 + 顶部状态标签 -->
+          <div class="voice-call-name">
+            <span id="voice-call-name">联系人</span>
+          </div>
+
+          <!-- 通话状态（包含呼吸灯和时长） -->
+          <div class="voice-call-status" id="voice-call-status">
+            <span id="voice-call-status-text">通话中</span>
+            <div class="voice-call-status-indicator"></div>
+            <span id="voice-call-duration">00:00</span>
+          </div>
+
+          <!-- 消息区域 -->
+          <div class="voice-call-message-area">
+            <div class="voice-call-messages" id="voice-call-messages"></div>
+            
+            <!-- 输入框 -->
+            <div class="voice-call-input-container">
+              <input type="text" class="voice-call-input" id="voice-call-input" placeholder="发送消息...">
+              <button class="voice-call-send-btn" id="voice-call-send" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 2L11 13"></path>
+                  <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 控制按钮 -->
+          <div class="voice-call-controls">
+            <div class="voice-control-wrap">
+              <button class="voice-control-btn mute-btn" id="voice-call-mic" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </button>
+              <span class="voice-control-label" id="voice-call-mic-label">麦克风已开</span>
+            </div>
+
+            <div class="voice-control-wrap">
+              <button class="voice-control-btn hangup-btn" id="voice-call-hangup" type="button">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"></path>
+                </svg>
+              </button>
+              <span class="voice-control-label">挂断</span>
+            </div>
+
+            <div class="voice-control-wrap">
+              <button class="voice-control-btn speaker-btn" id="voice-call-speaker" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+              </button>
+              <span class="voice-control-label" id="voice-call-camera-label">摄像头已开</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 聊天设置页面（单个会话） -->
+    <div id="page-chat-settings" class="yd-page">
+      <!-- 顶部栏：模仿聊天页面 -->
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="chat-settings-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">聊天设置</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+
+      <div class="yd-page-content yd-chat-settings-page">
+        <div class="chat-settings-content">
+          <!-- 第一栏：群头像和群名称 -->
+          <div class="settings-card">
+            <div class="group-info-card">
+              <div class="group-avatar" id="settingsGroupAvatar">
+                <img src="" alt="会话头像" id="settingsGroupAvatarImg">
+              </div>
+              <div class="group-info">
+                <div class="group-name" id="settingsGroupName">会话名称</div>
+                <div class="group-created-days" id="settingsGroupCreatedDays">单聊 / 群聊</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第二栏：群聊成员（单聊时只显示一个） -->
+          <div class="settings-card">
+            <div class="members-header">
+              <span class="members-title">会话成员</span>
+              <span class="members-count" id="settingsMembersCount">该会话共 1 个成员</span>
+            </div>
+            <div class="members-list" id="settingsMembersList">
+              <!-- 由脚本渲染具体成员列表 -->
+            </div>
+          </div>
+
+          <!-- 第三栏：会话设置 -->
+          <div class="settings-card">
+            <div class="settings-item">
+              <span class="settings-label">会话名称</span>
+              <div class="settings-value-container">
+                <span class="settings-value" id="editableGroupName">会话名称</span>
+                <input type="text" class="settings-input" id="yd-chat-settings-title" style="display:none;">
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item">
+              <span class="settings-label">会话头像</span>
+              <div class="settings-value-container">
+                <span class="settings-value">查看会话头像</span>
+                <input type="text" class="settings-input" id="yd-chat-settings-avatar" style="display:none;">
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item">
+              <span class="settings-label">聊天背景</span>
+              <div class="settings-value-container">
+                <span class="settings-value">查看聊天背景</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-item" id="yd-chat-settings-bubble">
+              <span class="settings-label">气泡样式</span>
+              <div class="settings-value-container">
+                <span class="settings-value">调整聊天气泡样式</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item" id="yd-chat-settings-session-beautify">
+              <span class="settings-label">阅读设置</span>
+              <div class="settings-value-container">
+                <span class="settings-value">头像大小、字体大小</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item" id="yd-chat-settings-reply-style">
+              <span class="settings-label">回复风格</span>
+              <div class="settings-value-container">
+                <span class="settings-value" id="yd-chat-settings-reply-style-value">默认</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item" id="yd-chat-settings-session-memory">
+              <span class="settings-label">记忆增强</span>
+              <div class="settings-value-container">
+                <span class="settings-value">会话记忆总结与历史</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item" id="yd-chat-settings-unread-badge">
+              <span class="settings-label">消息红点</span>
+              <div class="settings-value-container">
+                <span class="settings-value" id="yd-chat-settings-unread-badge-value">开启</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="settings-item" id="yd-chat-settings-suggested-reply">
+              <span class="settings-label">灵感回复</span>
+              <div class="settings-value-container">
+                <span class="settings-value" id="yd-chat-settings-suggested-reply-value">开启</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-item" id="yd-chat-settings-role-voice">
+              <span class="settings-label">角色语音</span>
+              <div class="settings-value-container">
+                <span class="settings-value" id="yd-chat-settings-role-voice-value">未设置</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第四栏：我的面具（当前会话） -->
+          <div class="settings-card">
+            <div class="settings-item">
+              <span class="settings-label">我的面具</span>
+              <div class="settings-value-container">
+                <div class="settings-my-avatar">
+                  <img src="" alt="我的面具头像" id="sessionMyMaskAvatarImg">
+                </div>
+                <span class="settings-value" id="sessionMyMaskName">未选择</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第五栏：导出会话 -->
+          <div class="settings-card">
+            <div class="settings-item" id="yd-chat-settings-export-session">
+              <span class="settings-label">导出会话数据</span>
+              <div class="settings-value-container">
+                <span class="settings-value">选择区间导出</span>
+                <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第六栏：危险操作 -->
+          <div class="settings-card">
+            <div class="settings-item danger" id="yd-chat-settings-clear">
+              <span class="settings-label">删除聊天记录</span>
+            </div>
+          </div>
+
+          <!-- 第七栏：删除会话 -->
+          <div class="settings-card">
+            <div class="settings-item danger" id="yd-chat-settings-delete">
+              <span class="settings-label">删除会话</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置页面：标题区仅圆形返回，正文区大标题「设置」+ 带图标入口 -->
+    <div id="page-settings" class="yd-page yd-page--settings">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="settings-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-header-spacer"></div>
+      </div>
+      
+      <div class="yd-page-content yd-settings-content">
+        <h1 class="yd-settings-large-title">设置</h1>
+
+        <div class="yd-settings-group">
+          <a href="javascript:void(0)" class="yd-settings-row yd-settings-row--profile" id="settings-profile">
+            <span class="yd-settings-row__avatar" id="settings-profile-avatar">云</span>
+            <span class="yd-settings-row__main">
+              <span class="yd-settings-row__title">SC 用户</span>
+              <span class="yd-settings-row__subtitle">本地数据 · 手动备份迁移</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div class="yd-settings-group">
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-api">
+            <span class="yd-settings-row__icon yd-settings-row__icon--api" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">API 设置</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-image-gen">
+            <span class="yd-settings-row__icon yd-settings-row__icon--image-gen" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">生图设置</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div class="yd-settings-group">
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-notify-mode">
+            <span class="yd-settings-row__icon yd-settings-row__icon--bell" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">消息通知</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-voice">
+            <span class="yd-settings-row__icon yd-settings-row__icon--voice" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">语音设置</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-time-awareness">
+            <span class="yd-settings-row__icon yd-settings-row__icon--time" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">时间感知</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-wallpaper">
+            <span class="yd-settings-row__icon yd-settings-row__icon--wallpaper" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">壁纸与背景</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-bubble-beautify">
+            <span class="yd-settings-row__icon yd-settings-row__icon--beautify-bubble" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">气泡美化</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-session-beautify">
+            <span class="yd-settings-row__icon yd-settings-row__icon--beautify-session" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">会话美化</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          
+          
+        </div>
+
+        <div class="yd-settings-group">
+          
+        </div>
+
+        <div class="yd-settings-group">
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-install-app">
+            <span class="yd-settings-row__icon yd-settings-row__icon--export" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">安装：将SC 通讯安装到主屏幕</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div class="yd-settings-group">
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-clear-cache">
+            <span class="yd-settings-row__icon yd-settings-row__icon--trash" aria-hidden="true"></span>
+            <span class="yd-settings-row__main">
+              <span class="yd-settings-row__title">清空数据</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-export">
+            <span class="yd-settings-row__icon yd-settings-row__icon--import" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">导出数据</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-import">
+            <span class="yd-settings-row__icon yd-settings-row__icon--export" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">导入数据</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-force-refresh-app">
+            <span class="yd-settings-row__icon yd-settings-row__icon--refresh" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">强制刷新</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-storage-check">
+            <span class="yd-settings-row__icon yd-settings-row__icon--wrench" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">数据自检与修复</span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </a>
+
+          <!-- 回收站（七天冷静期备份）：与上方“行样式”保持一致 -->
+          <div class="yd-settings-row" style="cursor: pointer; padding: 11px 16px;" id="yd-recycle-bin-header">
+            <span class="yd-settings-row__icon yd-settings-row__icon--trash" aria-hidden="true"></span>
+            <span class="yd-settings-row__main">
+              <span class="yd-settings-row__title">回收站</span>
+              <span class="yd-settings-row__subtitle" id="yd-recycle-bin-meta"></span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </div>
+          <div id="yd-recycle-bin-list" style="display:flex; flex-direction:column; gap:0;"></div>
+        </div>
+
+        <input type="file" id="import-file" accept=".json,.gz,application/json,application/gzip" style="display:none" aria-hidden="true">
+        <input type="file" id="wallpaper-file" accept="image/png,image/jpeg,image/webp" style="display:none" aria-hidden="true">
+      </div>
+    </div>
+
+    <!-- API 设置子页面 -->
+    <div id="page-settings-api" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="settings-api-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">API 设置</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="api-config-add" aria-label="新增 API 配置">+</button>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div class="yd-settings-group">
+          <div class="yd-beautify-preset-row">
+            <label class="yd-beautify-field-label" style="margin: 0 8px 0 0;">当前配置</label>
+            <select class="yd-beautify-preset-select" id="api-config-select">
+              <option value="">默认</option>
+            </select>
+            <button type="button" class="yd-btn yd-btn--text yd-btn--danger" id="api-config-delete">删除</button>
+          </div>
+        </div>
+        <div class="yd-settings-group">
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="api-row-base-url">
+            <span class="yd-settings-row__icon yd-settings-row__icon--link" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">API 地址</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="base-url-display">未设置</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="api-row-api-key">
+            <span class="yd-settings-row__icon yd-settings-row__icon--key" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">API Key</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="api-key-display">未设置</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="yd-settings-group">
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="api-row-chat-rounds">
+            <span class="yd-settings-row__icon yd-settings-row__icon--rounds" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">记忆轮数</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="chat-rounds-display">200</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="api-row-max-tokens">
+            <span class="yd-settings-row__icon yd-settings-row__icon--tokens" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">上下文上限</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="api-max-tokens-display">无上限</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="api-row-temperature">
+            <span class="yd-settings-row__icon yd-settings-row__icon--tokens" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">温度</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="api-temperature-display">0.8</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="yd-settings-row yd-settings-row--api-detail" id="api-row-model">
+            <span class="yd-settings-row__icon yd-settings-row__icon--model" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">模型选择</span>
+            <span class="yd-settings-row__value-wrap">
+              <select class="yd-settings-select" id="api-model" aria-label="模型选择">
+                <option value="" selected disabled>请选择</option>
+              </select>
+            </span>
+          </div>
+        </div>
+        <div class="yd-settings-group yd-api-auto-vision-card" aria-label="多模态自动识图">
+          <div class="yd-settings-row yd-settings-row--api-detail yd-api-auto-vision-row" id="api-row-auto-vision">
+            <span class="yd-settings-row__icon yd-settings-row__icon--image-gen" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">多模态自动识图</span>
+            <label class="yd-api-auto-vision-toggle">
+              <span class="yd-toggle__control">
+                <input type="checkbox" id="api-auto-vision" class="yd-toggle__input" checked role="switch" aria-label="多模态自动识图">
+                <span class="yd-toggle__slider" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div class="yd-settings-group yd-api-auto-vision-card" aria-label="流式请求">
+          <div class="yd-settings-row yd-settings-row--api-detail yd-api-auto-vision-row" id="api-row-stream">
+            <span class="yd-settings-row__icon yd-settings-row__icon--stream" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">流式请求</span>
+            <label class="yd-api-auto-vision-toggle">
+              <span class="yd-toggle__control">
+                <input type="checkbox" id="api-stream" class="yd-toggle__input" role="switch" aria-label="流式请求">
+                <span class="yd-toggle__slider" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div class="yd-settings-detail-actions">
+          <button type="button" class="yd-btn yd-btn--primary-full" id="save-api">存储</button>
+        </div>
+
+        <input type="hidden" id="base-url" value="">
+        <input type="hidden" id="api-key" value="">
+        <input type="hidden" id="chat-rounds" value="200">
+        <input type="hidden" id="api-max-tokens" value="unlimited">
+        <input type="hidden" id="api-temperature" value="0.8">
+      </div>
+    </div>
+
+    <!-- 生图设置子页面（独立页，样式与 API 设置子页一致） -->
+    <div id="page-settings-image-gen" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="settings-image-gen-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">生图设置</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="image-gen-config-add" aria-label="新增生图配置">+</button>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div class="yd-settings-group">
+          <div class="yd-beautify-preset-row">
+            <label class="yd-beautify-field-label" style="margin: 0 8px 0 0;">当前配置</label>
+            <select class="yd-beautify-preset-select" id="image-gen-config-select" aria-label="生图当前配置">
+              <option value="">默认</option>
+            </select>
+            <button type="button" class="yd-btn yd-btn--text yd-btn--danger" id="image-gen-config-delete">删除</button>
+          </div>
+        </div>
+        <div class="yd-settings-group">
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="image-gen-row-base-url">
+            <span class="yd-settings-row__icon yd-settings-row__icon--link" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">API 地址</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="image-gen-base-url-display">未设置</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="yd-settings-row yd-settings-row--api-detail yd-settings-row--clickable" id="image-gen-row-api-key">
+            <span class="yd-settings-row__icon yd-settings-row__icon--key" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">API Key</span>
+            <span class="yd-settings-row__value-wrap">
+              <span class="yd-settings-row__value" id="image-gen-api-key-display">未设置</span>
+            </span>
+            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="yd-settings-row yd-settings-row--api-detail" id="image-gen-row-model">
+            <span class="yd-settings-row__icon yd-settings-row__icon--model" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">模型选择</span>
+            <span class="yd-settings-row__value-wrap">
+              <select class="yd-settings-select" id="image-gen-model" aria-label="生图模型选择">
+                <option value="" selected disabled>请选择</option>
+              </select>
+            </span>
+          </div>
+        </div>
+        <div class="yd-settings-group yd-api-auto-vision-card" aria-label="朋友圈自动生图">
+          <div class="yd-settings-row yd-settings-row--api-detail yd-api-auto-vision-row" id="image-gen-row-auto-moments">
+            <span class="yd-settings-row__icon yd-settings-row__icon--image-gen" aria-hidden="true"></span>
+            <span class="yd-settings-row__label">朋友圈自动生图</span>
+            <label class="yd-api-auto-vision-toggle">
+              <span class="yd-toggle__control">
+                <input type="checkbox" id="image-gen-auto-moments" class="yd-toggle__input" checked role="switch" aria-label="朋友圈自动生图">
+                <span class="yd-toggle__slider" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <input type="hidden" id="image-gen-base-url" value="">
+        <input type="hidden" id="image-gen-api-key" value="">
+
+        <div class="yd-settings-group" aria-label="测试生图">
+          <div class="yd-gen-test-section-head">测试生成图片</div>
+          <div class="yd-gen-test-card">
+            <textarea id="gen-test-prompt" class="yd-settings-input yd-gen-test-textarea" rows="5" placeholder="请输入生成图片的描述" aria-label="生图描述"></textarea>
+            <button type="button" class="yd-btn yd-btn--primary-full" id="gen-test-run" disabled>测试</button>
+          </div>
+          <p id="gen-test-error" class="yd-gen-test-error yd-gen-test-error--inset" hidden></p>
+          <div id="gen-test-result-card" class="yd-gen-test-result-block" hidden>
+            <div class="yd-gen-test-card yd-gen-test-card--preview">
+              <div class="yd-voice-settings-label">预览</div>
+              <img id="gen-test-image" class="yd-gen-test-preview" alt="生成结果">
+            </div>
+          </div>
+        </div>
+
+        <div class="yd-settings-detail-actions">
+          <button type="button" class="yd-btn yd-btn--primary-full" id="save-image-gen">存储</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 语音设置子页面（MiniMax T2A） -->
+    <div id="page-settings-voice" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="settings-voice-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">语音设置</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div class="yd-voice-settings-card">
+          <div class="yd-voice-settings-title">MiniMax 语音合成</div>
+          <div class="yd-voice-settings-subtitle">只需设置密钥、默认模型与默认音色。</div>
+
+          <div class="yd-voice-settings-field">
+            <div class="yd-voice-settings-label">API Key</div>
+            <input type="password" class="yd-settings-input" id="voice-api-key" placeholder="输入 MiniMax API Key（Bearer）">
+          </div>
+
+          <div class="yd-voice-settings-grid">
+            <div class="yd-voice-settings-field">
+              <div class="yd-voice-settings-label">默认模型</div>
+              <select class="yd-settings-input" id="voice-model">
+                <option value="speech-2.8-hd">speech-2.8-hd</option>
+                <option value="speech-2.8-turbo">speech-2.8-turbo</option>
+                <option value="speech-2.6-hd">speech-2.6-hd</option>
+                <option value="speech-2.6-turbo">speech-2.6-turbo</option>
+                <option value="speech-02-hd">speech-02-hd</option>
+                <option value="speech-02-turbo">speech-02-turbo</option>
+                <option value="speech-01-hd">speech-01-hd</option>
+                <option value="speech-01-turbo">speech-01-turbo</option>
+              </select>
+            </div>
+
+            <div class="yd-voice-settings-field">
+              <div class="yd-voice-settings-label">启用语气词</div>
+              <label class="yd-settings-checkbox-row" style="display:flex;align-items:center;gap:8px;min-height:40px;">
+                <input type="checkbox" id="voice-mood-tags-enabled" />
+                <span style="font-size:13px;color:#6B7280;">仅 speech-2.8-hd / speech-2.8-turbo 生效</span>
+              </label>
+            </div>
+
+            <div class="yd-voice-settings-field">
+              <div class="yd-voice-settings-label">默认音色</div>
+              <div class="yd-voice-settings-voice-row">
+                <input type="hidden" id="voice-id-select" value="">
+                <button type="button" class="yd-settings-input yd-voice-settings-pick" id="voice-pick">
+                  <span id="voice-id-display">请先获取可用音色</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="yd-voice-settings-field">
+            <div class="yd-voice-settings-label">测试</div>
+            <textarea class="yd-beautify-textarea" id="voice-test-text" rows="3" placeholder="输入要合成的文本（用于测试）"></textarea>
+          </div>
+
+          <div class="yd-voice-settings-actions">
+            <button type="button" class="yd-btn yd-btn--secondary" id="voice-test">测试</button>
+            <button type="button" class="yd-btn yd-btn--primary" id="voice-save">保存</button>
+          </div>
+
+          <audio id="voice-audio" controls style="width:100%; margin-top:12px; display:none;"></audio>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图标美化子页面 -->
+    <div id="page-settings-beautify" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="settings-beautify-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">图标美化</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="beautify-preset-add" aria-label="新预设">+</button>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div class="yd-settings-group">
+          <div class="yd-beautify-preset-row">
+            <label class="yd-beautify-field-label" style="margin: 0 8px 0 0; display: inline-block;">当前预设</label>
+            <select class="yd-beautify-preset-select" id="beautify-preset-select">
+              <option value="">默认</option>
+            </select>
+            <button type="button" class="yd-btn yd-btn--text yd-btn--danger" id="beautify-preset-delete">删除</button>
+          </div>
+        </div>
+
+        <div class="yd-settings-group yd-beautify-settings-group">
+          <div class="yd-beautify-settings-header">
+            <div class="yd-beautify-settings-title-row">
+              <div>
+                <div class="yd-beautify-settings-title">全局图标设置</div>
+                <div class="yd-beautify-settings-subtitle">背景渐变、图标颜色与透明度（单独图标设置不会被覆盖）</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="yd-beautify-global-icon-body">
+            <div class="yd-beautify-field-label">背景渐变</div>
+            <div class="yd-beautify-icon-style-row">
+              <input type="color" id="beautify-icon-global-bg-start" value="#a8c5e6" aria-label="全局图标背景起始色">
+              <span style="font-size:12px;">→</span>
+              <input type="color" id="beautify-icon-global-bg-end" value="#b8d4f1" aria-label="全局图标背景结束色">
+            </div>
+
+            <div class="yd-beautify-field-label">图标图案颜色</div>
+            <div class="yd-beautify-icon-style-row">
+              <input type="color" id="beautify-icon-global-fg" value="#ffffff" aria-label="全局图标颜色">
+            </div>
+
+            <div class="yd-beautify-field-label">图标下面字体颜色</div>
+            <div class="yd-beautify-icon-style-row">
+              <input type="color" id="beautify-icon-global-label" value="#000000" aria-label="全局图标下面字体颜色">
+            </div>
+
+            <div class="yd-beautify-field-label">透明度</div>
+            <div class="yd-beautify-icon-style-row">
+              <input type="range" id="beautify-icon-global-opacity" min="0.3" max="1" step="0.05" value="1" style="flex:1;" aria-label="全局图标透明度">
+            </div>
+
+            <div class="yd-beautify-actions">
+              <button type="button" class="yd-btn yd-btn--primary-full" id="beautify-save-global-icon-style-btn">保存全局图标样式</button>
+            </div>
+          </div>
+        </div>
+
+        
+
+        
+      </div>
+    </div>
+
+    <!-- 新增组件页面 -->
+    
+
+    <!-- 时间日期组件样式设置 -->
+    
+
+    <!-- 播放器组件样式设置 -->
+    
+
+    <!-- 相片卡片组件样式设置（2×2，模糊背景 + 单张照片 + 左/右文字） -->
+    
+
+    <!-- 相片圆卡组件样式设置（2×2，模糊背景 + 圆形图片 + 两行文字） -->
+    
+
+    <!-- 日期卡组件样式设置（2×2，背景图 + 日期角标 + 模糊/透明） -->
+    
+
+    <!-- 头像卡片组件样式设置（4×4，背景图 + 头像 + 多行文案） -->
+    
+
+    <!-- 便笺组件样式设置 -->
+    
+
+    <!-- API 编辑弹窗 -->
+    <div id="api-edit-modal" class="yd-api-modal" role="dialog" aria-modal="true" aria-labelledby="api-edit-modal-title" hidden>
+      <div class="yd-api-modal__backdrop"></div>
+      <div class="yd-api-modal__box">
+        <h2 class="yd-api-modal__title" id="api-edit-modal-title">API 地址</h2>
+        <div id="api-edit-single-wrap">
+          <input type="text" class="yd-api-modal__input" id="api-edit-input" placeholder="https://api.openai.com/v1" autocapitalize="off" autocomplete="off">
+        </div>
+        <p class="yd-api-modal__hint" id="api-edit-hint" hidden>增加记忆轮数可能提高 token 消耗，或超出大模型上下文导致失忆</p>
+        <div id="api-edit-max-tokens-panel" class="yd-api-modal__max-tokens-panel" hidden>
+          <p class="yd-api-modal__hint yd-api-modal__hint--max-tokens" id="api-edit-max-tokens-hint">
+            对应接口 max_tokens，用于约束单次生成占用。调高可能增加 token 消耗；若与历史消息等合计过大，仍可能超出模型总上下文窗口而出现截断或失忆。
+          </p>
+          <div class="yd-api-modal__switch-row">
+            <span class="yd-api-modal__switch-label" id="api-edit-max-tokens-switch-label">无上限</span>
+            <label class="yd-api-modal__toggle">
+              <span class="yd-toggle__control">
+                <input type="checkbox" id="api-edit-max-tokens-unlimited-switch" class="yd-toggle__input" role="switch" aria-labelledby="api-edit-max-tokens-switch-label" checked>
+                <span class="yd-toggle__slider" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+          <div id="api-edit-max-tokens-number-row" class="yd-api-modal__max-tokens-number-row" hidden>
+            <label class="yd-api-modal__field-label" for="api-edit-max-tokens-number">上下文上限（数值）</label>
+            <input type="number" class="yd-api-modal__input yd-api-modal__input--tight-margin" id="api-edit-max-tokens-number" min="1" max="999999999" step="1" inputmode="numeric" placeholder="例如 8192、128000">
+          </div>
+        </div>
+        <div class="yd-api-modal__actions">
+          <button type="button" class="yd-btn yd-api-modal__btn yd-api-modal__btn--cancel" id="api-edit-cancel">取消</button>
+          <button type="button" class="yd-btn yd-api-modal__btn yd-api-modal__btn--confirm" id="api-edit-confirm">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 美化小助手页面 -->
+    <div id="page-beautify" class="yd-page">
+      <div class="yd-page-header">
+        <button class="yd-header-btn" id="beautify-back">返回</button>
+        <div class="yd-page-header__center">美化小助手</div>
+        <div style="width:40px"></div>
+      </div>
+      
+      <div class="yd-page-content yd-beautify-content">
+        <!-- 输入区 -->
+        <div class="yd-beautify-input-section">
+          <textarea class="yd-beautify-input" id="beautify-input" placeholder="描述你想要的样式，例如：主屏幕改成粉色" rows="3"></textarea>
+          <button class="yd-btn-generate" id="generate-css">生成样式</button>
+        </div>
+        
+        <!-- CSS预览 -->
+        <div class="yd-beautify-preview">
+          <h3>生成的CSS</h3>
+          <textarea class="yd-css-preview" id="css-preview" readonly rows="10"></textarea>
+          <div class="yd-beautify-actions">
+            <input type="text" id="theme-name" placeholder="主题名称">
+            <button class="yd-btn-save-theme" id="save-theme">保存主题</button>
+            <button class="yd-btn-apply" id="apply-theme">应用</button>
+          </div>
+        </div>
+        
+        <!-- 主题列表 -->
+        <div class="yd-theme-list-section">
+          <h3>我的主题</h3>
+          <div class="yd-theme-list" id="theme-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 壁纸页面 -->
+    <div id="page-wallpaper" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="wallpaper-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">壁纸</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="wallpaper-upload" aria-label="上传">+</button>
+      </div>
+
+      <div class="yd-page-content yd-wallpaper-content">
+        <button id="wallpaper-reset" class="sc-primary" type="button">恢复默认木纹背景</button><p>选择图片可覆盖主屏幕木纹；恢复默认不会删除相册图片。</p>
+        <div class="yd-wallpaper-grid" id="wallpaper-grid"></div>
+      </div>
+    </div>
+
+    <!-- 北京天气 -->
+    <div id="page-weather" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="weather-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">天气</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-weather-content">
+        <div class="yd-weather-card yd-weather-card--now">
+          <div class="yd-weather-now">
+            <div class="yd-weather-now__left">
+              <div class="yd-weather-now__temp" id="weather-now-temp">--°</div>
+              <div class="yd-weather-now__cond" id="weather-now-cond">--</div>
+            </div>
+            <div class="yd-weather-now__icon" id="weather-now-icon" aria-hidden="true"></div>
+          </div>
+
+          <p id="weather-details"></p>
+          <p id="weather-status" role="status">打开后获取北京天气</p>
+          <button id="weather-refresh" class="sc-primary">刷新天气</button>
+        </div>
+
+        <div class="yd-weather-card yd-weather-card--forecast">
+          <div class="yd-weather-card__title">未来 7 天</div>
+          <div class="yd-weather-list" id="weather-list"></div>
+          <div class="yd-weather-hint">数据来自 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · CC BY 4.0。固定北京城区，当前天气为模型估算；进入页面时更新，15 分钟内使用缓存。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 地图页面（模拟） -->
+    
+
+    <!-- 相册页面 -->
+    <div id="page-album" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="album-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">相册</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="album-upload" aria-label="上传">+</button>
+      </div>
+      
+      <div class="yd-page-content yd-album-content">
+        <div class="yd-album-tabs-row">
+          <div class="yd-beautify-page-tabs yd-album-tabs" id="album-tabs" role="tablist" aria-label="相册分类">
+            <button type="button" class="yd-beautify-tab yd-beautify-tab--active" data-filter="all">全部</button>
+            <button type="button" class="yd-beautify-tab" data-filter="sticker">表情包</button>
+            <button type="button" class="yd-beautify-tab" data-filter="image">图片</button>
+          </div>
+          <div class="yd-album-header-actions">
+            <button class="yd-header-btn yd-header-btn--text yd-album-header-actions__btn" id="album-actions" aria-label="操作">操作</button>
+          </div>
+        </div>
+        <div class="yd-album-grid" id="album-grid"></div>
+      </div>
+      <input type="file" id="album-file" accept="image/png,image/jpeg,image/webp" multiple style="display:none">
+    </div>
+
+    <!-- 相机页面 -->
+    <div id="page-camera" class="yd-page">
+      <div class="yd-camera-screen" aria-label="相机取景器">
+        <!-- 顶部栏：只保留返回 -->
+        <div class="yd-camera-topbar">
+          <button class="yd-camera-topbar__back" id="camera-back" type="button" aria-label="返回">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+        </div>
+
+        <!-- 取景/预览区域 -->
+        <div class="yd-camera-view" id="camera-view">
+          <div class="yd-camera-view__hint" id="camera-preview-empty">点击快门拍照</div>
+          <img class="yd-camera-view__img" id="camera-preview-img" alt="照片预览" />
+
+          <!-- 顶部胶囊按钮：出镜角色 / 当前地点 -->
+          <div class="yd-camera-chips">
+            <button type="button" class="yd-camera-chip" id="camera-chip-participants">
+              <span class="yd-camera-chip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.33 0-6 1.34-6 3v1h12v-1c0-1.66-2.67-3-6-3Z"/></svg>
+              </span>
+              <span class="yd-camera-chip__text">出镜角色</span>
+            </button>
+            <button type="button" class="yd-camera-chip" id="camera-chip-location">
+              <span class="yd-camera-chip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 4.41 7 13 7 13s7-8.59 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 2.5-2.5A2.5 2.5 0 0 1 12 11.5Z"/></svg>
+              </span>
+              <span class="yd-camera-chip__text">当前地点</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 底部控制区：模拟手机相机常见布局 -->
+        <div class="yd-camera-bottombar">
+          <button class="yd-camera-sidebtn" id="camera-retake" type="button" aria-label="重拍" disabled>
+            重拍
+          </button>
+
+          <button class="yd-camera-shutter" id="camera-capture" type="button" aria-label="快门">
+            <span class="yd-camera-shutter__outer"></span>
+            <span class="yd-camera-shutter__inner"></span>
+          </button>
+
+          <button class="yd-camera-sidebtn yd-camera-sidebtn--primary" id="camera-save" type="button" aria-label="保存" disabled>
+            保存
+          </button>
+
+          <!-- 相机页快门统一走“选取照片”，不强制调用系统相机 -->
+          <input type="file" id="camera-file" accept="image/png,image/jpeg,image/webp" style="display:none">
+        </div>
+
+        <!-- 描述输入层：拍照后弹出 -->
+        <div class="yd-camera-desc-sheet" id="camera-desc-sheet" hidden>
+          <div class="yd-camera-desc-sheet__mask" data-close="1"></div>
+          <div class="yd-camera-desc-sheet__panel" role="dialog" aria-modal="true" aria-label="照片信息">
+            <div class="yd-camera-desc-sheet__title">照片信息</div>
+
+            <div class="yd-camera-desc-sheet__section">
+              <div class="yd-camera-desc-sheet__label">出镜角色（可多选）</div>
+              <div class="yd-camera-desc-sheet__hint">可以选择和你一起出镜的角色，也可以只选“我”或留空。</div>
+              <div class="yd-camera-participants" id="camera-participants">
+                <!-- 由 Camera.renderParticipantsList 动态填充 -->
+              </div>
+            </div>
+
+            <div class="yd-camera-desc-sheet__section">
+              <div class="yd-camera-desc-sheet__label">拍摄时间</div>
+              <input class="yd-camera-desc-input" id="camera-shot-time" />
+              <div class="yd-camera-desc-sheet__hint">默认使用当前时间，你也可以改成更合适的描述。</div>
+            </div>
+
+            <div class="yd-camera-desc-sheet__section">
+              <div class="yd-camera-desc-sheet__label">拍摄地点（可选）</div>
+              <input class="yd-camera-desc-input" id="camera-shot-location" placeholder="例如：上海·外滩" />
+            </div>
+
+            <div class="yd-camera-desc-sheet__section">
+              <div class="yd-camera-desc-sheet__label">描述这张照片</div>
+              <textarea class="yd-camera-desc-textarea" id="camera-desc" rows="3"></textarea>
+              <div class="yd-camera-desc-sheet__hint">例如：和小南在海边散步的傍晚。</div>
+            </div>
+
+            <div class="yd-camera-desc-sheet__actions">
+              <button type="button" class="yd-btn yd-btn--secondary" id="camera-desc-cancel">取消</button>
+              <button type="button" class="yd-btn yd-btn--primary" id="camera-desc-confirm">确认保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的音乐页面 -->
+    
+
+    <!-- 音乐播放详情页 -->
+    
+
+    <!-- 音乐编辑弹窗（唱片头像、创作人、歌词等） -->
+    
+
+    <!-- 我的面具页面 -->
+    <div id="page-mask" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="mask-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">我的面具</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="mask-add" aria-label="新增面具">+</button>
+      </div>
+      <div class="yd-page-content" id="mask-list"></div>
+    </div>
+
+    <!-- 角色列表页面 -->
+    <div id="page-character" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="character-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center">角色</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="character-add" aria-label="新增角色">+</button>
+      </div>
+      
+      <div class="yd-page-content" id="character-content"></div>
+      
+      <!-- 隐藏的文件输入（导入角色卡） -->
+      <input type="file" id="character-import-file" accept="image/png,.json,application/json" style="display:none">
+    </div>
+
+    <!-- 角色编辑页面 -->
+    <div id="page-character-edit" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="character-edit-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center" id="character-edit-title">角色编辑</div>
+        <button class="yd-header-btn yd-header-btn--text" id="character-save">保存</button>
+      </div>
+      <div class="yd-page-content yd-character-edit-content">
+        <div class="yd-character-form">
+          <div class="yd-character-section">
+            <h3 class="yd-character-section__title">基础信息</h3>
+            <div class="yd-form-group">
+              <!-- <label>头像</label> -->
+              <div class="yd-avatar-field" id="char-avatar-field">
+                <div class="yd-avatar-thumb" id="char-avatar-thumb" title="点击放大预览">
+                  <img id="char-avatar-img" class="yd-avatar-thumb__img" alt="角色头像">
+                  <div class="yd-avatar-thumb__placeholder" id="char-avatar-placeholder">👤</div>
+                </div>
+                <div class="yd-avatar-hint">点击头像可放大预览</div>
+              </div>
+            </div>
+            <!-- 折叠编辑：角色名称 -->
+            <div class="yd-collapse-item yd-collapse-item--form">
+              <div class="yd-collapse-item__header" data-collapse="char-name-content">
+                <div class="yd-collapse-item__title">角色名称</div>
+                <div class="yd-collapse-item__meta" id="char-name-preview">未填写</div>
+                <span class="yd-collapse-item__icon">▼</span>
+              </div>
+              <div class="yd-collapse-item__content" id="char-name-content">
+                <div class="yd-collapse-item__body">
+                  <input type="text" class="yd-input" id="char-name" placeholder="输入角色名称">
+                </div>
+              </div>
+            </div>
+
+            <!-- 折叠编辑：角色设定 -->
+            <div class="yd-collapse-item yd-collapse-item--form">
+              <div class="yd-collapse-item__header" data-collapse="char-description-content">
+                <div class="yd-collapse-item__title">角色设定</div>
+                <div class="yd-collapse-item__meta" id="char-description-preview">未填写</div>
+                <span class="yd-collapse-item__icon">▼</span>
+              </div>
+              <div class="yd-collapse-item__content" id="char-description-content">
+                <div class="yd-collapse-item__body">
+                  <textarea class="yd-textarea" id="char-description" rows="16" placeholder="性格、背景、说话方式等（会参与对话与提示词）"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- 折叠编辑：多国语 -->
+            <div class="yd-collapse-item yd-collapse-item--form">
+              <div class="yd-collapse-item__header" data-collapse="char-chat-i18n-content">
+                <div class="yd-collapse-item__title">多国语</div>
+                <div class="yd-collapse-item__meta" id="char-chat-i18n-preview">中文 · 未开启</div>
+                <span class="yd-collapse-item__icon">▼</span>
+              </div>
+              <div class="yd-collapse-item__content" id="char-chat-i18n-content">
+                <div class="yd-collapse-item__body">
+                  <div class="yd-form-row">
+                    <label class="yd-label" for="char-default-language">默认语言</label>
+                    <select class="yd-input" id="char-default-language">
+                      <option value="zh" selected>中文</option>
+                      <option value="en">英语</option>
+                      <option value="ja">日语</option>
+                      <option value="ko">韩语</option>
+                      <option value="yue">粤语</option>
+                      <option value="es">西班牙语</option>
+                      <option value="fr">法语</option>
+                      <option value="de">德语</option>
+                      <option value="ru">俄语</option>
+                      <option value="pt">葡萄牙语</option>
+                      <option value="it">意大利语</option>
+                      <option value="ar">阿拉伯语</option>
+                      <option value="vi">越南语</option>
+                      <option value="id">印尼语</option>
+                      <option value="tr">土耳其语</option>
+                      <option value="nl">荷兰语</option>
+                      <option value="uk">乌克兰语</option>
+                    </select>
+                  </div>
+                  <div class="yd-form-row" style="margin-top:12px;">
+                    <label class="yd-label" for="char-region-timezone">角色所在地区 / 时区</label>
+                    <select class="yd-input" id="char-region-timezone">
+                      <option value="Asia/Shanghai" data-label="中国">中国（北京时间 UTC+8）</option>
+                      <option value="Asia/Tokyo" data-label="日本">日本（东京 UTC+9）</option>
+                      <option value="Asia/Seoul" data-label="韩国">韩国（首尔 UTC+9）</option>
+                      <option value="Asia/Hong_Kong" data-label="中国香港">中国香港（UTC+8）</option>
+                      <option value="Asia/Singapore" data-label="新加坡">新加坡（UTC+8）</option>
+                      <option value="Europe/London" data-label="英国">英国（伦敦）</option>
+                      <option value="Europe/Paris" data-label="法国">法国（巴黎）</option>
+                      <option value="Europe/Berlin" data-label="德国">德国（柏林）</option>
+                      <option value="Europe/Moscow" data-label="俄罗斯">俄罗斯（莫斯科）</option>
+                      <option value="America/New_York" data-label="美国东部">美国·东部（纽约）</option>
+                      <option value="America/Chicago" data-label="美国中部">美国·中部（芝加哥）</option>
+                      <option value="America/Denver" data-label="美国山地">美国·山地（丹佛）</option>
+                      <option value="America/Los_Angeles" data-label="美国西部">美国·西部（洛杉矶）</option>
+                      <option value="America/Sao_Paulo" data-label="巴西">巴西（圣保罗）</option>
+                      <option value="Australia/Sydney" data-label="澳大利亚">澳大利亚（悉尼）</option>
+                      <option value="Pacific/Auckland" data-label="新西兰">新西兰（奥克兰）</option>
+                      <option value="Asia/Dubai" data-label="阿联酋">阿联酋（迪拜）</option>
+                      <option value="Asia/Bangkok" data-label="泰国">泰国（曼谷）</option>
+                      <option value="Asia/Jakarta" data-label="印尼">印尼（雅加达）</option>
+                      <option value="Asia/Kolkata" data-label="印度">印度（新德里）</option>
+                    </select>
+                  </div>
+                  <div class="yd-character-region-time" id="char-region-time-live"></div>
+                  <div class="yd-form-row yd-form-row--switch" id="char-multilingual-row" style="margin-top:12px;">
+                    <label class="yd-label" for="char-multilingual-enabled">双语消息</label>
+                    <label class="yd-switch">
+                      <input type="checkbox" id="char-multilingual-enabled" />
+                      <span class="yd-switch__slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 折叠编辑：角色语音 -->
+            <div class="yd-collapse-item yd-collapse-item--form">
+              <div class="yd-collapse-item__header" data-collapse="char-role-voice-content">
+                <div class="yd-collapse-item__title">角色语音</div>
+                <div class="yd-collapse-item__meta" id="char-role-voice-preview">未设置（将使用系统默认音色）</div>
+                <span class="yd-collapse-item__icon">▼</span>
+              </div>
+              <div class="yd-collapse-item__content" id="char-role-voice-content">
+                <div class="yd-collapse-item__body">
+                  <div class="yd-character-voice-row">
+                    <div class="yd-character-voice-row__info">
+                      <div class="yd-character-voice-row__name" id="char-role-voice-name">未设置</div>
+                      <div class="yd-character-voice-row__id" id="char-role-voice-id">将使用系统默认音色</div>
+                    </div>
+                    <button type="button" class="yd-btn yd-btn--secondary yd-btn--small" id="char-role-voice-pick">选择音色</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="yd-character-section">
+            <div class="yd-character-section__title-row">
+              <h3 class="yd-character-section__title">世界书</h3>
+              <button type="button" class="yd-btn yd-btn--small yd-btn--secondary" id="char-book-add-entry">＋ 添加世界书条目</button>
+            </div>
+            <div class="yd-character-preview" id="char-book-preview"></div>
+          </div>
+
+          <div class="yd-character-section">
+            <h3 class="yd-character-section__title">扩展（正则）</h3>
+            <div class="yd-character-preview" id="char-extensions-preview"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Ta 的手机 -->
+    
+
+    <!-- Ta 的经历 -->
+    <div id="page-ta-experience" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="ta-exp-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-forum-title">
+          <div class="yd-forum-title__name">ta的世界线</div>
+          <div class="yd-forum-title__status">
+            <span class="yd-forum-title__icon" aria-hidden="true">
+              <svg viewBox="0 0 1391 1024" width="13" height="13" fill="currentColor" aria-hidden="true">
+                <path d="M1359.819487 306.333538c-21.293949-78.821744-115.580718-130.363077-246.311384-151.578256 18.248205 24.234667 36.49641 48.49559 51.672615 75.776 72.992821 21.215179 121.645949 54.560821 133.802667 93.997949 6.091487 24.234667 0 51.515077-18.248206 81.841231-18.248205 33.345641-54.718359 69.710769-103.371487 109.121641v-6.038975C1177.337436 242.661744 958.411487 24.392205 690.806154 24.392205 429.318564 21.346462 210.392615 239.642256 210.392615 506.407385c0 81.867487 21.293949 160.689231 57.764103 227.380512-97.28-18.195692-161.13559-57.606564-176.338051-103.082666-6.091487-24.260923 0-51.541333 18.248205-81.841231 9.110974-18.195692 24.313436-36.391385 39.515897-54.587077 0-30.299897 3.045744-63.645538 9.137231-90.952205-97.306256 78.821744-149.005128 166.728205-127.711179 242.530461 24.313436 84.886974 130.756923 139.474051 279.735794 157.643488 91.214769 115.213128 228.063179 187.969641 386.179282 187.969641 237.174154 0 437.851897-172.793436 477.394052-397.154462 136.822154-90.925949 212.834462-197.054359 185.475282-287.980308zM696.897641 930.842256c-115.528205 0-221.971692-45.476103-298.010256-121.278359h30.431179c106.417231 0 225.017436-15.149949 346.637128-45.476102 121.619692-30.299897 231.082667-75.776 322.323693-124.297846-51.725128 169.773949-212.860718 291.052308-401.381744 291.052307zM1119.573333 557.948718c-88.169026 54.560821-209.788718 109.147897-355.774359 145.513026-112.482462 30.326154-228.036923 45.476103-331.434666 45.476102-30.404923 0-57.764103-3.019487-85.123282-3.019487-48.653128-69.737026-76.012308-151.604513-76.012308-239.510974 0-233.419487 191.566769-424.408615 425.695179-424.408616 234.12841 0 425.695179 190.989128 425.69518 424.408616 0 18.195692 0 33.345641-3.045744 51.541333z"></path>
+              </svg>
+            </span>
+            <span class="yd-forum-title__status-text" id="ta-exp-role-name">未选择角色</span>
+          </div>
+        </div>
+        <button class="yd-header-btn yd-header-btn--circle" id="ta-exp-switch-top" type="button" aria-label="切换角色">
+          <svg class="yd-forum-switch-icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+            <path d="M96 416h832c0.32 0 0.576-0.192 0.896-0.192a30.656 30.656 0 0 0 30.976-30.976c-0.064-0.256 0.128-0.512 0.128-0.832a31.424 31.424 0 0 0-14.912-26.368l-188.48-188.48a30.72 30.72 0 1 0-43.456 43.456L852.544 352H96a32 32 0 0 0 0 64z m832 192H96c-0.32 0-0.576 0.192-0.896 0.192a30.528 30.528 0 0 0-30.976 30.976c0.064 0.256-0.128 0.512-0.128 0.832 0 11.264 6.144 20.672 14.912 26.368l188.48 188.48a30.72 30.72 0 1 0 43.456-43.456L171.456 672H928a32 32 0 0 0 0-64z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="yd-page-content yd-ta-exp-page">
+        <div class="yd-ta-exp-gate" id="ta-exp-gate">
+        </div>
+        <div class="yd-ta-exp-list" id="ta-exp-list" hidden>
+          <div id="ta-exp-list-inner"></div>
+          <div class="yd-moments-updatebar" id="ta-exp-updatebar" hidden>
+            <button type="button" class="yd-moments-updatebar__btn" id="ta-exp-update-btn">
+              <span class="yd-moments-updatebar__text">有新内容更新</span>
+              <span class="yd-moments-updatebar__badge" id="ta-exp-update-badge" hidden>1</span>
+              <span class="yd-ta-exp-update-spinner" id="ta-exp-update-spinner" hidden aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ta 的日记 -->
+    
+
+    <!-- 聊天气泡设置页面 -->
+    <div id="page-bubble-settings" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="bubble-settings-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">气泡美化</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="bubble-preset-add" aria-label="新增预设">+</button>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <!-- 预设选择与导入导出 -->
+        <div class="yd-settings-group">
+          <div class="yd-bubble-layout-title">当前</div>
+          <div class="yd-bubble-layout-card yd-bubble-preset-card">
+            <div class="yd-beautify-preset-row yd-bubble-preset-row">
+              <label class="yd-beautify-field-label yd-bubble-preset-label">预设</label>
+              <select class="yd-beautify-preset-select" id="bubble-preset-select">
+                <option value="">默认</option>
+              </select>
+              <button type="button" class="yd-btn yd-btn--icon yd-bubble-preset-action-trigger" id="bubble-preset-actions" aria-label="预设操作">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="5" cy="12" r="1.5"></circle>
+                  <circle cx="12" cy="12" r="1.5"></circle>
+                  <circle cx="19" cy="12" r="1.5"></circle>
+                </svg>
+              </button>
+              <div class="yd-bubble-preset-menu" id="bubble-preset-ops-menu" hidden>
+                <button type="button" class="yd-bubble-preset-menu__item yd-bubble-preset-menu__item--danger" id="bubble-preset-delete">删除预设</button>
+                <button type="button" class="yd-bubble-preset-menu__item" id="bubble-preset-export">导出预设</button>
+              </div>
+            </div>
+            <div class="yd-beautify-actions yd-bubble-preset-add-actions" style="padding: 0 2px 2px;">
+              <div class="yd-bubble-preset-menu" id="bubble-preset-add-menu" hidden>
+                <button type="button" class="yd-bubble-preset-menu__item" id="bubble-preset-add-manual">手动新增</button>
+                <button type="button" class="yd-bubble-preset-menu__item" id="bubble-preset-add-import">导入预设</button>
+              </div>
+              <input type="file" id="bubble-preset-import" accept=".json,application/json" style="display:none" aria-hidden="true">
+            </div>
+          </div>
+        </div>
+
+        <!-- 气泡预览 -->
+        <div class="yd-bubble-layout-section">
+          <div class="yd-bubble-layout-title">预览</div>
+          <div id="bubble-preview" class="yd-bubble-layout-card">
+            <div class="yd-bubble-layout-subtitle">效果预览</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <!-- 角色气泡预览 -->
+              <div class="yd-message">
+                <div class="yd-message__avatar-col">
+                  <div class="yd-message__avatar">
+                    <div class="yd-message__avatar-inner">
+                      <span class="yd-message__avatar-fallback">角</span>
+                    </div>
+                  </div>
+                  <div data-bubble-preview-meta-avatar="role" hidden></div>
+                </div>
+                <div class="yd-message__body" style="margin-right:42px;">
+                  <div class="yd-message__header yd-message__meta-row--top">
+                    <div class="yd-message__name">角色</div>
+                    <div data-bubble-preview-meta-top="role" hidden></div>
+                  </div>
+                  <div class="yd-message__bubble-row">
+                    <div class="yd-message__content">
+                      <div class="yd-message__text">这是角色的气泡效果</div>
+                    </div>
+                    <div data-bubble-preview-meta-outer="role" hidden></div>
+                  </div>
+                  <div data-bubble-preview-meta-bottom="role" hidden></div>
+                </div>
+              </div>
+              <!-- 我的气泡预览 -->
+              <div class="yd-message yd-message--user">
+                <div class="yd-message__avatar-col">
+                  <div class="yd-message__avatar">
+                    <div class="yd-message__avatar-inner">
+                      <span class="yd-message__avatar-fallback">我</span>
+                    </div>
+                  </div>
+                  <div data-bubble-preview-meta-avatar="user" hidden></div>
+                </div>
+                <div class="yd-message__body" style="margin-left:42px;">
+                  <div class="yd-message__header yd-message__meta-row--top" data-bubble-preview-meta-top="user" hidden></div>
+                  <div class="yd-message__bubble-row">
+                    <div data-bubble-preview-meta-outer="user" hidden></div>
+                    <div class="yd-message__content">
+                      <div class="yd-message__text">这是我的气泡效果</div>
+                    </div>
+                  </div>
+                  <div data-bubble-preview-meta-bottom="user" hidden></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 基础颜色设置 -->
+        <div class="yd-bubble-layout-title">设置</div>
+        <div class="yd-settings-group">
+          <div class="yd-bubble-layout-card yd-bubble-color-card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="flex: 1;">
+                <div style="font-size: 13px; color: #8E8E93;">气泡颜色</div>
+                <div style="font-size: 13px; color: #8E8E93; margin-top: 2px;">分别调整我的气泡与角色气泡的基础颜色</div>
+              </div>
+            </div>
+
+            <!-- 我的气泡 -->
+            <div style="margin-bottom: 20px; padding: 12px; background: #F9FAFB; border-radius: 8px;">
+              <div style="font-size: 14px; font-weight: 500; color: #000; margin-bottom: 12px;">我的气泡</div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">背景色</label>
+                  <input type="color" id="bubble-user-bg" value="#007AFF" style="width: 60px; height: 40px; border: 1px solid #E5E5EA; border-radius: 8px; cursor: pointer; padding:0;">
+                </div>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">字体颜色</label>
+                  <input type="color" id="bubble-user-text" value="#FFFFFF" style="width: 60px; height: 40px; border: 1px solid #E5E5EA; border-radius: 8px; cursor: pointer; padding:0;">
+                </div>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">显示发送时间</label>
+                  <label class="yd-global-regex-modal-toggle__switch">
+                    <input type="checkbox" id="bubble-user-meta-show-time" class="yd-global-regex-modal-toggle__input">
+                    <span class="yd-global-regex-modal-toggle__slider" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+              <div id="bubble-user-meta-time-pos-row" hidden style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <label style="font-size: 13px; color: #666;">发送时间的显示位置</label>
+                  <select id="bubble-user-meta-time-position" style="flex: 0 0 96px; height: 32px; border: 1px solid #E5E5EA; border-radius: 8px; font-size: 13px; padding: 0 8px; background: #fff;">
+                    <option value="top">上</option>
+                    <option value="bottom" selected>下</option>
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">显示已读和未读状态</label>
+                  <label class="yd-global-regex-modal-toggle__switch">
+                    <input type="checkbox" id="bubble-user-meta-show-read" class="yd-global-regex-modal-toggle__input">
+                    <span class="yd-global-regex-modal-toggle__slider" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+              <div id="bubble-user-meta-read-pos-row" hidden style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <label style="font-size: 13px; color: #666;">已读和未读状态的显示位置</label>
+                  <select id="bubble-user-meta-read-position" style="flex: 0 0 96px; height: 32px; border: 1px solid #E5E5EA; border-radius: 8px; font-size: 13px; padding: 0 8px; background: #fff;">
+                    <option value="top">上</option>
+                    <option value="bottom" selected>下</option>
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 角色气泡 -->
+            <div style="margin-bottom: 0; padding: 12px; background: #F9FAFB; border-radius: 8px;">
+              <div style="font-size: 14px; font-weight: 500; color: #000; margin-bottom: 12px;">角色的气泡</div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">背景色</label>
+                  <input type="color" id="bubble-role-bg" value="#F0F0F0" style="width: 60px; height: 40px; border: 1px solid #E5E5EA; border-radius: 8px; cursor: pointer; padding:0;">
+                </div>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">字体颜色</label>
+                  <input type="color" id="bubble-role-text" value="#000000" style="width: 60px; height: 40px; border: 1px solid #E5E5EA; border-radius: 8px; cursor: pointer; padding:0;">
+                </div>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">显示发送时间</label>
+                  <label class="yd-global-regex-modal-toggle__switch">
+                    <input type="checkbox" id="bubble-role-meta-show-time" class="yd-global-regex-modal-toggle__input">
+                    <span class="yd-global-regex-modal-toggle__slider" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+              <div id="bubble-role-meta-time-pos-row" hidden style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <label style="font-size: 13px; color: #666;">发送时间的显示位置</label>
+                  <select id="bubble-role-meta-time-position" style="flex: 0 0 96px; height: 32px; border: 1px solid #E5E5EA; border-radius: 8px; font-size: 13px; padding: 0 8px; background: #fff;">
+                    <option value="top">上</option>
+                    <option value="bottom" selected>下</option>
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label style="font-size: 13px; color: #666;">显示已读和未读状态</label>
+                  <label class="yd-global-regex-modal-toggle__switch">
+                    <input type="checkbox" id="bubble-role-meta-show-read" class="yd-global-regex-modal-toggle__input">
+                    <span class="yd-global-regex-modal-toggle__slider" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+              <div id="bubble-role-meta-read-pos-row" hidden style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <label style="font-size: 13px; color: #666;">已读和未读状态的显示位置</label>
+                  <select id="bubble-role-meta-read-position" style="flex: 0 0 96px; height: 32px; border: 1px solid #E5E5EA; border-radius: 8px; font-size: 13px; padding: 0 8px; background: #fff;">
+                    <option value="top">上</option>
+                    <option value="bottom" selected>下</option>
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 高级 CSS 设置 -->
+        <div class="yd-settings-group">
+          <div class="yd-bubble-layout-title">高级设置</div>
+          <div class="yd-bubble-layout-card">
+            <div class="yd-bubble-layout-subtitle">直接编辑聊天气泡区域的 CSS</div>
+            <div style="padding: 0;">
+              <div class="yd-bubble-customcss-header">
+                <div class="yd-beautify-field-label" style="margin: 0;">自定义 CSS（可选）</div>
+                <button type="button" class="yd-btn yd-btn--text yd-btn--mini" id="bubble-custom-preview"><span class="yd-bubble-preview-pill">预览</span></button>
+              </div>
+              <textarea class="yd-beautify-textarea" id="bubble-custom-css" rows="10" placeholder="例如：&#10;.yd-message__content { border-radius: 24px; }&#10;.yd-message--user .yd-message__content { background: linear-gradient(135deg, #ff9a9e, #fad0c4); }"></textarea>
+              <div class="yd-bubble-customcss-actions">
+                <button type="button" class="yd-btn yd-btn--secondary yd-btn--small" id="bubble-custom-clear">清空全部</button>
+                <button type="button" class="yd-btn yd-btn--secondary yd-btn--small" id="bubble-custom-copy">复制全部</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部固定操作栏 -->
+      <div class="yd-bubble-settings-bottom-bar" role="group" aria-label="气泡设置操作">
+        <button type="button" class="yd-btn yd-btn--secondary" id="bubble-settings-reset-default">恢复默认</button>
+        <button type="button" class="yd-btn yd-btn--primary" id="bubble-settings-apply">应用</button>
+      </div>
+    </div>
+
+    <!-- 会话美化页面 -->
+    <div id="page-session-beautify" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="session-beautify-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">会话美化</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:900;font-size:14px;margin:0 0 8px;">预览</div>
+          <div class="yd-session-quote-preview" aria-label="预览">
+            <!-- 正文预览：不进气泡，三两行即可 -->
+            <div
+              id="yd-session-text-preview"
+              class="yd-message__plain yd-message__plain--md"
+              style="padding:0;margin:0 0 10px;white-space:pre-wrap;"
+              aria-label="正文预览"
+            >走廊尽头的灯忽明忽暗，他低声说：<span class="yd-quote-beautify">“别怕，我在。”</span> 指尖却还带着雨水的凉意。</div>
+
+            <!-- 气泡预览：复用聊天同款 DOM（与“聊天气泡”页一致） -->
+            <div id="yd-session-quote-preview-chat" aria-label="气泡预览内容" style="display:flex;flex-direction:column;gap:10px;">
+              <div class="yd-message">
+                <div class="yd-message__avatar">
+                  <div class="yd-message__avatar-inner">
+                    <span class="yd-message__avatar-fallback">角</span>
+                  </div>
+                </div>
+                <div class="yd-message__body" style="margin-right:42px;">
+                  <div class="yd-message__name">角色</div>
+                  <div class="yd-message__content">
+                    <div class="yd-message__text">晚安，想你。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="font-weight:900;font-size:14px;margin:0 0 8px;">内容美化</div>
+        <div class="yd-settings-group">
+          <div class="yd-session-beautify-card">
+            <div class="yd-session-beautify-item">
+              <div class="yd-session-beautify-item__head">
+                <span>双引号内容美化</span>
+                <label class="yd-global-regex-modal-toggle__switch">
+                  <input type="checkbox" id="session-quote-beautify-enabled" class="yd-global-regex-modal-toggle__input" checked>
+                  <span class="yd-global-regex-modal-toggle__slider" aria-hidden="true"></span>
+                </label>
+              </div>
+              <input
+                type="text"
+                id="session-quote-beautify-css"
+                class="yd-forum-compose__input"
+                placeholder="双引号样式 CSS（默认渐变）"
+                style="margin-top:8px;"
+              >
+            </div>
+          </div>
+
+          <div class="yd-session-beautify-card">
+            <div class="yd-session-beautify-item">
+              <div class="yd-session-beautify-item__head">
+                <span>正文内容美化</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;">
+                <div class="yd-session-quote-color-label">字体颜色</div>
+                <input
+                  type="color"
+                  id="session-quote-beautify-text-color"
+                  value="#000000"
+                  aria-label="字体颜色（正文部分）"
+                  style="padding:0;border:none;background:transparent;width:44px;height:28px;"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-weight:900;font-size:14px;margin:14px 0 8px;">头像与字体大小</div>
+        <div class="yd-settings-group">
+          <div class="yd-session-beautify-card">
+            <div class="yd-session-beautify-item">
+              <div class="yd-session-beautify-item__head">
+                <span>头像大小</span>
+                <span id="session-avatar-size-label">36px</span>
+              </div>
+              <input type="range" id="session-avatar-size" min="28" max="56" step="1" value="36">
+            </div>
+            <div class="yd-session-beautify-item">
+              <div class="yd-session-beautify-item__head">
+                <span>字体大小</span>
+                <span id="session-font-size-label">14px</span>
+              </div>
+              <input type="range" id="session-font-size" min="12" max="20" step="1" value="14">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部固定操作栏 -->
+      <div class="yd-session-beautify-bottom-bar" role="group" aria-label="会话美化操作">
+        <button type="button" class="yd-btn yd-btn--secondary" id="session-beautify-reset">恢复默认</button>
+        <button type="button" class="yd-btn yd-btn--primary" id="session-beautify-apply">应用</button>
+      </div>
+    </div>
+
+    <!-- 会话记忆增强（单个会话） -->
+    <div id="page-session-memory" class="yd-page yd-page--settings-detail">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="session-memory-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">记忆增强</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-settings-detail-content">
+        <div class="yd-session-memory-wrap">
+          <div class="yd-session-memory-section-title">实时记忆</div>
+          <div class="yd-session-memory-card">
+            <div class="yd-session-memory-row">
+              <div class="yd-session-memory-row__label yd-session-memory-row__label--strong">实时记忆轮数</div>
+              <div class="yd-session-memory-row__value" id="yd-session-memory-realtime-rounds">-</div>
+            </div>
+            <div class="yd-session-memory-note">
+              <div class="yd-session-memory-note__text">说明：用于控制每次请求带入的历史消息轮数，角色对于该记忆的注意力大于历史总结记忆。</div>
+              <div class="yd-session-memory-note__actions">
+                <button type="button" class="yd-session-memory-note-link" id="yd-session-memory-go-api">
+                  去设置
+                  <svg class="yd-session-memory-note-link__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m9 18 6-6-6-6"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="yd-session-memory-section-title">总结小助手</div>
+          <div class="yd-session-memory-card">
+            <div class="yd-session-memory-helper-preset-row">
+              <span class="yd-session-memory-helper-preset-label">总结记忆的预设</span>
+              <button type="button" class="yd-session-memory-helper-link" id="yd-session-memory-helper">
+                查看
+                <svg class="yd-session-memory-note-link__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="yd-session-memory-section-title">历史记忆</div>
+          <div class="yd-session-memory-card">
+            <label class="yd-book-edit__row yd-toggle" style="margin:2px 0 10px;">
+              <span class="yd-toggle__label yd-book-edit__toggle-label yd-session-memory-toggle-strong">自动总结记忆</span>
+              <span class="yd-toggle__control">
+                <input type="checkbox" id="yd-session-memory-enabled" class="yd-toggle__input">
+                <span class="yd-toggle__slider"></span>
+              </span>
+            </label>
+
+            <div class="yd-session-memory-row">
+              <div class="yd-session-memory-row__label">每</div>
+              <input type="number" min="1" step="1" class="yd-session-memory-input" id="yd-session-memory-every-rounds" value="50">
+              <div class="yd-session-memory-row__label">轮对话总结一次记忆</div>
+            </div>
+
+            <hr class="yd-session-memory-in-card-divider" aria-hidden="true">
+
+            <div class="yd-book-edit__row yd-toggle yd-session-memory-manual-row">
+              <span class="yd-toggle__label yd-book-edit__toggle-label yd-session-memory-toggle-strong">手动总结记忆</span>
+              <button type="button" class="yd-btn yd-btn--secondary yd-session-memory-btn-sm" id="yd-session-memory-summarize-now">选择内容</button>
+            </div>
+          </div>
+
+          <div class="yd-session-memory-section-title">历史记忆书</div>
+          <div class="yd-session-memory-card">
+            <div class="yd-session-memory-history" id="yd-session-memory-history-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 记忆增强：总结小助手提示词编辑 -->
+    <div class="yd-modal" id="yd-session-memory-helper-modal" hidden>
+      <div class="yd-modal-backdrop" data-act="close" style="position:fixed;inset:0;background:rgba(0,0,0,0.28);"></div>
+      <div class="yd-modal-content" role="dialog" aria-modal="true" aria-label="总结小助手" style="max-width:740px;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:0 !important;overflow:hidden;border-radius:14px;background:#fff;box-shadow:0 16px 36px rgba(0,0,0,0.24);width:min(92vw,740px);">
+        <div class="yd-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:10px 10px 8px;margin:0;border:0;">
+          <div style="font-weight:900">总结小助手</div>
+          <button type="button" class="yd-btn-close" data-act="close" aria-label="关闭">×</button>
+        </div>
+        <div style="padding:0 10px 10px;">
+          <textarea id="yd-session-memory-helper-text" class="yd-session-memory-helper-textarea" rows="14" placeholder="请输入提示词..."></textarea>
+          <div class="yd-session-memory-helper-actions">
+            <button type="button" class="yd-btn yd-btn--secondary yd-session-memory-btn-sm" id="yd-session-memory-helper-reset">恢复默认</button>
+            <button type="button" class="yd-btn yd-session-memory-btn-sm" id="yd-session-memory-helper-save" style="background:#111;color:#fff;">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日历 -->
+    
+
+    <div id="calendar-event-sheet" class="yd-modal" hidden>
+      <div class="yd-cal-sheet-panel" id="calendar-event-sheet-panel">
+        <div class="yd-cal-sheet-panel__title" id="calendar-event-sheet-title">添加</div>
+        <div class="yd-cal-field">
+          <label for="calendar-event-type">类型</label>
+          <select class="yd-input" id="calendar-event-type">
+            <option value="birthday">生日</option>
+            <option value="anniversary">纪念日</option>
+            <option value="custom">自定义</option>
+            <option value="period_start">记录经期开始</option>
+          </select>
+        </div>
+        <div class="yd-cal-field" id="calendar-birthday-subject-wrap" hidden>
+          <span class="yd-cal-field__label">谁的生日</span>
+          <div class="yd-cal-birthday-pick" id="calendar-birthday-subject-pick" role="radiogroup" aria-label="谁的生日"></div>
+        </div>
+        <div class="yd-cal-field" id="calendar-event-title-wrap">
+          <label for="calendar-event-title" id="calendar-event-title-label">标题</label>
+          <input class="yd-input" id="calendar-event-title" type="text" placeholder="" maxlength="80" />
+          <p class="yd-cal-field-hint" id="calendar-event-title-hint" hidden></p>
+        </div>
+        <div id="calendar-sheet-period-fields" hidden>
+          <div class="yd-cal-field">
+            <label for="calendar-period-duration">月经持续时间（天）</label>
+            <input class="yd-input" id="calendar-period-duration" type="number" min="2" max="10" value="5" />
+            <p class="yd-cal-field-hint">一般为 3～7 天，本次经期预计持续天数</p>
+          </div>
+          <div class="yd-cal-field">
+            <label for="calendar-cycle-length">月经周期（天）</label>
+            <input class="yd-input" id="calendar-cycle-length" type="number" min="21" max="45" value="28" />
+            <p class="yd-cal-field-hint">两次月经第一天之间的间隔，常用 21～35 天，用于预测下次经期</p>
+          </div>
+        </div>
+        <div class="yd-cal-field" id="calendar-event-date-wrap">
+          <label for="calendar-event-date" id="calendar-event-date-label">日期</label>
+          <input class="yd-input" id="calendar-event-date" type="date" />
+        </div>
+        <div class="yd-cal-field" id="calendar-char-link-wrap">
+          <div class="yd-cal-char-link-head">
+            <span class="yd-cal-field__label">谁可以看<span class="yd-cal-field__label-sub">（设置谁可以查看本条记录）</span></span>
+            <button type="button" class="yd-cal-char-pick__all" id="calendar-char-select-all" hidden>全选</button>
+          </div>
+          <div class="yd-cal-char-pick-box">
+            <div class="yd-cal-char-pick" id="calendar-char-pick"></div>
+          </div>
+        </div>
+        <div class="yd-cal-repeat-row" id="calendar-event-repeat-wrap">
+          <span class="yd-cal-repeat-row__label">每年重复</span>
+          <span class="yd-toggle__control">
+            <input type="checkbox" id="calendar-event-repeat" class="yd-toggle__input" role="switch" aria-label="每年重复" />
+            <span class="yd-toggle__slider" aria-hidden="true"></span>
+          </span>
+        </div>
+        <p class="yd-cal-field-hint yd-cal-remind-hint">推送提醒请在「日历设置」中开关纪念日/生日提醒</p>
+        <div class="yd-cal-field" id="calendar-event-notes-wrap">
+          <label for="calendar-event-notes">备注（可选）</label>
+          <textarea class="yd-textarea" id="calendar-event-notes" rows="2" placeholder="备注"></textarea>
+        </div>
+        <div class="yd-cal-sheet-actions">
+          <button type="button" class="yd-btn" data-cal-act="close">取消</button>
+          <button type="button" class="yd-btn" id="calendar-event-delete" style="color:#e11d48;">删除</button>
+          <button type="button" class="yd-btn" id="calendar-event-save" style="background:#111;color:#fff;">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 笔记本：列表页 -->
+    
+
+    <!-- 笔记本：详情编辑页 -->
+    
+
+    <!-- 全局正则：列表页（布局同世界书） -->
+    <div id="page-global-regex" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="global-regex-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">正则</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="global-regex-add" aria-label="新增正则条目">+</button>
+      </div>
+      <div class="yd-page-content yd-worldbook-content">
+        <div class="yd-beautify-page-tabs yd-album-tabs" id="global-regex-tabs" role="tablist" aria-label="正则分类">
+          <button type="button" class="yd-beautify-tab yd-beautify-tab--active" data-filter="all">当前</button>
+          <button type="button" class="yd-beautify-tab" data-filter="global">全局正则</button>
+          <button type="button" class="yd-beautify-tab" data-filter="character">角色正则</button>
+        </div>
+        <div class="yd-worldbook-section" id="global-regex-section-character">
+          <h3 class="yd-worldbook-section__title">角色正则规则</h3>
+          <div class="yd-worldbook-list" id="global-regex-character-list"></div>
+        </div>
+        <div class="yd-worldbook-section" id="global-regex-section-user">
+          <h3 class="yd-worldbook-section__title">全局正则规则</h3>
+          <div class="yd-worldbook-list" id="global-regex-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 正则测试：聊天消息区 + 底部双按钮 -->
+    <div id="page-regex-test" class="yd-page">
+      <div class="yd-chat-background" id="regex-test-background"></div>
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="regex-test-back" type="button" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">正则测试</div>
+        <div class="yd-header-spacer"></div>
+      </div>
+      <div class="yd-page-content yd-chat-messages" id="regex-test-messages">
+        <div class="yd-chat-scroll" id="regex-test-scroll"></div>
+      </div>
+      <div class="yd-page-footer yd-regex-test-footer yd-chat-input-wrapper">
+        <div class="yd-regex-test-toolbar">
+          <button type="button" class="yd-regex-test-pick-btn" id="regex-test-pick-rule">选择正则</button>
+        </div>
+        <div class="yd-chat-input-container">
+          <textarea class="yd-textarea yd-chat-input" id="regex-test-input" placeholder="输入测试内容..." rows="1"></textarea>
+          <button class="yd-chat-send-btn yd-regex-test-send" id="regex-test-send" type="button" aria-label="测试">测试</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 制卡助手：顶部栏 + 输入框 -->
+    <div id="page-card-assistant" class="yd-page">
+      <div class="yd-chat-background" id="card-assistant-background"></div>
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="card-assistant-back" type="button" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">制卡助手</div>
+        <button
+          class="yd-header-btn yd-header-btn--circle yd-header-btn--add"
+          id="card-assistant-new-chat"
+          type="button"
+          aria-label="新对话"
+        >+</button>
+      </div>
+      <div class="yd-page-content yd-chat-messages" id="card-assistant-messages">
+        <button
+          type="button"
+          id="card-assistant-picker-btn"
+          class="yd-card-assistant-floating-bar"
+          aria-label="选择制卡助手"
+        >
+          <span class="yd-card-assistant-floating-bar__label">小助手预设</span>
+          <span class="yd-card-assistant-floating-bar__name" id="card-assistant-picker-btn-name">系统默认</span>
+          <span class="yd-card-assistant-floating-bar__chevron" aria-hidden="true">›</span>
+        </button>
+        <div class="yd-chat-scroll" id="card-assistant-scroll"></div>
+      </div>
+      <div class="yd-page-footer yd-chat-input-wrapper yd-card-assistant-footer">
+        <div class="yd-chat-input-container">
+          <textarea class="yd-textarea yd-chat-input yd-card-assistant-input" id="card-assistant-input" placeholder="输入你要制卡的需求..." rows="1"></textarea>
+          <button class="yd-chat-send-btn yd-card-assistant-send" id="card-assistant-send" type="button" aria-label="发送">
+            <!-- 聊天页的“伪发送（入队）”按钮图标复用 -->
+            <svg class="icon" viewBox="0 0 1024 1024" width="20" height="20" aria-hidden="true">
+              <path d="M392.021333 925.013333a34.133333 34.133333 0 0 1-34.133333-34.133333V579.242667c0-10.24 4.608-19.968 12.629333-26.453334l276.48-224.085333a34.0992 34.0992 0 0 1 43.008 52.906667L426.154667 595.456v192.853333l82.944-110.592c10.069333-13.482667 28.672-17.578667 43.52-9.557333l137.557333 73.728L853.333333 156.16c3.242667-11.434667-3.413333-18.602667-6.485333-21.162667-3.072-2.56-11.093333-7.850667-21.845333-2.901333L206.336 422.4l80.213333 46.08c16.384 9.386667 22.016 30.208 12.629334 46.592s-30.208 22.016-46.592 22.016-46.592 0-137.045334-78.677333a33.979733 33.979733 0 0 1-17.066666-31.061333c0.512-12.8 8.021333-24.064 19.626666-29.525334L795.989333 70.314667c31.744-14.848 68.096-10.069333 94.890667 12.629333a87.790933 87.790933 0 0 1 28.16 91.477333L744.277333 801.28a34.082133 34.082133 0 0 1-48.981333 20.821333L546.133333 742.058667l-126.805333 169.301333c-6.656 8.704-16.896 13.653333-27.306667 13.653333z" fill="#80B7F9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 世界书：列表页 -->
+    <div id="page-worldbook" class="yd-page">
+      <div class="yd-page-header yd-settings-nav">
+        <button class="yd-header-btn yd-header-btn--circle" id="worldbook-back" aria-label="返回">
+          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="yd-page-header__center yd-settings-nav__title">世界书</div>
+        <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="worldbook-add" aria-label="新增世界书条目">+</button>
+      </div>
+      <div class="yd-page-content yd-worldbook-content">
+        <div class="yd-beautify-page-tabs yd-album-tabs" id="worldbook-tabs" role="tablist" aria-label="世界书分类">
+          <button type="button" class="yd-beautify-tab yd-beautify-tab--active" data-filter="all">当前</button>
+          <button type="button" class="yd-beautify-tab" data-filter="global">全局世界书</button>
+          <button type="button" class="yd-beautify-tab" data-filter="character">角色世界书</button>
+        </div>
+        <div class="yd-worldbook-section" id="worldbook-section-global">
+          <h3 class="yd-worldbook-section__title">全局世界书</h3>
+          <div class="yd-worldbook-list" id="worldbook-global-list"></div>
+        </div>
+        <div class="yd-worldbook-section" id="worldbook-section-character">
+          <h3 class="yd-worldbook-section__title">当前会话 · 角色世界书</h3>
+          <div class="yd-worldbook-list" id="worldbook-character-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 全局通知浮层（置于脚本前，结构清晰） -->
+  <div id="yd-global-notify">
+    <div class="yd-notify-banner" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <div class="yd-notify-banner__icon" aria-hidden="true"></div>
+      <div class="yd-notify-banner__content">
+        <div class="yd-notify-banner__title">
+          <div class="yd-notify-banner__title-left"></div>
+          <div class="yd-notify-banner__title-right"></div>
+        </div>
+        <div class="yd-notify-banner__body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/jsmediatags.min.js"></script>
+  <script src="scripts/config.js"></script>
+  <script src="scripts/storage.js"></script>
+  <script src="scripts/image-generation-api.js"></script>
+  <script src="scripts/state.js"></script>
+  <script src="scripts/theme.js"></script>
+  <script src="scripts/homescreen.js"></script>
+  <script src="scripts/message-types.js"></script>
+  <script src="scripts/message-parser.js"></script>
+  <script src="vendor/marked.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="vendor/purify.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="scripts/markdown-plain.js"></script>
+  <script src="scripts/global-regex-converter.js"></script>
+  <script src="scripts/chat-message-builder.js"></script>
+  <script src="scripts/notifications.js"></script>
+  <script src="scripts/system-actions.js"></script>
+  <script src="scripts/chat.js"></script>
+  <script src="scripts/sc-scheduler.js"></script>
+  <script src="scripts/settings.js"></script>
+  <script src="scripts/bubble-settings.js"></script>
+  <script src="scripts/session-beautify.js"></script>
+  <script src="scripts/reply-style.js"></script>
+  <script src="scripts/session-memory.js"></script>
+  <script src="scripts/beautify.js"></script>
+  <script src="scripts/album.js"></script>
+  <script src="scripts/camera.js"></script>
+  <script src="scripts/wallpaper.js"></script>
+  <script src="scripts/weather.js"></script>
+  <script src="scripts/moments.js"></script>
+  <script src="scripts/moments-image-studio.js"></script>
+  <script src="scripts/forum.js"></script>
+  <script src="scripts/sc-timer.js"></script>
+  <script src="scripts/cycle-engine.js"></script>
+  <script src="scripts/character.js"></script>
+    <script src="scripts/worldbook.js"></script>
+    <script src="scripts/global-regex-page.js"></script>
+    <script src="scripts/regex-test-page.js"></script>
+  <script src="scripts/card-assistant-page.js"></script>
+  <script src="scripts/mask.js"></script>
+  <script src="scripts/ta.js"></script>
+  <script src="scripts/ta-experience.js"></script>
+  <script src="scripts/sc-ui.js"></script>
+  <script src="scripts/sc-chat.js"></script>
+  <script src="scripts/sc-backup.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
+
+

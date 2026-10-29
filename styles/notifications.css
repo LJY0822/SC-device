@@ -1,0 +1,124 @@
+#yd-global-notify {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+#yd-global-notify .yd-notify-banner {
+  pointer-events: auto;
+}
+
+.yd-notify-banner[hidden] {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.yd-notify-banner {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  z-index: 10000;
+  border-radius: 16px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform: translateY(-16px);
+  opacity: 0;
+  transition: transform 220ms ease, opacity 220ms ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.yd-notify-banner--enter,
+.yd-notify-banner.yd-notify-banner--enter {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.yd-notify-banner__icon {
+  flex-shrink: 0;
+  width: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px 0 0 16px;
+  color: rgba(60, 60, 67, 0.7);
+}
+
+.yd-notify-banner__icon svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.yd-notify-banner__icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.yd-notify-banner__content {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.yd-notify-banner__title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: rgba(60, 60, 67, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.yd-notify-banner__title-left{
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-notify-banner__title-right{
+  flex: 0 0 auto;
+  color: rgba(60, 60, 67, 0.8);
+  font-weight: 800;
+}
+
+.yd-notify-banner__body {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.yd-notify-banner:active {
+  opacity: 0.9;
+  transform: translateY(1px);
+}
+

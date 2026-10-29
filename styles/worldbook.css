@@ -1,0 +1,211 @@
+/* 世界书页面 */
+.yd-worldbook-content {
+  padding: 16px 16px 24px;
+  background: #F2F2F7;
+  overflow: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.yd-worldbook-section {
+  margin-bottom: 18px;
+}
+
+/* tabs 与下方内容统一留白：不受 section 显隐状态影响 */
+.yd-worldbook-content > .yd-beautify-page-tabs {
+  margin-bottom: 12px;
+}
+
+.yd-worldbook-section__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 10px;
+}
+
+.yd-worldbook-role-group {
+  margin: 0 0 14px;
+}
+
+.yd-worldbook-role-group__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.55);
+  margin: 0 0 8px;
+  padding: 0 2px;
+}
+
+.yd-worldbook-role-group__list {
+  gap: 10px;
+}
+
+.yd-worldbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 全局世界书条目：与角色页相同 yd-collapse-item 结构，外层卡片阴影 */
+.yd-worldbook-list > .yd-collapse-item {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  overflow: hidden;
+}
+
+.yd-worldbook-list > .yd-collapse-item .yd-collapse-item__header {
+  border-radius: 0;
+}
+
+/* 角色页「世界书」标题略小；全局页略强调一级标题可读性 */
+.yd-worldbook-list .yd-collapse-item__title {
+  font-weight: 600;
+  color: #111;
+  max-width: 42vw;
+}
+
+@media (min-width: 480px) {
+  .yd-worldbook-list .yd-collapse-item__title {
+    max-width: 280px;
+  }
+}
+
+.yd-worldbook-entry {
+  padding: 10px 10px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.yd-worldbook-entry__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.yd-worldbook-entry__pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* 全局正则页：与世界书列表同壳，正文区标签 */
+.yd-global-regex-block {
+  margin-top: 8px;
+}
+.yd-global-regex-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
+}
+.yd-global-regex-pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.yd-global-regex-pattern {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.yd-global-regex-section-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.52);
+}
+
+.yd-global-regex-section-note code {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.yd-global-regex-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #444;
+}
+
+.yd-global-regex-priority-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+.yd-global-regex-item--system .yd-collapse-item__header {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+}
+
+/* 正则页：padding 放在内层，折叠动画全程不抽边距（避免关合时贴边闪一下） */
+#global-regex-system-list > .yd-collapse-item > .yd-collapse-item__content,
+#global-regex-list > .yd-collapse-item > .yd-collapse-item__content,
+#global-regex-character-list > .yd-collapse-item > .yd-collapse-item__content {
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#global-regex-system-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner,
+#global-regex-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner,
+#global-regex-character-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner {
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+#global-regex-system-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-collapse-item__text,
+#global-regex-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-collapse-item__text,
+#global-regex-character-list > .yd-collapse-item > .yd-collapse-item__content > .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-collapse-item__text {
+  border-top: none;
+}
+
+#global-regex-system-list .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-global-regex-hint,
+#global-regex-list .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-global-regex-hint,
+#global-regex-character-list .yd-global-regex-collapse-inner > .yd-global-regex-block:first-child .yd-global-regex-hint {
+  margin-top: 0;
+}
+
+.yd-global-regex-sample-line {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0 0 6px;
+}
+
+.yd-global-regex-item--character .yd-collapse-item__header {
+  background: linear-gradient(180deg, rgba(25, 118, 210, 0.06), transparent);
+}
+
+/* 内置协议：与聊天同款卡片/气泡，仅展示、不可点 */
+.yd-global-regex-chat-preview {
+  background: #ededed;
+  padding: 14px 12px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.yd-global-regex-chat-preview .yd-global-regex-preview-msg {
+  margin: 0;
+  max-width: 100%;
+}
+
+/* 最后一格略留底，避免贴圆角 */
+#global-regex-system-list .yd-global-regex-collapse-inner > .yd-global-regex-block:last-child,
+#global-regex-list .yd-global-regex-collapse-inner > .yd-global-regex-block:last-child,
+#global-regex-character-list .yd-global-regex-collapse-inner > .yd-global-regex-block:last-child {
+  margin-bottom: 4px;
+}
+

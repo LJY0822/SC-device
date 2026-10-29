@@ -1,0 +1,326 @@
+/* 主屏幕 */
+#page-homescreen {
+  background: #fff;
+}
+
+/* 壁纸 */
+.yd-wallpaper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* 主屏分页容器（左右滑动） */
+.yd-homescreen-pager {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 100px; /* 预留Dock空间（80px dock + 20px bottom） */
+  z-index: 2;
+}
+
+/* 隐藏 Dock 时不再为底部预留空隙，桌面区域延伸到屏幕底 */
+#page-homescreen.yd-homescreen--dock-hidden .yd-homescreen-pager {
+  bottom: 0;
+}
+
+.yd-homescreen-pages {
+  height: 100%;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.yd-homescreen-pages::-webkit-scrollbar {
+  display: none;
+}
+
+.yd-homescreen-page {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0; /* 允许 flex 子项收缩，避免被内部 padding 内容撑宽导致 100%+padding */
+  height: 100%;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+  overflow: hidden; /* 防止内部出现横向溢出时把页“撑开”的兼容性问题 */
+}
+
+/* 页内内容容器：把 padding 从 flex item 上移下来，避免部分移动端把 padding 叠加到 100% 宽度上造成横向溢出 */
+.yd-homescreen-page__inner {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  /* 顶部不要贴太近：留出更像手机桌面的头部空间 */
+  padding: calc(18px + env(safe-area-inset-top) + 20px) 18px 18px;
+}
+
+/* 主屏网格：单位格由JS写入 CSS 变量 */
+.yd-homescreen-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 4), var(--grid-unit, 92px));
+  grid-template-rows: repeat(var(--grid-rows, 7), var(--grid-unit, 92px));
+  gap: var(--grid-gap, 16px);
+  justify-content: center;
+  align-content: start;
+}
+
+.yd-tile-outer{
+  position: relative;
+  overflow: visible; /* 外层不裁剪，阴影可显示 */
+  width: 100%;
+  height: 100%;
+}
+
+.yd-tile {
+  position: relative;
+  overflow: hidden; /* 内层裁剪，保留圆角 */
+  border-radius: 18px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Widget tile（iframe 内嵌HTML） */
+.yd-tile--widget {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: none;
+}
+
+.yd-tile-outer.yd-tile-outer--widget.yd-widget--widget-note .yd-tile--widget{
+  /* widget-note（拍立得组件）不吃统一外观阴影，避免影响组件自身视觉 */
+  box-shadow: none !important;
+}
+
+.yd-tile-outer.yd-tile-outer--widget.yd-widget--widget-photo-circle .yd-tile--widget{
+  /* widget-photo-circle（相片圆卡）不吃统一外观阴影，避免影响组件自身视觉 */
+  box-shadow: none !important;
+}
+
+.yd-tile-outer.yd-tile-outer--widget.yd-widget--widget-time-date {
+  /* 阴影打在外层，避免被圆角裁剪吃掉 */
+  box-shadow: 0 10px 26px rgba(0,0,0,0.16);
+  z-index: 2;
+  /* 时间日期组件在某些浏览器里可能出现四角直角泄露，外层也做圆角裁剪 */
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.yd-tile--widget:hover {
+  transform: none;
+}
+
+.yd-tile--widget.yd-widget--transparent {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.yd-widget-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.yd-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  justify-content: flex-start;
+}
+
+.yd-icon__img {
+  /* 普通图标根据格子大小自适应，但当前上限偏小，容易“看起来小” */
+  /* 注意：tile 外层 `overflow: hidden`，图标块过高会把底部裁掉，看起来“变扁” */
+  width: clamp(50px, calc(var(--grid-unit, 92px) * 0.7), 68px);
+  height: clamp(50px, calc(var(--grid-unit, 92px) * 0.7), 68px);
+  background: linear-gradient(135deg, #a8c5e6 0%, #b8d4f1 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(168, 197, 230, 0.3), 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #fff; /* 默认图标图案颜色，可被内联样式覆盖 */
+}
+
+.yd-icon__img:hover {
+  transform: none;
+  box-shadow: 0 4px 16px rgba(168, 197, 230, 0.3), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 2x2大图标 */
+.yd-icon--large .yd-icon__img {
+  width: clamp(96px, calc(var(--grid-unit, 92px) * 1.8), 176px);
+  height: clamp(96px, calc(var(--grid-unit, 92px) * 1.8), 176px);
+  border-radius: 20px;
+}
+
+.yd-icon--large .yd-icon__img svg {
+  width: 64px;
+  height: 64px;
+}
+
+.yd-icon--large .yd-icon__img .emoji {
+  font-size: 64px;
+}
+
+.yd-icon--large {
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.yd-icon__img:active {
+  transform: none;
+}
+
+/* SVG图标样式 */
+.yd-icon__img svg {
+  width: 34px;
+  height: 34px;
+  fill: currentColor;
+}
+
+/* 线稿图标根节点若写 fill="none"，须压过上一行的 fill:currentColor，否则子元素会继承成实心同色块 */
+.yd-icon__img svg[fill='none'] {
+  fill: none;
+}
+
+/* Emoji图标样式 */
+.yd-icon__img .emoji {
+  font-size: 34px;
+}
+
+/* 图片图标样式 */
+.yd-icon__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+/* 上传图片作为图标：不叠加背景色，只保留透明度控制 */
+.yd-icon__img.yd-icon__img--custom-image {
+  background: transparent !important;
+}
+
+.yd-icon__label {
+  font-size: 12px;
+  color: #000;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.yd-icon--dragging {
+  opacity: 0.5;
+}
+
+/* 分页指示点 */
+.yd-homescreen-dots {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 10px;
+  display: inline-flex;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: auto;
+  padding: 10px 12px;
+  border-radius: 999px;
+  /* Dock 同款底色 */
+  background: rgba(100, 100, 100, 0.2);
+  backdrop-filter: blur(1px) saturate(1.25);
+  -webkit-backdrop-filter: blur(1px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.yd-homescreen-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  /* 小白点 */
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0.95);
+  transition: background 160ms ease, transform 160ms ease;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.yd-homescreen-dot--active {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.15);
+}
+
+/* Dock栏 */
+.yd-dock {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(1px) saturate(1.25);
+  -webkit-backdrop-filter: blur(1px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 16px;
+  border-radius: 34px;
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  margin-bottom: 0;
+}
+
+.yd-dock .yd-icon {
+  margin: 0;
+  width: auto;
+  height: auto;
+  justify-content: center;
+}
+
+.yd-dock .yd-icon__img {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 0;
+}
+
+.yd-dock .yd-icon__label {
+  display: none;
+}
+

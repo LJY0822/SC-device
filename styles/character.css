@@ -1,0 +1,1626 @@
+/* 角色页面 */
+#page-character {
+  background: #f8f8f8;
+}
+
+#character-content {
+  padding: 16px;
+}
+
+/* 角色编辑页：统一为“灰底 + 白色分区卡片” */
+#page-character-edit {
+  background: #f8f8f8;
+}
+
+.yd-character-edit-content {
+  padding: 16px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  background: transparent;
+}
+
+.yd-character-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.yd-character-section__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.yd-character-section__title-row .yd-character-section__title {
+  margin: 0;
+}
+
+.yd-character-section__title-row .yd-btn {
+  flex: 0 0 auto;
+}
+
+.yd-character-section__title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.yd-character-section__hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #999;
+  line-height: 1.5;
+}
+
+.yd-character-preview {
+  display: block;
+}
+
+.yd-character-preview__empty {
+  color: #999;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+/* 折叠编辑（用于“角色描述/开场白”这类字段） */
+.yd-collapse-item--form + .yd-collapse-item--form {
+  margin-top: 12px;
+}
+
+.yd-collapse-item--form .yd-collapse-item__header {
+  padding: 12px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  gap: 10px;
+}
+
+.yd-collapse-item--form.yd-collapse-item--active .yd-collapse-item__header,
+.yd-collapse-item--form.yd-collapse-item--active .yd-collapse-item__header {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.yd-collapse-item--form .yd-collapse-item__header:active {
+  background: #f5f5f5;
+}
+
+.yd-collapse-item--form .yd-collapse-item__title {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+
+.yd-collapse-item--form .yd-collapse-item__meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yd-collapse-item__meta--filled {
+  color: #333;
+}
+
+/* 头像与角色名称、各折叠项之间的间距 */
+.yd-form-group + .yd-collapse-item--form {
+  margin-top: 12px;
+}
+
+.yd-collapse-item__body {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: #fff;
+}
+
+/* 角色编辑折叠项：展开后不再用固定 max-height，避免时区说明等动态内容被底部裁切 */
+.yd-collapse-item--form > .yd-collapse-item__content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.yd-collapse-item--form.yd-collapse-item--active > .yd-collapse-item__content {
+  max-height: none;
+  overflow: visible;
+}
+
+.yd-collapse-item__body .yd-textarea {
+  min-height: 140px;
+}
+
+/* 角色设定：展开后高度更大 */
+#char-description {
+  min-height: 420px;
+}
+
+.yd-avatar-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yd-avatar-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a8c5e6 0%, #b8d4f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.yd-avatar-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.yd-avatar-thumb__placeholder {
+  font-size: 32px;
+}
+
+.yd-avatar-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+/* 图片放大预览 */
+.yd-image-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yd-image-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.yd-image-viewer--moments .yd-image-viewer__backdrop {
+  background: rgba(59, 130, 246, 0.18);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.yd-image-viewer__panel {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 560px);
+  max-height: 88vh;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.yd-image-viewer--moments .yd-image-viewer__panel {
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.35), rgba(191, 219, 254, 0.55));
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.yd-image-viewer__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  padding-right: 36px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-image-viewer--moments .yd-image-viewer__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.yd-image-viewer__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 10px;
+  background: #f1f1f1;
+  color: #333;
+  cursor: pointer;
+}
+
+.yd-image-viewer--moments .yd-image-viewer__close {
+  background: rgba(255,255,255,0.65);
+}
+
+.yd-image-viewer__close:active {
+  opacity: 0.7;
+}
+
+.yd-image-viewer__img {
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #000;
+}
+
+.yd-image-viewer--moments .yd-image-viewer__img {
+  /* 朋友圈配图预览：这里通常是“占位图标”，不要占太大面积 */
+  height: 200px;
+  max-height: 200px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+.yd-image-viewer__desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #111;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  max-height: 28vh;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+.yd-image-viewer--moments .yd-image-viewer__desc {
+  font-size: 15px;
+  color: #0f172a;
+  max-height: 46vh;
+}
+
+.yd-image-viewer__change-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.yd-image-viewer__change-row-side {
+  min-width: 0;
+}
+
+.yd-image-viewer__change-row-center {
+  display: flex;
+  justify-content: center;
+}
+
+.yd-image-viewer__detail-link {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 400;
+  color: #2563eb;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.yd-image-viewer__detail-link:active {
+  opacity: 0.65;
+}
+
+.yd-image-viewer--moments .yd-image-viewer__detail-link {
+  color: #1d4ed8;
+}
+
+/* 朋友圈配图全屏：主区铺满；底部圆形图标悬浮（不占布局高度） */
+.yd-image-viewer--moments-fs {
+  display: block;
+}
+
+/*
+ * 全屏预览暗角：仅由这一层叠黑（线性时长由 JS Web Animations API 控制）。
+ * 前景 fs-main / stage 等勿铺纯黑，否则会整块盖住 backdrop，看起来「一下子全黑」。
+ */
+.yd-image-viewer.yd-image-viewer--moments-fs .yd-image-viewer__backdrop {
+  z-index: 0;
+  background: #000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  opacity: 0;
+}
+
+.yd-image-viewer__fs {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  padding: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: border-box;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 220ms ease,
+    transform 260ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+/* 朋友圈全屏：与缩略图 FLIP 入场配合，不用整体上移，避免与图片缩放不同步 */
+/* 不在此层做 opacity 过渡：父层半透明 + 子图 transform 易在边缘合成出浅色晕闪（WebKit/Blink 常见） */
+.yd-image-viewer--moments-fs .yd-image-viewer__fs {
+  z-index: 1;
+  transform: none;
+  transition: none;
+}
+
+.yd-image-viewer--moments-fs .yd-image-viewer__fs-main,
+.yd-image-viewer--moments-fs .yd-image-viewer__fs-desc-mask,
+.yd-image-viewer--moments-fs .yd-image-viewer__fs-toolbar {
+  pointer-events: auto;
+}
+
+.yd-image-viewer--moments-fs--show .yd-image-viewer__fs {
+  opacity: 1;
+  transform: none;
+}
+
+.yd-image-viewer__fs-main {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* 主区统一用栈：仅通过 hidden 切换「图 / 配文方板 / 空」层，与进入数据一致 */
+.yd-image-viewer__fs-stack {
+  position: absolute;
+  inset: 0;
+}
+
+.yd-image-viewer__fs-layer-image,
+.yd-image-viewer__fs-layer-desc {
+  position: absolute;
+  inset: 0;
+}
+
+.yd-image-viewer__fs-layer-desc {
+  overflow: hidden;
+}
+
+.yd-image-viewer__fs-zoomwrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.yd-image-viewer--moments-fs .yd-image-viewer__fs-zoomwrap {
+  isolation: isolate;
+}
+
+.yd-image-viewer__fs-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.yd-image-viewer__fs-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 缩放入场时减轻边缘浅色晕影；入场结束后仍保留轻微层提升，不影响捏合（transform 在 stage 上） */
+.yd-image-viewer--moments-fs .yd-image-viewer__fs-img {
+  background: #000;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.yd-image-viewer__fs-empty {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 15px;
+  padding: 24px;
+  text-align: center;
+}
+
+/* 仅配图描述：中间一块正方形渐变板；上下为黑底（与全屏 backdrop 一致），不被 flex 纵向拉成条 */
+.yd-image-viewer__fs-desc-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 0 72px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.yd-image-viewer__fs-canvas {
+  position: relative;
+  /* 边长 = min(屏宽, 可视高 - 上下留白)，避免竖条拉满 */
+  width: min(100vw, calc(100svh - 44px - 72px - max(16px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))));
+  max-width: 100%;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  overflow: hidden;
+  background: linear-gradient(
+    148deg,
+    hsl(218, 14%, 72%) 0%,
+    hsl(235, 12%, 74%) 28%,
+    hsl(248, 11%, 76%) 52%,
+    hsl(210, 12%, 73%) 76%,
+    hsl(225, 13%, 71%) 100%
+  );
+  transition: background 0.2s ease;
+}
+
+.yd-image-viewer__fs-canvas-bg {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(ellipse 95% 85% at 18% 22%, rgba(215, 208, 200, 0.38), transparent 58%),
+    radial-gradient(ellipse 90% 80% at 82% 18%, rgba(188, 198, 212, 0.36), transparent 55%),
+    radial-gradient(ellipse 100% 90% at 55% 92%, rgba(200, 195, 208, 0.32), transparent 58%),
+    linear-gradient(
+      132deg,
+      hsl(220, 13%, 68%) 0%,
+      hsl(248, 11%, 72%) 26%,
+      hsl(230, 10%, 70%) 52%,
+      hsl(205, 12%, 69%) 78%,
+      hsl(218, 11%, 67%) 100%
+    );
+  filter: blur(24px) saturate(0.88);
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+.yd-image-viewer__fs-canvas-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px 16px;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.yd-image-viewer__fs-canvas-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* 叠在看图上的配文：与主区域同一套正方形渐变板，半透明遮罩衬底 */
+.yd-image-viewer__fs-desc-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 0 72px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.42);
+  pointer-events: auto;
+}
+
+.yd-image-viewer__fs-desc-mask[hidden] {
+  display: none !important;
+}
+
+.yd-image-viewer__fs-desc-mask .yd-image-viewer__fs-desc-wrap--sheet {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  flex: 0 1 auto;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0;
+  overflow: visible;
+}
+
+/* 悬浮工具条：右对齐，不占 flex 高度 */
+.yd-image-viewer__fs-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 11;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-left: 16px;
+  box-sizing: border-box;
+  /* 整块底部区域拦截点击，避免穿透到主区误关；按钮本身仍可点 */
+  pointer-events: auto;
+}
+
+.yd-image-viewer__fs-ico {
+  pointer-events: auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(88, 88, 88, 0.92);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
+}
+
+.yd-image-viewer__fs-ico:active:not(:disabled) {
+  transform: scale(0.92);
+  background: rgba(68, 68, 68, 0.95);
+}
+
+.yd-image-viewer__fs-ico.is-active {
+  background: rgba(120, 120, 120, 0.95);
+}
+
+.yd-image-viewer__fs-ico:disabled,
+.yd-image-viewer__fs-ico.is-busy {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.yd-image-viewer__fs-ico-svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  pointer-events: none;
+}
+
+/* 配文态下首钮带 is-active 时勿变浅底，否则比旁两颗「更亮」；底与其它一致 */
+.yd-image-viewer--moments-fs #yd-iv-tool-toggle-view.yd-image-viewer__fs-ico.is-active {
+  background: rgba(88, 88, 88, 0.92);
+}
+
+/* 提示 i 略放大，与其它图标视觉重量接近 */
+.yd-image-viewer__fs-ico-svg--info-i {
+  width: 20px;
+  height: 20px;
+}
+
+.yd-image-viewer__desc--toggle {
+  margin-top: 4px;
+}
+
+/* 朋友圈全屏预览：编辑图片弹窗（挂在 #yd-image-viewer 下，避免被 .yd-image-viewer__fs 的 transform 影响 fixed 定位） */
+.yd-image-viewer .yd-moments-img-edit-modal.yd-modal--active {
+  z-index: 30;
+}
+
+.yd-moments-img-edit-modal__box.yd-modal-content {
+  max-width: 320px;
+  padding: 16px 18px 14px;
+}
+
+.yd-moments-img-edit-modal__head.yd-modal-header {
+  margin-bottom: 12px;
+}
+
+.yd-moments-img-edit-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.yd-moments-img-edit-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-moments-img-edit-modal__opt {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 15px;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.yd-moments-img-edit-modal__opt:active {
+  background: #e2e8f0;
+}
+
+.yd-image-viewer .yd-moments-desc-edit-modal.yd-modal--active {
+  z-index: 32;
+}
+
+.yd-moments-desc-edit-modal__box.yd-modal-content {
+  max-width: min(92vw, 400px);
+  padding: 16px 18px 14px;
+}
+
+.yd-moments-desc-edit-modal__head.yd-modal-header {
+  margin-bottom: 10px;
+}
+
+.yd-moments-desc-edit-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.yd-moments-desc-edit-modal__ta {
+  width: 100%;
+  min-height: 140px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #0f172a;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.yd-moments-desc-edit-modal__ta:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.yd-moments-desc-edit-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.yd-moments-desc-edit-modal__btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.yd-moments-desc-edit-modal__btn--ghost {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.yd-moments-desc-edit-modal__btn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.yd-moments-desc-edit-modal__btn:active {
+  opacity: 0.88;
+}
+
+/* 角色语音 */
+.yd-character-voice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.yd-character-voice-row__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.yd-character-voice-row__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-character-voice-row__id {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.yd-role-voice-picker {
+  width: min(92vw, 680px);
+  max-height: 86vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.yd-role-voice-picker__toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px 12px;
+}
+
+.yd-role-voice-picker__search {
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-role-voice-picker__list {
+  overflow: auto;
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yd-role-voice-card {
+  appearance: none;
+  border: 1px solid #e7e7e7;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.yd-role-voice-card.is-active {
+  border-color: #111;
+  box-shadow: 0 0 0 1px rgba(17,17,17,0.1) inset;
+}
+
+.yd-role-voice-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.yd-role-voice-card__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.yd-role-voice-card__lang {
+  font-size: 11px;
+  color: #4b5563;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.yd-role-voice-card__lang--zh { background: #fee2e2; color: #991b1b; }
+.yd-role-voice-card__lang--yue { background: #ffedd5; color: #9a3412; }
+.yd-role-voice-card__lang--ja { background: #fde68a; color: #92400e; }
+.yd-role-voice-card__lang--ko { background: #dbeafe; color: #1e40af; }
+.yd-role-voice-card__lang--en { background: #dcfce7; color: #166534; }
+.yd-role-voice-card__lang--es { background: #ede9fe; color: #5b21b6; }
+.yd-role-voice-card__lang--pt { background: #fae8ff; color: #86198f; }
+.yd-role-voice-card__lang--fr { background: #cffafe; color: #155e75; }
+.yd-role-voice-card__lang--de { background: #fef3c7; color: #92400e; }
+.yd-role-voice-card__lang--ru { background: #e0e7ff; color: #3730a3; }
+.yd-role-voice-card__lang--it { background: #d1fae5; color: #065f46; }
+.yd-role-voice-card__lang--ar { background: #fce7f3; color: #9d174d; }
+.yd-role-voice-card__lang--tr { background: #ffe4e6; color: #9f1239; }
+.yd-role-voice-card__lang--uk { background: #dbeafe; color: #1d4ed8; }
+.yd-role-voice-card__lang--vi { background: #ecfccb; color: #3f6212; }
+.yd-role-voice-card__lang--nl { background: #e9d5ff; color: #6b21a8; }
+.yd-role-voice-card__lang--id { background: #e0f2fe; color: #0c4a6e; }
+.yd-role-voice-card__lang--default {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.yd-role-voice-card__id {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+  word-break: break-all;
+}
+
+.yd-role-voice-card__desc {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.5;
+}
+/* 简单字段展示块（用于“寻找 / 替换为”） */
+.yd-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 8px;
+  gap: 4px;
+}
+
+.yd-field__label {
+  font-size: 13px;
+  color: #666;
+}
+
+.yd-field__value {
+  width: 100%;
+  font-size: 13px;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f8f8f8;
+  word-break: break-word;
+}
+
+/* 通用胶囊开关 */
+.yd-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.yd-toggle__label {
+  font-size: 13px;
+  color: #666;
+}
+
+.yd-toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.yd-toggle__control {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.yd-toggle__slider {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: #ccc;
+  transition: background 0.2s;
+}
+
+.yd-toggle__slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+
+.yd-toggle__input:checked + .yd-toggle__slider {
+  background: #34c759;
+}
+
+.yd-toggle__input:checked + .yd-toggle__slider::before {
+  transform: translateX(18px);
+}
+
+/* 世界书：底部「添加条目」 */
+.yd-character-book-actions {
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+/* 世界书条目编辑：整体留白，字段标题不贴边 */
+.yd-book-edit {
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+
+.yd-book-edit__block {
+  margin-top: 14px;
+}
+
+.yd-book-edit__block:first-child {
+  margin-top: 0;
+}
+
+.yd-book-edit__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 8px 2px;
+  line-height: 1.35;
+}
+
+.yd-book-edit__label--spaced {
+  margin-top: 12px;
+}
+
+.yd-book-edit .yd-input,
+.yd-book-edit .yd-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.yd-book-edit__row.yd-toggle {
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0;
+  padding: 4px 2px 0;
+}
+
+.yd-book-edit__toggle-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.yd-book-edit__actions {
+  margin-top: 14px;
+  padding: 0 2px;
+}
+
+/* 放大世界书编辑文本区域 */
+.yd-book-content {
+  min-height: 520px;
+}
+
+.yd-ext-find,
+.yd-ext-replace {
+  min-height: 220px;
+}
+
+/* 图标按钮（无边框无背景） */
+.yd-icon-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.yd-icon-btn:active {
+  opacity: 0.6;
+}
+
+/* 角色列表项 - 使用基础列表项样式 */
+.yd-character-item {
+  display: block;
+}
+
+/* 角色头像装饰 */
+.yd-character-item .yd-list-item__avatar {
+  background: linear-gradient(135deg, #a8c5e6 0%, #b8d4f1 100%);
+  font-size: 24px;
+}
+
+/* 角色信息 */
+.yd-character-info {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.yd-character-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* 角色详情卡片 */
+.yd-character-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.yd-character-card:active {
+  background: #f5f5f5;
+}
+
+.yd-character-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.yd-character-card__avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a8c5e6 0%, #b8d4f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.yd-character-card__avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.yd-character-card__info {
+  flex: 1;
+  min-width: 0; /* 允许在 flex 中正确收缩，避免长文本撑破布局 */
+}
+
+.yd-character-card__name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yd-character-card__desc {
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+}
+
+.yd-character-card__content {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.yd-character-card__section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.yd-character-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.yd-character-card__text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.yd-character-card__text--small {
+  font-size: 13px;
+  color: #999;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.yd-character-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.yd-character-card__actions button {
+  flex: 1;
+  min-width: 0; /* 窄屏下按钮可收缩 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 角色创建模态框 */
+.yd-character-modal-content {
+  max-width: 500px;
+  max-height: 85vh;
+}
+
+.yd-character-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.yd-character-advanced {
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.yd-character-advanced__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* 兼容旧类名：避免遗漏引用时样式断层 */
+.yd-character-advanced__hint {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.yd-character-json-preview {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px;
+  font-size: 13px;
+  color: #666;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.yd-character-json-preview__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.yd-character-json-preview__item {
+  padding: 6px 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fafafa;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.yd-character-json-preview__empty {
+  color: #999;
+  font-size: 13px;
+}
+
+/* 折叠列表 */
+.yd-collapse-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-collapse-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.yd-collapse-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: #ffffff;
+}
+
+.yd-collapse-item__header:active {
+  background: #f5f5f5;
+}
+
+.yd-collapse-item__title-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.yd-collapse-item__title {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 世界书类型标签 */
+.yd-book-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.yd-book-type--constant {
+  background: #e0f7e9;
+  color: #1e8e3e;
+}
+
+.yd-book-type--keyword {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+/* 世界书关键词信息显示（展开内容第一行） */
+.yd-book-keywords-info {
+  padding: 10px 12px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1976d2;
+  background: #e3f2fd;
+  border-bottom: 1px solid #bbdefb;
+  line-height: 1.5;
+}
+
+/* 当有关键词信息时，内容区域不需要顶部边框 */
+.yd-book-keywords-info + .yd-collapse-item__text {
+  border-top: none;
+}
+
+.yd-collapse-item__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* 扩展正则编辑按钮：确保右对齐，宽度固定 */
+.yd-ext-edit-btn {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.yd-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  margin-left: 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.yd-switch--on {
+  background: #e0f7e9;
+  color: #1e8e3e;
+}
+
+.yd-switch--off {
+  background: #f1f1f1;
+  color: #999;
+}
+
+.yd-collapse-item__icon {
+  font-size: 10px;
+  color: #999;
+  margin-left: 8px;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.yd-collapse-item--active .yd-collapse-item__icon {
+  transform: rotate(180deg);
+}
+
+.yd-collapse-item__content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #fff;
+}
+
+.yd-collapse-item__text {
+  padding: 12px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+}
+
+.yd-character-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.yd-character-form-actions button {
+  flex: 1;
+}
+
+.yd-btn--secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* 导入回显摘要（只读） */
+.yd-character-import-summary {
+  display: block;
+}
+
+.yd-character-import-summary__title {
+  display: none;
+}
+
+.yd-character-import-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 360px) {
+  .yd-character-import-summary__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yd-character-import-summary__item {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.yd-character-import-summary__label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.yd-character-import-summary__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* 角色选择菜单 */
+.yd-character-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.yd-character-menu--active {
+  transform: translateY(0);
+}
+
+.yd-character-menu__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.yd-character-menu__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.yd-character-menu__option {
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.yd-character-menu__option:active {
+  background: #e8e8e8;
+}
+
+.yd-character-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: none;
+}
+
+.yd-character-menu-overlay--active {
+  display: block;
+}
+
+/* 导入角色卡：说明弹层（须用自定义弹层才能立刻调起系统文件选择） */
+.yd-char-import-disclaimer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.yd-char-import-disclaimer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.yd-char-import-disclaimer__panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  z-index: 1;
+}
+
+.yd-char-import-disclaimer__title {
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+  color: #111;
+}
+
+.yd-char-import-disclaimer__body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #444;
+  margin-bottom: 18px;
+}
+
+.yd-char-import-disclaimer__body p {
+  margin: 0 0 10px;
+}
+
+.yd-char-import-disclaimer__body p:last-child {
+  margin-bottom: 0;
+}
+
+.yd-char-import-disclaimer__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.yd-char-import-disclaimer__actions .yd-btn {
+  flex: 1;
+  margin: 0;
+}
+
+.yd-char-import-disclaimer__ok {
+  background: #007aff;
+  color: #fff;
+}
+
+.yd-char-import-disclaimer__ok:active {
+  opacity: 0.85;
+}
+
+.yd-character-region-time {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+.yd-character-region-time[hidden],
+#char-multilingual-row[hidden] {
+  display: none !important;
+}
+

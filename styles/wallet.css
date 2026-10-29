@@ -1,0 +1,293 @@
+.yd-wallet-page {
+  background: #fff;
+}
+
+.yd-wallet-content {
+  /* 顶部栏高度与其它设置页保持一致（避免内容被额外下推导致顶部空白过大） */
+  padding: calc(10px + env(safe-area-inset-top)) 18px 18px;
+  box-sizing: border-box;
+}
+
+.yd-wallet-actions{
+  display:flex;
+  gap: 10px;
+  margin: 12px 0 6px;
+  flex-wrap: wrap;
+}
+
+.yd-wallet-section-title {
+  font-size: 16px;
+  font-weight: 800; /* 更明显的加粗 */
+  color: rgba(17, 17, 17, 0.86);
+  margin: 8px 0 12px;
+}
+
+.yd-wallet-bills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yd-wallet-bill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(17,17,17,0.04);
+  border: 1px solid rgba(17,17,17,0.06);
+}
+
+.yd-wallet-bill__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.yd-wallet-bill__title {
+  font-size: 14px;
+  font-weight: 650;
+  color: rgba(17,17,17,0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-wallet-bill__time {
+  font-size: 12px;
+  color: rgba(17,17,17,0.52);
+}
+
+.yd-wallet-bill__amount {
+  font-family: "DIN Alternate","DIN","Bahnschrift","Roboto Mono","Consolas",monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(17,17,17,0.9);
+  margin-left: 10px;
+  flex: 0 0 auto;
+}
+
+.yd-wallet-bill__amount--plus { color: #b91c1c; }
+.yd-wallet-bill__amount--minus { color: #0f766e; }
+
+.yd-wallet-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: none;
+}
+
+.yd-wallet-modal[aria-hidden="false"] {
+  display: block;
+}
+
+.yd-wallet-modal__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.yd-wallet-modal__panel {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-52%);
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+  padding: 16px;
+}
+
+.yd-wallet-modal__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(17,17,17,0.92);
+  margin-bottom: 6px;
+}
+
+.yd-wallet-modal__desc {
+  font-size: 13px;
+  color: rgba(17,17,17,0.62);
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+
+.yd-wallet-modal__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.10);
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.02);
+  margin-bottom: 14px;
+}
+
+.yd-wallet-modal__prefix {
+  font-family: "DIN Alternate","DIN","Bahnschrift","Roboto Mono","Consolas",monospace;
+  color: rgba(17,17,17,0.6);
+}
+
+.yd-wallet-modal__input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  font-family: "DIN Alternate","DIN","Bahnschrift","Roboto Mono","Consolas",monospace;
+}
+
+.yd-wallet-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.yd-wallet-card {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  height: 214px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f0f0f;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.yd-wallet-card__texture {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 100%),
+    linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  background-size: 4px 4px, 100% 100%;
+  z-index: 1;
+}
+
+.yd-wallet-card__shine {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%);
+  transform: rotate(35deg);
+  z-index: 2;
+  pointer-events: none;
+  transition: transform 0.5s;
+}
+
+.yd-wallet-card__balance {
+  position: absolute;
+  top: 24px;
+  left: 26px;
+  z-index: 3;
+}
+
+.yd-wallet-card__balance-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin-bottom: 2px;
+}
+
+.yd-wallet-card__balance-value {
+  font-family: "DIN Alternate","DIN","Bahnschrift","Roboto Mono","Consolas",monospace;
+  font-size: 1.6rem;
+  color: #f1d592;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  font-weight: 500;
+}
+
+.yd-wallet-card__brand {
+  position: absolute;
+  top: 24px;
+  right: 26px;
+  font-family: Georgia, serif;
+  color: #d4af37;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  font-style: italic;
+  z-index: 3;
+}
+
+.yd-wallet-card__chip {
+  position: absolute;
+  top: 82px;
+  left: 26px;
+  width: 42px;
+  height: 32px;
+  background: linear-gradient(135deg, #e0c07c 0%, #b8860b 100%);
+  border-radius: 6px;
+  z-index: 3;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+
+.yd-wallet-card__chip-inner {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: repeating-linear-gradient(90deg, transparent, transparent 9px, rgba(0,0,0,0.1) 9px, rgba(0,0,0,0.1) 10px);
+}
+
+.yd-wallet-card__number {
+  position: absolute;
+  top: 128px;
+  left: 26px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 3.5px;
+  word-spacing: 8px;
+  z-index: 3;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.yd-wallet-card__footer {
+  position: absolute;
+  bottom: 22px;
+  left: 26px;
+  right: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 3;
+}
+
+.yd-wallet-card__holder-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.5rem;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 2px;
+}
+
+.yd-wallet-card__holder-name {
+  font-family: Georgia, serif;
+  font-size: 0.8rem;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.yd-wallet-card__tag {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 600;
+  color: #d4af37;
+  font-size: 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 3px 9px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+

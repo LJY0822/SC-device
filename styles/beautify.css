@@ -1,0 +1,1296 @@
+/* 美化小助手页面 */
+#page-beautify {
+  background: #f8f8f8;
+}
+
+.yd-beautify-content {
+  padding: 16px;
+}
+
+.yd-beautify-input-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+.yd-beautify-input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.yd-btn-generate {
+  width: 100%;
+}
+
+.yd-beautify-preview {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+.yd-beautify-preview h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.yd-css-preview {
+  width: 100%;
+  font-family: monospace;
+  font-size: 12px;
+  background: #f5f5f5;
+  margin-bottom: 10px;
+}
+
+.yd-beautify-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.yd-beautify-actions input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.yd-beautify-actions button {
+  flex: 1;
+}
+
+.yd-theme-list-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.yd-theme-list-section h3 {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.yd-theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yd-theme-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.yd-theme-item__name {
+  font-weight: 500;
+}
+
+.yd-theme-item__actions {
+  display: flex;
+  gap: 5px;
+}
+
+.yd-theme-item__actions button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.yd-btn-delete-theme {
+  background: #ff3b30;
+}
+
+/* 相册内容区：tabs + 图片网格 */
+.yd-album-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.yd-album-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 6px 16px;
+}
+
+.yd-album-tabs {
+  flex-shrink: 0;
+  /* tabs 不要太宽：贴合内容，整体留点边距 */
+  align-self: flex-start;
+  margin: 0;
+  padding: 4px;
+}
+
+.yd-album-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.yd-album-header-actions__btn {
+  min-width: 42px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #111827;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.yd-album-header-actions__btn:active {
+  opacity: 0.8;
+}
+
+.yd-album-action-menu {
+  position: fixed;
+  z-index: 10020;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.yd-album-action-menu__item {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #111827;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.yd-album-action-menu__item:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* 单独为“相册分类”tabs（#album-tabs）增加左/上间距
+   避免影响通用的 .yd-beautify-page-tabs 或其它相册 tabs（如 global-regex/worldbook）。 */
+#album-tabs.yd-album-tabs {
+  margin-top: 0;
+  margin-left: 0;
+}
+
+.yd-album-oneclick-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yd-album-oneclick-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.yd-album-oneclick-target input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.yd-album-tabs .yd-beautify-tab {
+  /* tabs 内部按钮与背景条留更舒服的空隙 */
+  padding: 6px 10px;
+}
+
+.yd-album-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.yd-album-item {
+  flex: 0 0 calc(50% - 4px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.yd-album-item--batch {
+  position: relative;
+}
+
+.yd-album-item__check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.42);
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.yd-album-item--selected .yd-album-item__check {
+  background: #0A84FF;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.yd-album-item--reveal-flash {
+  outline: 3px solid rgba(10, 132, 255, 0.65);
+  outline-offset: 2px;
+  transition: outline-color 0.3s ease;
+}
+
+.yd-album-batch-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.yd-album-batch-bar__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.yd-album-item__image {
+  width: 100%;
+  aspect-ratio: 1;
+  background-size: cover;
+  background-position: center;
+}
+
+.yd-album-item__name {
+  padding: 6px 8px 8px;
+  font-size: 13px;
+  color: #111827;
+  line-height: 1.4;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.yd-album-item__name-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.yd-album-badge {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.2;
+  /* 甜系粉色标签 */
+  background: #fff0f5;
+  color: #fe4274;
+  border: 1px solid rgba(231, 90, 149, 0.22);
+  white-space: nowrap;
+}
+
+.yd-album-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* 相册预览弹窗 */
+.yd-album-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.yd-album-modal__inner {
+  width: min(94vw, 420px);
+  max-height: 88vh;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.yd-album-modal__image-wrap {
+  width: 100%;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 允许图片贴边显示，圆角裁切也无所谓 */
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.yd-album-modal__image {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  background: #000000;
+}
+
+.yd-album-modal__body {
+  padding: 10px 12px 12px;
+  background: #ffffff;
+  color: #111827;
+}
+
+.yd-album-modal__name {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.yd-album-modal__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.yd-album-modal__actions #yd-album-delete {
+  margin-right: auto;
+}
+
+.yd-album-btn {
+  flex: 0;
+  height: 28px;
+  min-height: 0;
+  padding: 0 14px;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.yd-album-btn:active {
+  opacity: 0.85;
+}
+
+.yd-album-btn--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.yd-album-btn--primary {
+  background: #111827;
+  color: #fff;
+}
+
+.yd-album-btn--secondary {
+  background: rgba(255,255,255,0.92);
+  color: #111827;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.yd-album-btn--tag {
+  background: #E0F2FE;
+  color: #075985;
+}
+
+.yd-album-meta {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yd-album-meta:empty {
+  display: none;
+}
+
+.yd-album-meta__row {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.yd-album-meta__k {
+  font-size: 12px;
+  color: #8E8E93;
+}
+
+.yd-album-meta__v {
+  font-size: 13px;
+  color: #111827;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.45;
+}
+
+.yd-album-meta__empty {
+  font-size: 12px;
+  color: #8E8E93;
+}
+
+.yd-album-meta__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.yd-album-btn--meta {
+  background: #111827;
+  color: #fff;
+}
+
+/* 相册：编辑“照片信息”面板（参考相机样式，但不绑定 #page-camera） */
+.yd-album-desc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+}
+
+.yd-album-desc-sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+
+.yd-album-desc-sheet__panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 32px);
+  max-width: 360px;
+  padding: 16px 16px 14px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 16px;
+}
+
+.yd-album-desc-sheet__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.yd-album-desc-sheet__section {
+  margin-top: 8px;
+}
+
+.yd-album-desc-sheet__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.yd-album-desc-sheet__hint {
+  font-size: 12px;
+  color: #8E8E93;
+  margin-top: 4px;
+}
+
+.yd-album-participants {
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(242,242,247,0.9);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.yd-album-participant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+}
+
+.yd-album-participant input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.yd-album-participant-label {
+  font-size: 13px;
+  color: #111;
+}
+
+.yd-album-desc-input {
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 0 10px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.95);
+  font-size: 13px;
+}
+
+.yd-album-desc-textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 8px 10px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.95);
+  font-size: 13px;
+  resize: none;
+}
+
+.yd-album-desc-sheet__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.yd-album-desc-btn {
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 0 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.yd-album-desc-btn--secondary {
+  background: rgba(255,255,255,0.9);
+  color: #111;
+}
+
+.yd-album-desc-btn--primary {
+  background: #111827;
+  color: #fff;
+  border-color: rgba(0,0,0,0.12);
+}
+
+/* 上传类型选择弹窗 */
+.yd-album-upload-picker {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.yd-album-upload-picker__inner {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  min-width: 220px;
+}
+
+.yd-album-upload-picker__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.yd-album-upload-picker__btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.yd-album-upload-picker__btns .yd-album-upload-type-btn {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  width: 100%;
+  background: #F2F2F7;
+  border: 1px solid #E5E5EA;
+  color: #111827;
+}
+
+.yd-album-upload-picker__btns .yd-album-upload-type-btn:hover,
+.yd-album-upload-picker__btns .yd-album-upload-type-btn:active {
+  background: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* 批量“粘贴链接导入” */
+.yd-album-link-import__textarea {
+  width: 100%;
+  min-height: 150px;
+  max-height: 360px;
+  border-radius: 12px;
+  border: 1px solid #E5E5EA;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-top: 6px;
+}
+
+.yd-album-link-import__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.yd-album-link-import__status {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 10px;
+  min-height: 18px;
+  white-space: pre-wrap;
+}
+
+/* 壁纸页面：一行两列网格 + 下方按钮 */
+#page-wallpaper {
+  background: #F2F2F7;
+}
+
+.yd-wallpaper-content {
+  padding: 16px 16px 24px;
+  background: #F2F2F7;
+}
+
+.yd-wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.yd-wallpaper-item {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.yd-wallpaper-item__image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background-size: cover;
+  background-position: center;
+}
+
+.yd-wallpaper-item__delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.yd-wallpaper-item__delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+.yd-wallpaper-item__delete:active {
+  transform: scale(0.96);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.yd-wallpaper-item__btn {
+  width: 100%;
+  border-radius: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: #f5f5f5;
+  font-size: 14px;
+}
+
+.yd-wallpaper-item__btn:active {
+  background: #e5e5e5;
+}
+
+.yd-wallpaper-item__btn--current {
+  background: #ffffff;
+  color: #007AFF;
+  font-weight: 600;
+}
+
+.yd-wallpaper-item__btn--current:active {
+  background: #ffffff;
+}
+
+.yd-wallpaper-item__btn--current:disabled {
+  opacity: 1;
+}
+
+.yd-wallpaper-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+/* 组件列表页面 */
+#page-widgets {
+  background: #F2F2F7;
+}
+
+#page-widgets .yd-page-header.yd-settings-nav {
+  /* 顶部栏与组件页风格统一：纯白，不要灰色毛玻璃 */
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#page-widgets .yd-page-header__center {
+  text-align: center;
+}
+
+.yd-time-date-preview {
+  width: 100%;
+  aspect-ratio: 4 / 2;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* 播放器预览：2×2 方形，限制最大尺寸以接近真实显示效果 */
+#player-style-preview {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  width: 100%;
+  margin: 0 auto 24px;
+}
+
+.yd-time-date-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  pointer-events: none;
+}
+
+.yd-time-date-style-group {
+  padding: 8px 0 4px;
+}
+
+#page-widget-time-date-style .yd-settings-group {
+  padding: 10px 16px 12px;
+}
+
+/* 播放器样式页：确保内容不被边框遮挡 */
+#page-widget-player-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 相片预览：1:1 方形，固定宽度160px */
+#note-style-preview {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  width: 100%;
+  margin: 0 auto 24px;
+  /* 仅用于相片样式预览的背景点阵，不影响实际相册/主屏样式 */
+  background-color: #f6f6f8;
+  /* 大点 + 小点 交错排列 */
+  background-image:
+    radial-gradient(circle, rgba(150, 150, 150, 0.189) 1.6px, transparent 1.4px),
+    radial-gradient(circle, rgba(106, 106, 106, 0.062) 1px, transparent 1px);
+  background-position: 0 0, 6px 6px;
+  background-size: 12px 12px;
+}
+
+/* 相片样式页：确保内容不被边框遮挡 */
+#page-widget-note-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 相片卡片预览：同样采用 1:1 区域，视觉接近 2×2 组件 */
+#photo-card-style-preview {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  width: 100%;
+  margin: 0 auto 24px;
+}
+
+/* 相片卡片样式页：适当内边距 */
+#page-widget-photo-card-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 相片圆卡预览：同样采用 1:1 区域，视觉接近 2×2 组件 */
+#photo-circle-style-preview {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  width: 100%;
+  margin: 0 auto 24px;
+}
+
+/* 相片圆卡样式页：适当内边距 */
+#page-widget-photo-circle-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 日期卡预览 */
+#date-card-style-preview {
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  width: 100%;
+  margin: 0 auto 24px;
+}
+
+/* 日期卡样式页：适当内边距 */
+#page-widget-date-card-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 头像卡片样式页：同样给分组加内边距，避免标题被边框顶住 */
+#page-widget-profile-card-style .yd-settings-group {
+  padding: 16px 20px 18px;
+}
+
+/* 头像卡片样式页：预览区域方形且与编辑区域同宽 */
+#profile-card-style-preview {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 24px;
+}
+
+.yd-time-date-colors {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.yd-time-date-color-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.yd-time-date-color-k {
+  font-size: 11px;
+  color: #6B7280;
+}
+
+.yd-time-date-select {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 0 10px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+}
+
+.yd-time-date-action__icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yd-time-date-action__icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+#time-date-style-reset {
+  background: #F5F5F7;
+  color: #111827;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#time-date-style-reset .yd-time-date-action__icon {
+  color: rgba(17, 24, 39, 0.45);
+}
+
+#time-date-style-save {
+  background: #111827;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#time-date-style-save .yd-time-date-action__icon {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* 组件样式页底部按钮：与时间日期“重置 / 保存并应用”保持完全一致 */
+#player-style-reset,
+#photo-card-style-reset,
+#photo-circle-style-reset,
+#date-card-style-reset,
+#profile-card-style-reset,
+#note-style-reset{
+  background: #F5F5F7;
+  color: #111827;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#player-style-reset .yd-time-date-action__icon,
+#photo-card-style-reset .yd-time-date-action__icon,
+#photo-circle-style-reset .yd-time-date-action__icon,
+#date-card-style-reset .yd-time-date-action__icon,
+#profile-card-style-reset .yd-time-date-action__icon,
+#note-style-reset .yd-time-date-action__icon{
+  color: rgba(17, 24, 39, 0.45);
+}
+
+#player-style-save,
+#photo-card-style-save,
+#photo-circle-style-save,
+#date-card-style-save,
+#profile-card-style-save,
+#note-style-save{
+  background: #111827;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#player-style-save .yd-time-date-action__icon,
+#photo-card-style-save .yd-time-date-action__icon,
+#photo-circle-style-save .yd-time-date-action__icon,
+#date-card-style-save .yd-time-date-action__icon,
+#profile-card-style-save .yd-time-date-action__icon,
+#note-style-save .yd-time-date-action__icon{
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.yd-time-date-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.yd-time-date-radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+}
+
+.yd-time-date-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.yd-profile-card-top-block {
+  padding: 10px 10px 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.yd-profile-card-top-title {
+  font-size: 13px;
+  color: #111827;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin-bottom: 10px;
+}
+
+.yd-profile-card-top-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.yd-profile-card-top-line + .yd-profile-card-top-line {
+  margin-top: 10px;
+}
+
+.yd-profile-card-top-k {
+  width: 96px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.yd-profile-card-top-block input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 10px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+}
+
+.yd-profile-card-top-block input[type="color"] {
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.yd-profile-card-top-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #111827;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.yd-profile-card-top-block input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-profile-card-top-pct {
+  font-size: 13px;
+  color: #111827;
+  min-width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .yd-profile-card-top-k {
+    width: 84px;
+  }
+}
+
+.yd-time-date-check {
+  font-size: 13px;
+  color: #111827;
+  user-select: none;
+}
+
+.yd-time-date-label {
+  font-size: 13px;
+  color: #6B7280;
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.yd-time-date-size {
+  font-size: 13px;
+  color: #111827;
+  min-width: 42px;
+  text-align: right;
+}
+
+.yd-time-date-row input[type="range"] {
+  flex: 1;
+}
+
+.yd-time-date-hint {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.yd-widgets-content {
+  padding: 16px 16px 24px;
+  overflow-x: hidden; /* 避免整页横向滚动 */
+}
+
+.yd-widgets-category-bar {
+  display: none; /* 取消分类展示 */
+}
+
+.yd-widgets-cat-btn {
+  flex: 0 0 auto;
+  min-width: 52px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+}
+
+.yd-widgets-cat-btn--active {
+  background: #FFFFFF;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.yd-widgets-add-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #8E8E93;
+}
+
+.yd-widgets-add-label {
+  font-size: 12px;
+}
+
+.yd-widgets-list {
+  display: grid;
+  /* 使用 4 列来更贴近日常桌面网格：1×1 ~ 1 列宽，4×* 可占满整行 */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.yd-widgets-item__info {
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.yd-widgets-item--full {
+  grid-column: 1 / -1;
+}
+
+.yd-widgets-item {
+  border: none;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.yd-widgets-item__preview {
+  width: 100%;
+  background: transparent;
+  border-radius: 16px;
+  overflow: hidden;
+  /* 厚实立体阴影 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07),
+              0 10px 20px rgba(0, 0, 0, 0.1),
+              0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.yd-widgets-item__preview-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #F5F5F7;
+  min-height: 40px;
+}
+
+.yd-widgets-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  pointer-events: none;
+}
+
+.yd-widgets-item__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.yd-widgets-item__meta {
+  font-size: 11px;
+  color: #8E8E93;
+}
+
+.yd-widgets-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #8E8E93;
+  font-size: 13px;
+  padding: 32px 0;
+}
+

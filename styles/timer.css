@@ -1,0 +1,316 @@
+.yd-timer-page {
+  background: #f6f7fb;
+}
+
+.yd-timer-content {
+  background: #f6f7fb;
+  padding: 12px 14px 18px;
+}
+
+.yd-timer-card {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.yd-timer-card--compact {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.yd-timer-card--compact .yd-timer-row {
+  margin-top: 0;
+}
+
+.yd-timer-card--compact .yd-timer-status {
+  margin-top: 6px;
+}
+
+/* 在 timer 卡片里复用 settings-row 的行样式 */
+.yd-timer-settings-row {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+/* settings-row 自带分割线，这里不需要 */
+.yd-timer-settings-row::before {
+  display: none;
+}
+
+.yd-timer-settings-row__icon-empty {
+  background: transparent !important;
+}
+
+.yd-timer-settings-row .yd-settings-row__value {
+  color: #8f96a3;
+  font-size: 13px;
+}
+
+.yd-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.yd-timer-row--toggle {
+  justify-content: space-between;
+  margin-top: 0;
+}
+
+.yd-timer-row__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #23262e;
+}
+
+.yd-timer-row--split .yd-timer-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.yd-timer-row--end {
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.yd-timer-row--actions {
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.yd-timer-row--actions .yd-btn {
+  flex: 0 0 auto;
+}
+
+.yd-timer-hint--dash {
+  flex-shrink: 0;
+  color: #9aa0ac;
+  font-size: 13px;
+}
+
+.yd-timer-field-title {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8f96a3;
+}
+
+.yd-timer-field-title strong {
+  color: #000;
+  font-weight: 700;
+}
+
+.yd-timer-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #8f96a3;
+}
+
+.yd-timer-status {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #2e7d32;
+  min-height: 1em;
+}
+
+.yd-timer-local-preview {
+  margin-top: 8px;
+}
+
+.yd-timer-local-preview__meta {
+  font-size: 12px;
+  color: #8f96a3;
+}
+
+.yd-timer-local-preview__body {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a5160;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#page-timer .yd-toggle {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 28px;
+  flex-shrink: 0;
+  /* 覆盖通用 .yd-toggle 的 padding-right，避免滑块轨道变窄导致圆点偏右 */
+  padding: 0;
+}
+
+#page-timer .yd-toggle input {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+}
+
+#page-timer .yd-toggle__slider {
+  position: absolute;
+  cursor: pointer;
+  width: 40px;
+  height: 22px;
+  left: 3px;
+  top: 3px;
+  background: #d5d8e0;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+#page-timer .yd-toggle__slider::before {
+  content: '';
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 0;
+  top: 0;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transform: translateX(10%);
+  transition: transform 0.2s ease;
+}
+
+#page-timer .yd-toggle input:checked + .yd-toggle__slider {
+  background: #4c8bf5;
+}
+
+#page-timer .yd-toggle input:checked + .yd-toggle__slider::before {
+  transform: translateX(18px);
+}
+
+.yd-timer-create__row {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.yd-timer-create__actions {
+  margin-top: 8px;
+}
+
+.yd-timer-input {
+  height: 40px;
+  font-size: 14px;
+}
+
+.yd-timer-input + .yd-timer-input {
+  margin-top: 8px;
+}
+
+.yd-timer-add-btn {
+  height: 40px;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.yd-timer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yd-timer-empty {
+  margin-top: 56px;
+  text-align: center;
+  color: #9aa0ac;
+}
+
+.yd-timer-empty__emoji {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.yd-timer-empty__title {
+  color: #444a57;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.yd-timer-empty__desc {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.yd-timer-item {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.yd-timer-item__left {
+  min-width: 0;
+  flex: 1;
+}
+
+.yd-timer-item__title {
+  color: #23262e;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-timer-item__meta {
+  margin-top: 4px;
+  color: #8f96a3;
+  font-size: 12px;
+}
+
+.yd-timer-item__desc {
+  margin-top: 3px;
+  color: #6f7684;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yd-timer-item__right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.yd-timer-item__time {
+  color: #23262e;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.yd-timer-item__status {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8f96a3;
+}
+
+.yd-timer-item__status.is-on {
+  color: #2e7d32;
+}
+
+.yd-timer-item__ops {
+  margin-top: 8px;
+}
+
+.yd-timer-item__delete {
+  border: none;
+  background: transparent;
+  color: #9aa0ac;
+  font-size: 12px;
+  padding: 0;
+}
+
