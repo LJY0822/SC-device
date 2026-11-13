@@ -34,6 +34,7 @@ const SCUI = {
     const day=document.querySelector('.sc-date'); if(day) day.textContent=date.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
   },
   async settings(session) {
+    document.getElementById('sc-chat-moments').onclick=()=>SCMoments.open(session.id);
     let box=document.getElementById('sc-session-settings');
     if(!box) { box=document.createElement('section'); box.id='sc-session-settings'; document.querySelector('#page-chat-settings .yd-page-content').prepend(box); }
     const esc=this.escape; const all=(await Storage.dbGetAll('sessions')).filter(s=>s.id!==session.id);
@@ -73,7 +74,7 @@ const SCUI = {
     box.querySelector('#sc-retry-round')?.addEventListener('click',()=>SCChat.resume(session.id));
   },
   init() {
-    this.home(); setInterval(()=>this.clock(),30000);
+    this.home(); setInterval(()=>this.clock(),1000);
     window.addEventListener('yd:pagechange',e=>{if(e.detail.to==='page-homescreen') this.home();});
   }
 };

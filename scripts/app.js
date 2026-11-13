@@ -60,7 +60,6 @@
     Chat.init();
     Settings.init();
 
-    Beautify.init();
     Album.init();
     Camera.init();
     Wallpaper.init();

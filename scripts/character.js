@@ -20,7 +20,7 @@ const Character = {
   },
 
   setupFormDirtyListeners() {
-    const ids = ['char-name', 'char-description'];
+    const ids = ['char-name', 'char-description', 'char-home-assistant', 'char-special-focus'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -443,6 +443,7 @@ const Character = {
   showCreateForm(data = null) {
     this.formDirty = false;
     this.currentEditingId = data?.id || null;
+    void SCDaily.fillRoleForm(this.currentEditingId);
     this.currentEditingData = data ?? null;
     // 手动新建：必须用空草稿；编辑/导入：挂接当前数据对象
     this.currentRawData = data ? data : this._emptyCharacterDraft();
@@ -1508,7 +1509,7 @@ const Character = {
       live.hidden = isChina;
       if (isChina) live.textContent = '';
     }
-    if (biRow) biRow.hidden = isChina;
+    if (biRow) biRow.hidden = false;
   },
 
   _formatWallClockInTimezone(timezone, date = new Date()) {
@@ -1587,9 +1588,8 @@ const Character = {
     const sw = document.getElementById('char-multilingual-enabled');
     const tzEl = document.getElementById('char-region-timezone');
     const default_language = String(langEl?.value || 'zh').trim() || 'zh';
-    const isChina = this._isChinaRegion(tzEl);
-    const enabled = !this._isZhDefaultLanguage(default_language) && !isChina && !!(sw && sw.checked);
-    const timezone = String(tzEl?.value || this.LANG_DEFAULT_TIMEZONE[default_language] || 'Asia/Shanghai').trim();
+    const enabled = !this._isZhDefaultLanguage(default_language) && !!(sw && sw.checked);
+    const timezone = String(tzEl?.value || 'Asia/Shanghai').trim();
     const region_label = this._getTimezoneSelectLabel(tzEl);
     return { default_language, enabled, timezone, region_label };
   },
@@ -1640,16 +1640,6 @@ const Character = {
     requestAnimationFrame(apply);
   },
 
-  _applyDefaultTimezoneForLanguage(lang) {
-    const tzEl = document.getElementById('char-region-timezone');
-    if (!tzEl) return;
-    const key = String(lang || 'zh').trim();
-    const def = this.LANG_DEFAULT_TIMEZONE[key] || 'Asia/Shanghai';
-    if (Array.from(tzEl.options).some((o) => o.value === def)) {
-      tzEl.value = def;
-    }
-  },
-
   _applyChatI18nToForm(normalized) {
     const chatI18n = normalized?.chat_i18n && typeof normalized.chat_i18n === 'object'
       ? normalized.chat_i18n
@@ -1663,18 +1653,17 @@ const Character = {
     if (tzEl && savedTz && Array.from(tzEl.options).some((o) => o.value === savedTz)) {
       tzEl.value = savedTz;
     } else {
-      this._applyDefaultTimezoneForLanguage(lang);
+      if(tzEl)tzEl.value='Asia/Shanghai';
     }
     const isZh = this._isZhDefaultLanguage(lang);
-    const isChina = this._isChinaRegion(tzEl);
-    const enabled = !isZh && !isChina && (
+    const enabled = !isZh && (
       chatI18n.enabled === true ||
       chatI18n.enabled === 1 ||
       String(chatI18n.enabled || '') === '1'
     );
     if (sw) {
       sw.checked = enabled;
-      sw.disabled = isZh || isChina;
+      sw.disabled = isZh;
     }
     const regionLabel = String(chatI18n.region_label || '').trim() || this._getTimezoneSelectLabel(tzEl);
     const timezone = String(tzEl?.value || savedTz || '').trim();
@@ -1690,25 +1679,12 @@ const Character = {
     if (!langEl || !sw) return;
     const lang = String(langEl.value || 'zh').trim() || 'zh';
     const isZh = this._isZhDefaultLanguage(lang);
-    if (isZh) {
-      sw.checked = false;
-      sw.disabled = true;
-      if (tzEl) tzEl.value = 'Asia/Shanghai';
-    } else {
-      this._applyDefaultTimezoneForLanguage(lang);
-      const isChina = this._isChinaRegion(tzEl);
-      sw.disabled = isChina;
-      if (isChina) {
-        sw.checked = false;
-      } else {
-        sw.checked = true;
-      }
-    }
+    sw.disabled = isZh;
+    if(isZh)sw.checked=false;
     this._updateChatI18nRegionDependentUi(tzEl);
     const regionLabel = this._getTimezoneSelectLabel(tzEl);
     const timezone = String(tzEl?.value || '').trim();
-    const isChina = this._isChinaRegion(tzEl);
-    this._refreshChatI18nPreview(lang, sw.checked && !isZh && !isChina, regionLabel, timezone);
+    this._refreshChatI18nPreview(lang, sw.checked && !isZh, regionLabel, timezone);
     this.markDirty();
   },
 
@@ -2573,11 +2549,7 @@ const Character = {
     };
     const newAvatar = String(character?.data?.avatar || '').trim();
     
-    if (this.currentEditingId) {
-      await Storage.dbPut('characters', character);
-    } else {
-      await Storage.dbAdd('characters', character);
-    }
+    await SCDaily.saveRoleCharacter(character, !this.currentEditingId);
     await this._syncSingleSessionAvatarFromCharacter(character.id, oldAvatar, newAvatar);
 
     if (typeof Chat !== 'undefined' && Chat.invalidateCharacterCache) {

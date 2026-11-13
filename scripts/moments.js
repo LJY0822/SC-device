@@ -258,7 +258,7 @@ const Moments = {
    * 根据「配图描述」调用设置中的生图 API（/v1/images/generations），返回可写入 moment.images 的地址列表。
    * 未配置完整生图设置或调用失败时返回空数组，不阻断发朋友圈文。
    */
-  async _buildMomentImagesFromImageDesc(desc) {
+  async _buildMomentImagesFromImageDesc(desc, characterIds = []) {
     const d = String(desc || '').trim();
     if (!d) return [];
     if (typeof ImageGenerationApi === 'undefined' || typeof ImageGenerationApi.generateFromDescription !== 'function') {
@@ -272,7 +272,11 @@ const Moments = {
       return [];
     }
     try {
-      const { images } = await ImageGenerationApi.generateFromDescription(d);
+      const {refs}=await SCMoments.references(characterIds);
+      const prompt=d+(refs.length?'\n'+refs.map((r,i)=>`Reference image ${i+1} depicts ${r.name}; preserve facial identity.`).join('\n'):'');
+      const { images } = refs.length ? await ImageGenerationApi.editFromPromptAndImageUrls(prompt,refs.map(r=>r.src)) : await ImageGenerationApi.generateFromDescription(prompt);
+      const enriched=await MomentsImageStudio._enrichImagesForStorage(images||[]);
+      await MomentsImageStudio._saveGeneratedImagesToAlbum(enriched);
       const first = images && images[0];
       const src = first && (first.dataUrl || first.url);
       return src ? [src] : [];
@@ -565,12 +569,13 @@ const Moments = {
 
         let images = [];
         if (mergedImageDesc && this._isImageGenAutoMomentsEnabled()) {
-          images = await this._buildMomentImagesFromImageDesc(mergedImageDesc);
+          images = await this._buildMomentImagesFromImageDesc(mergedImageDesc,[selectedOne.characterId]);
         }
 
         const moment = {
           id: (typeof State !== 'undefined' && State.generateId) ? State.generateId() : (now + Math.random()).toString(36),
           authorName,
+          scImageCharacterIds: [selectedOne.characterId],
           authorAvatar,
           text: momentText,
           images,
@@ -641,7 +646,7 @@ const Moments = {
       '',
       '【配图描述（将原样送入文生图模型，决定成片质量，务必写满视觉信息）】',
       '- 仅在需要配图时，在 text 最末尾追加单独一行，且整段 JSON 中只有这一行以「配图：」开头，格式严格为：配图：<配图描述>。不需要配图则全文不要出现「配图：」。',
-      '- <配图描述>用中文写成一段完整、可执行的绘画说明：不依赖读者去看正文上文也能还原画面；禁止只写情绪词或口号（如「很美」「氛围感拉满」），必须落到能看见的内容。',
+      '- <配图描述>必须用英文写成一段完整、可执行的绘画说明（朋友圈正文仍按角色原有语言生成）：不依赖读者去看正文上文也能还原画面；禁止只写情绪词或口号（如「很美」「氛围感拉满」），必须落到能看见的内容。',
       '- 至少覆盖这些维度（可合并为流畅长句，但信息要齐）： ①需要有很强的信息说明和细节去支撑整个图片的生成(主体与数量、谁/什么物、在做什么、大致姿态、物品、文字内容文字字体、室内或户外、具体空间类型、背景里有什么...等等各方面的信息和细节的详细描述）；②整体风格需要满足世界观设定③光线与时间感；④镜头与构图（远景/中景/特写、平视或略俯/仰、主体在画面中的位置、景深是否虚化背景）。',
       '- 与角色人设、正文语气一致：同一角色发朋友圈的配图应在细节上自洽（衣着风格、居住环境档次、审美偏好等可从设定与摘录中推断）。',
       '- 慎用可识别的真人明星脸、真实品牌 Logo 与受版权保护的形象；需要人物时可写年龄段、发型、衣着风格与气质等泛化特征。',
@@ -997,7 +1002,7 @@ const Moments = {
       const desc = String(parsed?.imageDesc || fallbackDesc || '').trim();
       if (!desc) throw new Error('配图描述为空，无法生成');
 
-      const imageUrls = await this._buildMomentImagesFromImageDesc(desc);
+      const imageUrls = await this._buildMomentImagesFromImageDesc(desc,await SCMoments.recordCharacterIds(mid,m.imageStudioFeedRecordId||''));
       // 生成失败时返回空数组：仍更新 moment.images，避免用户重复点“生图”时状态卡死
       m.images = Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : [];
       await Storage.dbPut('moments', m);

@@ -96,9 +96,9 @@ const Chat = {
           <div style="padding:14px 16px 12px;">
             <div style="font-size:13px;line-height:1.75;color:#333;">
               这里的发送是“两段式”：<br>
-              第一次点击发送，会先把你输入的内容加入待发送队列；<br>
+              点击“加入”，会先把你输入的内容加入待发送队列；<br>
               你可以继续补充消息；<br>
-              当输入框为空时，再次点击发送按钮，才会真正发送并开始接收回复。
+              当输入框为空时，点击“发送”，才会真正发送并开始接收回复。
             </div>
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
               <button type="button" data-act="later" style="min-width:96px;min-height:34px;border-radius:10px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#333;font-size:12px;font-weight:700;cursor:pointer;">稍后再看</button>
@@ -2203,19 +2203,11 @@ const Chat = {
   },
 
   _getSendSvgs() {
-    // 伪发送（入队）
-    const queueSvg = `
-      <svg class="icon" viewBox="0 0 1024 1024" width="20" height="20" aria-hidden="true">
-        <path d="M392.021333 925.013333a34.133333 34.133333 0 0 1-34.133333-34.133333V579.242667c0-10.24 4.608-19.968 12.629333-26.453334l276.48-224.085333a34.0992 34.0992 0 0 1 43.008 52.906667L426.154667 595.456v192.853333l82.944-110.592c10.069333-13.482667 28.672-17.578667 43.52-9.557333l137.557333 73.728L853.333333 156.16c3.242667-11.434667-3.413333-18.602667-6.485333-21.162667-3.072-2.56-11.093333-7.850667-21.845333-2.901333L206.336 422.4l80.213333 46.08c16.384 9.386667 22.016 30.208 12.629334 46.592s-30.208 22.016-46.592 12.629333l-137.045334-78.677333a33.979733 33.979733 0 0 1-17.066666-31.061333c0.512-12.8 8.021333-24.064 19.626666-29.525334L795.989333 70.314667c31.744-14.848 68.096-10.069333 94.890667 12.629333a87.790933 87.790933 0 0 1 28.16 91.477333L744.277333 801.28a34.082133 34.082133 0 0 1-48.981333 20.821333L546.133333 742.058667l-126.805333 169.301333c-6.656 8.704-16.896 13.653333-27.306667 13.653333z" fill="#80B7F9"/>
-      </svg>
-    `;
-    // 真实发送（flush）
-    const flushSvg = `
-      <svg class="icon" viewBox="0 0 1024 1024" width="26" height="26" aria-hidden="true">
-        <path d="M855.466667 179.2C765.866667 89.6 640 40.533333 512 42.666667c-128-2.133333-253.866667 46.933333-343.466667 136.533333-83.2 85.333333-128 196.266667-125.866666 311.466667 0 78.933333 21.333333 155.733333 57.6 221.866666l-34.133334 100.266667c-8.533333 29.866667-2.133333 61.866667 17.066667 83.2 17.066667 19.2 40.533333 29.866667 64 29.866667 4.266667 0 10.666667 0 14.933333-2.133334l147.2-27.733333c61.866667 27.733333 130.133333 40.533333 200.533334 40.533333h10.666666c125.866667 0 245.333333-49.066667 332.8-136.533333 85.333333-85.333333 130.133333-196.266667 125.866667-311.466667 4.266667-115.2-40.533333-224-123.733333-309.333333zM320 554.666667c-36.266667 0-64-27.733333-64-64s27.733333-64 64-64 64 27.733333 64 64-27.733333 64-64 64z m194.133333 0c-36.266667 0-64-27.733333-64-64s27.733333-64 64-64 64 27.733333 64 64-29.866667 64-64 64z m189.866667 0c-36.266667 0-64-27.733333-64-64s27.733333-64 64-64 64 27.733333 64 64-27.733333 64-64 64z" fill="#80B7F9"/>
-      </svg>
-    `;
-    return { queueSvg, flushSvg };
+    const svg = path => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+    return {
+      queueSvg: svg('<path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/>'),
+      flushSvg: svg('<path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/>')
+    };
   },
 
   /**
@@ -2429,17 +2421,17 @@ const Chat = {
     const { queueSvg, flushSvg } = this._getSendSvgs();
 
     // 真实发送进行中：避免按钮呈现“还需要再点一次 flush”的误导感。
-    // 统一保持“伪发送”图标（禁用），等 flush 内部清队列后再恢复常态。
+    // 发送中禁用按钮，等 flush 内部清队列后再恢复常态。
     if (this._flushingPending === true && !hasInput) {
       btn.disabled = true;
-      btn.innerHTML = queueSvg;
+      btn.innerHTML = flushSvg + '<span>发送中</span>';
       btn.setAttribute('aria-label', '发送中');
       return;
     }
 
     // 占位符：伪发送后（有 pending 无输入）提示确认发送
     input.placeholder = hasPending && !hasInput
-      ? '继续补充，或点击右侧接收回复'
+      ? '继续补充，或点击“发送”接收回复'
       : '输入消息...';
 
     // 有输入：永远是“伪发送（入队）”
@@ -2447,18 +2439,18 @@ const Chat = {
     // 都没有：禁用
     if (hasInput) {
       btn.disabled = false;
-      btn.innerHTML = queueSvg;
+      btn.innerHTML = queueSvg + '<span>加入</span>';
       btn.setAttribute('aria-label', '发送（入队）');
       return;
     }
     if (hasPending) {
       btn.disabled = this._flushingPending === true;
-      btn.innerHTML = flushSvg;
+      btn.innerHTML = flushSvg + '<span>发送</span>';
       btn.setAttribute('aria-label', '发送待发送消息');
       return;
     }
     btn.disabled = true;
-    btn.innerHTML = queueSvg;
+    btn.innerHTML = flushSvg + '<span>发送</span>';
     btn.setAttribute('aria-label', '发送');
   },
 
@@ -6027,7 +6019,7 @@ const Chat = {
     let timer = null;
 
     const start = () => {
-      if (timer) return;
+      if (timer || this._getCurrentSessionMode() === 1) return;
       console.log('[chat] longpress-start', payload);
       timer = window.setTimeout(() => {
         console.log('[chat] longpress-trigger', payload);
@@ -6510,19 +6502,13 @@ const Chat = {
     const regionTzMap = (typeof ChatMessageBuilder !== 'undefined' && ChatMessageBuilder.REGION_DEFAULT_TZ)
       ? ChatMessageBuilder.REGION_DEFAULT_TZ
       : { 中国: 'Asia/Shanghai', 日本: 'Asia/Tokyo' };
-    const langTzMap = (typeof ChatMessageBuilder !== 'undefined' && ChatMessageBuilder.LANG_DEFAULT_TIMEZONE)
-      ? ChatMessageBuilder.LANG_DEFAULT_TIMEZONE
-      : { zh: 'Asia/Shanghai', ja: 'Asia/Tokyo' };
     let timezone = String(chatI18n.timezone || chatI18n.time_zone || '').trim();
     if (!timezone && regionLabel && regionTzMap[regionLabel]) timezone = regionTzMap[regionLabel];
-    if (!timezone && langTzMap[defaultLanguage]) timezone = langTzMap[defaultLanguage];
     if (!timezone) timezone = 'Asia/Shanghai';
-    const isChinaRegion = regionLabel === '中国' || (!regionLabel && timezone === 'Asia/Shanghai');
     const multilingualEnabled =
       defaultLanguage !== 'zh' &&
       defaultLanguage !== 'zh-cn' &&
       defaultLanguage !== 'chinese' &&
-      !isChinaRegion &&
       (chatI18n.enabled === true || String(chatI18n.enabled || '') === '1' || chatI18n.enabled === 1);
     return {
       id: base.id ?? inner.id ?? null,
@@ -7145,6 +7131,7 @@ const Chat = {
         ? 0
         : this._getCurrentSessionMode();
 
+    if (m === 1) this._clearQuote();
     this._syncModeToggleLabel(m);
     // 修复：避免前一次把 inline display/hide 作用到其它会话
     const menuBtn = document.getElementById('chat-menu');
@@ -8025,12 +8012,7 @@ const Chat = {
     const sessionBeautifyRow = document.getElementById('yd-chat-settings-session-beautify');
     if (sessionBeautifyRow) {
       sessionBeautifyRow.addEventListener('click', () => {
-        State.switchPage('page-chat');
-        try {
-          if (typeof SessionBeautify !== 'undefined' && SessionBeautify.openChatModal) {
-            SessionBeautify.openChatModal();
-          }
-        } catch (e) {}
+        State.switchPage('page-bubble-settings');
       });
     }
 
@@ -14249,6 +14231,10 @@ h1{font-size:16px;margin:0 0 12px;font-weight:800;}
   },
 
   _setQuote(payload) {
+    if (this._getCurrentSessionMode() === 1) {
+      this._clearQuote();
+      return;
+    }
     const text = String(payload?.text || '').trim();
     if (!text) {
       this._clearQuote();

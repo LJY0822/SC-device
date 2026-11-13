@@ -114,6 +114,7 @@ const SessionBeautify = {
     });
 
     setTimeout(syncForm, 0);
+    window.addEventListener('sc:appearance-open', syncForm);
   },
 
   _toast(message) {

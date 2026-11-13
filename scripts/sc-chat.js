@@ -157,8 +157,9 @@ const SCChat = {
     const rows=accepted?await Storage.dbGetAll('messages'):[];
     const blocks=currentTargets.map(s=>({会话:s.title||'未命名',记录:rows.filter(m=>m.sessionId===s.id&&['user','assistant'].includes(m.role)).sort((a,b)=>a.createdAt-b.createdAt).slice(-50).map(m=>({发言人:m.role==='user'?'用户':m.characterName||'角色',时间:new Date(m.createdAt).toLocaleString(),内容:String(m.content||'')}))}));
     const key='sc_inspection_audit_'+sid;const log=await Storage.kvGet(key)||[];
-    log.push({at:Date.now(),actor:actor.name,accepted,targets:accepted?blocks.map(b=>({title:b.会话,count:b.记录.length})):[]});
-    await Storage.kvSet(key,log.slice(-100));
+    log.push({id:State.generateId(),at:Date.now(),actor:actor.name,accepted,targets:accepted?blocks.map(b=>({title:b.会话,count:b.记录.length})):[]});
+    await Storage.kvSet(key,log);
+    if(Chat.currentSessionId===sid)await Chat.renderMessages();
     return accepted?JSON.stringify(blocks):'用户拒绝了本次查岗，不提供任何聊天记录。';
   },
   async showAudit(sid) {
@@ -181,16 +182,28 @@ Chat._buildMomentsContextAssistantForSession=async session=>{
 Chat.callAI=function(user,history,opts={}) {return opts.scInternal?SCChat.original.call(this,user,history,opts):SCChat.run(user,history,opts);};
 const scOriginalRenderMessages=Chat.renderMessages;
 Chat.renderMessages=async function(...args){
-  const result=await scOriginalRenderMessages.apply(this,args);
   const sid=this.currentSessionId;
+  const stickToBottom=this._isNearBottom(this._getChatScrollContainer(),this._getChatNearBottomThresholdPx());
+  const result=await scOriginalRenderMessages.apply(this,args);
+  if(this.currentSessionId!==sid)return result;
   const rows=await Storage.kvGet('sc_inspection_audit_'+sid)||[];
   if(this.currentSessionId!==sid)return result;
+  const scroll=document.getElementById('chat-scroll');
   document.getElementById('sc-chat-audit')?.remove();
-  const row=rows.at(-1);
-  if(row){
-    const button=document.createElement('button');button.id='sc-chat-audit';button.className='sc-audit';
-    button.textContent=`${row.actor} · ${row.accepted?`已查看 ${row.targets.length} 个会话`:'查岗申请已拒绝'} ›`;
-    button.onclick=()=>SCChat.showAudit(sid);document.getElementById('chat-messages')?.append(button);
-  }
+  scroll?.querySelectorAll('[data-sc-audit]').forEach(el=>el.remove());
+  if(!scroll)return result;
+  const messages=this.messages||[];
+  const visible=Array.from(scroll.children).filter(el=>el.dataset.msgId);
+  const byId=new Map(messages.map(m=>[String(m.id),m]));
+  rows.forEach((row,index)=>{
+    if(this._hasMoreHistory && messages.length && row.at<messages[0].createdAt)return;
+    const button=document.createElement('button');button.type='button';button.className='sc-audit';
+    button.dataset.scAudit=row.id||`${row.at}-${index}`;
+    button.textContent=`${row.actor} · ${row.accepted?`已查看 ${row.targets.length} 个会话`:'查岗申请已拒绝'} · ${new Date(row.at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} ›`;
+    button.onclick=()=>SCChat.showAudit(sid);
+    const next=visible.find(el=>Number(byId.get(el.dataset.msgId)?.createdAt)>row.at);
+    scroll.insertBefore(button,next||null);
+  });
+  if(stickToBottom && document.getElementById('page-chat')?.classList.contains('yd-page--active'))this._scrollChatToBottom();
   return result;
 };

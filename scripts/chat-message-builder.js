@@ -297,8 +297,6 @@ const ChatMessageBuilder = {
     if (tz) return tz;
     const region = String(c.regionLabel || c.region_label || '').trim();
     if (region && this.REGION_DEFAULT_TZ[region]) return this.REGION_DEFAULT_TZ[region];
-    const lang = String(c.defaultLanguage || c.default_language || '').trim().toLowerCase();
-    if (lang && this.LANG_DEFAULT_TIMEZONE[lang]) return this.LANG_DEFAULT_TIMEZONE[lang];
     const chatI18n = c.chat_i18n;
     if (chatI18n && typeof chatI18n === 'object') {
       tz = String(chatI18n.timezone || chatI18n.time_zone || '').trim();

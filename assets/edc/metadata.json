@@ -1,0 +1,123 @@
+{
+  "box": {
+    "file": "box-v1.png",
+    "width": 1536,
+    "height": 1024,
+    "crop": [
+      33,
+      34,
+      1467,
+      961
+    ]
+  },
+  "pen": {
+    "file": "pen-v1.png",
+    "width": 2172,
+    "height": 724,
+    "crop": [
+      17,
+      202,
+      2136,
+      309
+    ]
+  },
+  "cloth": {
+    "file": "cloth-v1.png",
+    "width": 1254,
+    "height": 1254,
+    "crop": [
+      84,
+      104,
+      1080,
+      1077
+    ]
+  },
+  "photo": {
+    "file": "photo-v1.png",
+    "width": 1536,
+    "height": 1024,
+    "crop": [
+      93,
+      122,
+      1333,
+      791
+    ]
+  },
+  "note": {
+    "file": "note-v1.png",
+    "width": 1448,
+    "height": 1086,
+    "crop": [
+      82,
+      69,
+      1279,
+      939
+    ]
+  },
+  "casing": {
+    "file": "casing-v1.png",
+    "width": 1536,
+    "height": 1024,
+    "crop": [
+      227,
+      64,
+      1088,
+      913
+    ]
+  },
+  "firesteel": {
+    "file": "firesteel-v1.png",
+    "width": 1312,
+    "height": 1199,
+    "crop": [
+      32,
+      45,
+      1210,
+      1135
+    ]
+  },
+  "button": {
+    "file": "button-v1.png",
+    "width": 1254,
+    "height": 1254,
+    "crop": [
+      59,
+      63,
+      1127,
+      1145
+    ]
+  },
+  "coin": {
+    "file": "coin-v1.png",
+    "width": 1263,
+    "height": 1245,
+    "crop": [
+      19,
+      15,
+      1200,
+      1223
+    ]
+  },
+  "glowstick": {
+    "file": "glowstick-v1.png",
+    "width": 1024,
+    "height": 1536,
+    "crop": [
+      349,
+      52,
+      316,
+      1443
+    ]
+  },
+  "key": {
+    "file": "key-v1.png",
+    "width": 1536,
+    "height": 1024,
+    "crop": [
+      300,
+      34,
+      936,
+      960
+    ]
+  }
+}

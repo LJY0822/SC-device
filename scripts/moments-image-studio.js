@@ -1213,6 +1213,7 @@ const MomentsImageStudio = {
     const inputFidelity = ifRaw === 'low' || ifRaw === 'high' ? ifRaw : '';
     return {
       refs: this._refDataUrls.slice(0, this._refCap()),
+      scDefaultRefs: (this._scDefaultRefDataUrls||[]).slice(),
       n: nRaw || '1',
       size: String(document.getElementById('mis-size')?.value || '').trim(),
       quality: String(document.getElementById('mis-quality')?.value || '').trim(),
@@ -1586,6 +1587,7 @@ const MomentsImageStudio = {
 
     const maxRef = this._refCap();
     const d = rec.draft && typeof rec.draft === 'object' ? rec.draft : {};
+    this._scDefaultRefDataUrls=Array.isArray(d.scDefaultRefs)?d.scDefaultRefs.slice():[];
     this._refDataUrls = Array.isArray(d.refs)
       ? d.refs.filter((u) => typeof u === 'string' && /^data:image\/(png|jpeg|webp);/i.test(u)).slice(0, maxRef)
       : [];
@@ -2351,7 +2353,7 @@ const MomentsImageStudio = {
     const standalone = !!(typeof State !== 'undefined' && State.momentsImageStudioStandalone);
     const mid = standalone ? '' : String(State?.momentsImageStudioMomentId || '').trim();
     const rid = String(State?.momentsImageStudioRecordId || '').trim();
-    const prompt = String(document.getElementById('mis-prompt')?.value || '').trim();
+    let prompt = String(document.getElementById('mis-prompt')?.value || '').trim();
     if (!rid || (!standalone && !mid)) {
       alert(standalone ? '缺少生图记录' : '缺少朋友圈条目');
       return;
@@ -2382,8 +2384,11 @@ const MomentsImageStudio = {
       return;
     }
 
+    let identityRefs;
+    try {identityRefs=await SCMoments.addDefaultReferences(mid,rid);}catch(e){alert(e.message);return;}
     const hasRef = this._refDataUrls.length > 0;
     const refDataUrls = this._refDataUrls.slice();
+    if(identityRefs.length)prompt+='\n'+identityRefs.map((r,i)=>`Reference image ${i+1} depicts ${r.name}; preserve this character's facial identity.`).join('\n');
     const opts = this._collectOptions(hasRef);
 
     try {

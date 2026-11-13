@@ -1,0 +1,227 @@
+/* Terminal palette shared by pages, sheets and chat; media keeps its own colors. */
+:root {
+  --ui-bg:#f0f1ed; --ui-card:#fafbf8; --ui-ink:#141b19;
+  --ui-muted:#63675f; --ui-line:#a4a89c; --ui-soft:#e4e8db;
+  --ui-accent:#626f4c; --ui-on-accent:#fff; --ui-danger:#a63232;
+}
+html[data-sc-mode="night"] {
+  color-scheme:dark;
+  --ui-bg:#1d2420; --ui-card:#242d26; --ui-ink:#e8ecdf;
+  --ui-muted:#aeb6a7; --ui-line:#55604f; --ui-soft:#354231;
+  --ui-accent:#b0bd91; --ui-on-accent:#1d2420; --ui-danger:#f1a1a1;
+}
+html[data-sc-mode="day"] { color-scheme:light; }
+html[data-sc-mode] {
+  --sc-ink:var(--ui-ink); --sc-muted:var(--ui-muted);
+  --sc-line:var(--ui-line); --sc-soft:var(--ui-soft);
+  --sc-accent:var(--ui-accent); --sc-radius:8px;
+}
+html[data-sc-mode], html[data-sc-mode] body, html[data-sc-mode] .yd-phone {
+  background:var(--ui-bg); color:var(--ui-ink); box-shadow:none;
+}
+#page-homescreen.sc-terminal { background-image:none; }
+
+/* Reset legacy glass/decoration without touching photographs or canvas output. */
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen), .yd-modal, .sc-dialog,
+  .yd-forum-picker, .yd-forum-compose, .yd-moments-compose, .yd-api-modal,
+  .yd-reply-style-modal, .yd-album-modal, .yd-album-desc-sheet, .yd-camera-desc-sheet,
+  .yd-character-menu, .yd-voice-sheet, .yd-char-import-disclaimer) {
+  color:var(--ui-ink);
+}
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen), .yd-modal, .sc-dialog,
+  .yd-forum-picker, .yd-forum-compose, .yd-moments-compose, .yd-api-modal,
+  .yd-reply-style-modal, .yd-album-modal, .yd-album-desc-sheet, .yd-camera-desc-sheet,
+  .yd-character-menu, .yd-voice-sheet, .yd-char-import-disclaimer) :where(*) {
+  color:inherit; border-color:var(--ui-line);
+  box-shadow:none!important; text-shadow:none!important;
+  backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+}
+html[data-sc-mode] .yd-page:not(#page-homescreen) {
+  background:var(--ui-bg)!important; color:var(--ui-ink)!important;
+}
+html[data-sc-mode] :is(.yd-page-header,.yd-settings-nav,.yd-page-footer,
+  .yd-settings-content,.yd-settings-detail-content,.yd-page-content,
+  .yd-character-content,.yd-worldbook-content,.yd-forum-content,.yd-forum-thread,
+  .yd-moments-content,.yd-album-content,.yd-album-tabs-row,.yd-weather-content,
+  .yd-timer-content,.yd-beautify-content,.mis-page,.mis-records-page) {
+  background:var(--ui-bg)!important; color:var(--ui-ink)!important;
+  box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+}
+html[data-sc-mode] :is(.yd-page-header,.yd-settings-nav) { border-bottom:1px solid var(--ui-line); }
+html[data-sc-mode] :is(.yd-page-footer,.yd-forum-bottom,.yd-forum-thread__composer) { border-top:1px solid var(--ui-line); }
+
+/* Paper-like bordered groups instead of floating rounded iOS cards. */
+html[data-sc-mode] :is(.yd-settings-group,.settings-group,.settings-card,.sc-settings-block,
+  .yd-character-section,.yd-character-card,.yd-character-item,.yd-collapse-item,
+  .yd-worldbook-entry,.yd-global-regex-block,.yd-weather-card,.weather-city-settings,
+  .yd-timer-card,.yd-timer-item,.yd-thread,.yd-forum-comment,.yd-forum-item,
+  .yd-voice-settings-card,.yd-voice-settings-voice-card,.yd-role-voice-card,
+  .yd-book-edit__block,.yd-character-json-preview,.yd-character-import-summary,
+  .yd-gen-test-card,.yd-gen-test-result-block,.yd-beautify-settings-group,
+  .yd-beautify-preset-actions-card,.yd-theme-item,.mis-records-item,
+  .mis-params-box,.mis-ref-zone,.mis-result-panel,.yd-moment__social,
+  .yd-beautify-preview,.yd-css-preview,.yd-global-regex-chat-preview,.yd-session-memory-card) {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  border:1px solid var(--ui-line)!important; border-radius:8px!important;
+  box-shadow:none!important; backdrop-filter:none!important;
+}
+html[data-sc-mode] :is(.yd-settings-row,.yd-list-item,.yd-moment,
+  .yd-weather-row,.yd-field,.yd-collapse-item__header,.yd-beautify-settings-header) {
+  background:transparent!important; border-color:var(--ui-line)!important;
+}
+html[data-sc-mode] :is(.yd-character-tag,.yd-book-type-badge,
+  .yd-global-regex-priority-pill,.yd-thread__social-tag,.sc-audit) {
+  background:var(--ui-soft)!important; color:var(--ui-accent)!important;
+  border-radius:5px;
+}
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog) :is(h1,h2,h3,h4,label,summary),
+html[data-sc-mode] :is(.yd-settings-nav__title,.yd-page-header__center,
+  .yd-settings-large-title,.yd-settings-row__label,.yd-settings-row__title,
+  .yd-character-card__name,.yd-character-card__text,.yd-collapse-item__title,
+  .yd-thread__title,.yd-forum-comment__name,.yd-forum-comment__body,.yd-moment__text,
+  .yd-moment__name,.yd-field__value,.yd-worldbook-entry__title,.yd-worldbook-entry__pre) {
+  color:var(--ui-ink)!important;
+}
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog) :is(small,[class*="__hint"],[class*="__meta"],[class*="__desc"],[class*="__subtitle"]),
+html[data-sc-mode] :is(.yd-settings-row__subtitle,.yd-settings-row__value,
+  .yd-field__label,.yd-character-card__label,.yd-beautify-hint,.yd-weather-hint,
+  .yd-timer-note,.yd-global-regex-hint,.yd-moment__time,.yd-forum-comment__floor) {
+  color:var(--ui-muted)!important;
+}
+
+/* Shared controls, including forms created dynamically in dialogs. */
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog,
+  .yd-forum-picker,.yd-forum-compose,.yd-moments-compose,.yd-api-modal,
+  .yd-reply-style-modal,.yd-album-modal,.yd-character-menu,.yd-voice-sheet)
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),textarea,select) {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  border:1px solid var(--ui-line)!important; border-radius:6px!important;
+  box-shadow:none!important; accent-color:var(--ui-accent);
+}
+html[data-sc-mode] input::placeholder, html[data-sc-mode] textarea::placeholder { color:var(--ui-muted)!important; opacity:1; }
+html[data-sc-mode] :is(input,button,textarea,select):focus-visible { outline:2px solid var(--ui-accent); outline-offset:2px; }
+html[data-sc-mode] :is(input[type="checkbox"],input[type="radio"],input[type="range"]) { accent-color:var(--ui-accent); }
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog,
+  .yd-forum-picker,.yd-forum-compose,.yd-moments-compose,.yd-api-modal,
+  .yd-reply-style-modal,.yd-album-modal,.yd-character-menu,.yd-voice-sheet) button {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  border-color:var(--ui-line)!important; border-radius:6px;
+}
+html[data-sc-mode] :is(.yd-header-btn,.yd-header-btn--circle,.yd-icon-btn) {
+  border:1px solid var(--ui-line)!important; border-radius:6px!important;
+}
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog,.yd-api-modal,.yd-forum-picker,.yd-forum-compose)
+  :is(.yd-btn--primary,.yd-btn--primary-full,.yd-btn-primary,
+  .sc-primary,.yd-forum-thread__send,.yd-forum-bottom__new,.mis-submit--primary,
+  .yd-api-modal__btn--confirm,.yd-beautify-tab--active,.yd-forum-item__btn--current) {
+  background:var(--ui-accent)!important; color:var(--ui-on-accent)!important;
+  border-color:var(--ui-accent)!important;
+}
+html[data-sc-mode] :is(.yd-page:not(#page-homescreen),.yd-modal,.sc-dialog,.yd-forum-picker)
+  :is(.yd-btn--danger,.yd-thread__more-delete,.yd-forum-item__btn--danger,
+  .yd-bubble-preset-menu__item--danger,.mis-records-item-menu__delete) { color:var(--ui-danger)!important; }
+html[data-sc-mode] :is(.yd-switch,.yd-toggle__slider,.yd-settings-switch) { background:var(--ui-line)!important; }
+html[data-sc-mode] :is(.yd-switch--on,input:checked + .yd-toggle__slider,input:checked + .yd-switch) { background:var(--ui-accent)!important; }
+
+/* Dialogs and action sheets use the same solid surfaces as their parent pages. */
+html[data-sc-mode] :is(.sc-dialog,.yd-modal-content,.yd-api-modal__box,
+  .yd-forum-picker__panel,.yd-forum-compose__panel,.yd-moments-compose__panel,
+  .yd-reply-style-modal__panel,.yd-album-modal__panel,.yd-album-modal__inner,.yd-album-desc-sheet__panel,
+  .yd-camera-desc-sheet__panel,.yd-char-import-disclaimer__panel,.yd-voice-sheet__panel,
+  .yd-character-menu,.yd-chat-avatar-actions__menu,.yd-chat-msg-actions__panel,.yd-bubble-preset-menu,
+  .yd-thread__more-menu,.yd-forum-comment-actions,.mis-records-item-menu__panel) {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  border:1px solid var(--ui-line)!important; border-radius:8px!important;
+  box-shadow:none!important; backdrop-filter:none!important;
+}
+html[data-sc-mode] :is(.yd-modal-header,.yd-modal-footer,.yd-forum-picker__bar,
+  .yd-forum-picker__footer,.yd-forum-compose__bar,.yd-moments-compose__bar,
+  .yd-forum-bottom,.yd-forum-thread__composer,.yd-album-tabs,.yd-album-tabs-row) {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important; border-color:var(--ui-line)!important;
+}
+
+/* Chat intentionally follows the terminal theme, regardless of saved wallpaper. */
+html[data-sc-mode] #page-chat #chat-background { background:var(--ui-bg)!important; background-image:none!important; }
+html[data-sc-mode] #page-chat :is(.yd-chat-input-wrapper,.yd-chat-input-shell,
+  .yd-chat-toolbar,.yd-chat-offline-toolbar,.yd-chat-input-container,.yd-chat-sticker-strip) {
+  background:var(--ui-bg)!important; color:var(--ui-ink)!important;
+  border:0!important;
+  backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+}
+html[data-sc-mode] #page-chat .yd-chat-input-shell { width:100%; border:0; border-radius:0; }
+html[data-sc-mode] #page-chat .yd-chat-input-wrapper { border-top:1px solid var(--ui-line)!important; }
+html[data-sc-mode] #page-chat .yd-chat-input-container { gap:8px; align-items:flex-end; }
+html[data-sc-mode] #page-chat #chat-input {
+  min-width:0; min-height:44px; padding:11px 12px; line-height:1.5;
+}
+html[data-sc-mode] #page-chat #chat-send {
+  position:static; width:auto; min-width:78px; min-height:44px; padding:0 10px;
+  display:flex; gap:6px; border:1px solid var(--ui-line); border-radius:5px;
+  background:var(--ui-soft)!important; color:var(--ui-ink)!important; font-size:13px;
+}
+html[data-sc-mode] #page-chat #chat-send:disabled { opacity:.45; cursor:default; }
+html[data-sc-mode] #page-chat #chat-send svg { width:18px; height:18px; flex-shrink:0; }
+html[data-sc-mode] :is(.yd-chat-msg-actions,.yd-chat-avatar-actions) {
+  background:transparent!important; border:0!important; box-shadow:none!important;
+}
+html[data-sc-mode] :is(.yd-chat-msg-actions__btn,.yd-chat-avatar-actions__item) {
+  background:var(--ui-soft); color:var(--ui-ink); border-radius:5px;
+}
+html[data-sc-mode] :is(#page-chat,#bubble-preview) .yd-message__content {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  background-image:none!important; border:1px solid var(--ui-line)!important;
+  border-radius:8px!important; box-shadow:none!important;
+}
+html[data-sc-mode] :is(#page-chat,#bubble-preview) .yd-message--user .yd-message__content { background:var(--ui-soft)!important; }
+html[data-sc-mode] #page-chat :is(.yd-message__text,.yd-message__name,.yd-message__content p,.yd-message__content span) { color:var(--ui-ink)!important; }
+html[data-sc-mode] #page-chat :is(.yd-message__time,.yd-message__meta,.yd-chat-toolbar__model) { color:var(--ui-muted)!important; }
+html[data-sc-mode] #page-chat .yd-message__content::before,
+html[data-sc-mode] #page-chat .yd-message__content::after { display:none!important; }
+html[data-sc-mode] #page-chat blockquote { background:var(--ui-soft)!important; color:var(--ui-ink)!important; border-color:var(--ui-accent)!important; }
+
+html[data-sc-mode] :is(#page-settings,#page-chat-settings) .yd-page-content { background:var(--ui-bg)!important; }
+html[data-sc-mode] :is(.terminal-role-options,.yd-bubble-layout-card,.yd-session-beautify-card,
+  .yd-collapse-item__body,.yd-collapse-item__text,.yd-bubble-preview-pill) {
+  background:var(--ui-card)!important; color:var(--ui-ink)!important;
+  border-color:var(--ui-line)!important; border-radius:8px!important;
+}
+html[data-sc-mode] :is(.yd-avatar-thumb,.yd-message__avatar-inner,.yd-settings-row__avatar) {
+  background:var(--ui-soft)!important; color:var(--ui-ink)!important;
+}
+html[data-sc-mode] :is(.yd-message__plain,.yd-message--memory,.yd-quote-beautify,
+  #yd-session-text-preview,#card-assistant-messages) {
+  color:var(--ui-ink)!important; -webkit-text-fill-color:var(--ui-ink)!important;
+}
+html[data-sc-mode] :is(.yd-message__plain,.yd-message--memory) :is(p,span,em,strong,li,h1,h2,h3) { color:inherit!important; }
+html[data-sc-mode] :is(.yd-chat-background,.yd-chat-scroll) { background:var(--ui-bg)!important; }
+html[data-sc-mode] #page-card-assistant #card-assistant-background { background:var(--ui-bg)!important; }
+html[data-sc-mode] .yd-quote-beautify { background:none!important; background-clip:initial!important; -webkit-background-clip:initial!important; }
+html[data-sc-mode] .yd-moments-cover__bg:not([style*="url("]) { background:var(--ui-soft)!important; }
+html[data-sc-mode] #page-camera :is(.yd-camera-screen,.yd-camera-topbar,.yd-camera-bottombar) {
+  background:var(--ui-bg)!important; color:var(--ui-ink)!important;
+}
+html[data-sc-mode] #page-camera .yd-camera-topbar { border-bottom:1px solid var(--ui-line); }
+html[data-sc-mode] #page-camera .yd-camera-bottombar { border-top:1px solid var(--ui-line); }
+html[data-sc-mode] #page-camera .yd-camera-view__hint { color:var(--ui-muted)!important; }
+html[data-sc-mode] .yd-settings-row__icon {
+  background-color:#626f4c!important; background-size:18px 18px,0 0!important;
+  border-radius:5px;
+}
+html[data-sc-mode] .yd-bubble-settings-bottom-bar {
+  background:var(--ui-bg)!important; border-top:1px solid var(--ui-line)!important;
+}
+html[data-sc-mode] .yd-toggle__input:checked + .yd-toggle__control .yd-toggle__slider { background:var(--ui-accent)!important; }
+html[data-sc-mode] :is(.yd-album-modal__body,.yd-album-modal__image-wrap) { background:var(--ui-card)!important; color:var(--ui-ink)!important; }
+
+#terminal-appearance-archive,
+#page-bubble-settings .yd-bubble-settings-bottom-bar[hidden] { display:none!important; }
+#page-bubble-settings .terminal-size-controls { margin-top:16px; }
+#page-bubble-settings .terminal-size-controls input[type="range"] { width:100%; accent-color:var(--ui-accent); }
+#page-bubble-settings .terminal-size-controls .yd-session-beautify-item { padding:16px 0; }
+#page-bubble-settings .terminal-size-controls .yd-session-beautify-item__head { display:flex; justify-content:space-between; gap:12px; margin-bottom:12px; }
+html[data-sc-mode] .yd-page .yd-switch.yd-switch--on {
+  background:#dfeddf!important; color:#365b38!important; border:1px solid #abc6ab!important;
+}
+html[data-sc-mode] .yd-page .yd-switch.yd-switch--off {
+  background:#f4dddd!important; color:#803f3f!important; border:1px solid #d9b1b1!important;
+}

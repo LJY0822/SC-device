@@ -32,3 +32,5 @@ body,button,input,select,textarea{font-family:Arial,'Microsoft YaHei',sans-serif
   background-size:180px 100%,100% 100%,100% 100%,100% 100%,100% 100%,540px 100%;
   background-attachment:fixed;
 }
+
+.sc-history-choice{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid #ddd;white-space:pre-wrap;overflow-wrap:anywhere}.sc-history-choice input{flex-shrink:0;margin-top:4px}#sc-moments-history{max-height:50vh;overflow:auto}#chat-scroll>[data-sc-audit]{display:block;margin:12px auto;max-width:100%;text-align:center}

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>SC-个人通讯装置</title>
+  <title>Shadow Company · 私人终端</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -27,6 +27,9 @@
   <link rel="stylesheet" href="styles/timer.css">
   <link rel="stylesheet" href="styles/camera.css">
   <link rel="stylesheet" href="styles/sc.css">
+  <link rel="stylesheet" href="styles/sc-terminal.css">
+  <link rel="stylesheet" href="styles/sc-edc.css">
+  <link rel="stylesheet" href="styles/sc-pages.css">
 </head>
 <body>
   <!-- 手机模拟器容器 -->
@@ -872,9 +875,9 @@
 
           <div class="settings-card">
             <div class="settings-item" id="yd-chat-settings-bubble">
-              <span class="settings-label">气泡样式</span>
+              <span class="settings-label">头像与字体大小</span>
               <div class="settings-value-container">
-                <span class="settings-value">调整聊天气泡样式</span>
+                <span class="settings-value">调整头像和字号</span>
                 <svg class="settings-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="m9 18 6-6-6-6"></path>
                 </svg>
@@ -907,6 +910,7 @@
                 </svg>
               </div>
             </div>
+            <button type="button" class="settings-item" id="sc-chat-moments" style="width:100%;background:transparent;border:0;text-align:left"><span class="settings-label">朋友圈</span><span class="settings-value">选择聊天片段生成配图 ›</span></button>
             <div class="settings-item" id="yd-chat-settings-unread-badge">
               <span class="settings-label">消息红点</span>
               <div class="settings-value-container">
@@ -1038,11 +1042,6 @@
             <span class="yd-settings-row__chevron" aria-hidden="true"></span>
           </a>
           
-          <a href="javascript:void(0)" class="yd-settings-row" id="settings-wallpaper">
-            <span class="yd-settings-row__icon yd-settings-row__icon--wallpaper" aria-hidden="true"></span>
-            <span class="yd-settings-row__label">壁纸与背景</span>
-            <span class="yd-settings-row__chevron" aria-hidden="true"></span>
-          </a>
           <a href="javascript:void(0)" class="yd-settings-row" id="settings-bubble-beautify">
             <span class="yd-settings-row__icon yd-settings-row__icon--beautify-bubble" aria-hidden="true"></span>
             <span class="yd-settings-row__label">气泡美化</span>
@@ -1555,7 +1554,7 @@
       </div>
     </div>
 
-    <!-- 北京天气 -->
+    <!-- 多城市天气 -->
     <div id="page-weather" class="yd-page">
       <div class="yd-page-header yd-settings-nav">
         <button class="yd-header-btn yd-header-btn--circle" id="weather-back" aria-label="返回">
@@ -1565,7 +1564,17 @@
         <div class="yd-header-spacer"></div>
       </div>
       <div class="yd-page-content yd-weather-content">
+        <section class="yd-weather-card weather-city-settings" aria-label="首页天气城市设置">
+          <h2>首页显示城市</h2>
+          <p>勾选要显示的城市。虚构地点须选择现实天气来源，可随时修改绑定。</p>
+          <div id="weather-city-options"></div>
+          <form id="weather-search-form"><label for="weather-search">添加其他现实城市</label><div class="weather-search-row"><input id="weather-search" placeholder="城市名，例如 Chicago" autocomplete="off" maxlength="80"><button type="submit">搜索</button></div></form>
+          <div id="weather-search-results" aria-live="polite"></div>
+          <button type="button" id="weather-save-cities" class="sc-primary">保存首页城市</button>
+          <p id="weather-selection-status" role="status"></p>
+        </section>
         <div class="yd-weather-card yd-weather-card--now">
+          <label class="weather-detail-picker">查看城市<select id="weather-city-select" aria-label="查看城市天气"></select></label>
           <div class="yd-weather-now">
             <div class="yd-weather-now__left">
               <div class="yd-weather-now__temp" id="weather-now-temp">--°</div>
@@ -1575,14 +1584,15 @@
           </div>
 
           <p id="weather-details"></p>
-          <p id="weather-status" role="status">打开后获取北京天气</p>
+          <p id="weather-source"></p>
+          <p id="weather-status" role="status">正在读取天气</p>
           <button id="weather-refresh" class="sc-primary">刷新天气</button>
         </div>
 
         <div class="yd-weather-card yd-weather-card--forecast">
           <div class="yd-weather-card__title">未来 7 天</div>
           <div class="yd-weather-list" id="weather-list"></div>
-          <div class="yd-weather-hint">数据来自 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · CC BY 4.0。固定北京城区，当前天气为模型估算；进入页面时更新，15 分钟内使用缓存。</div>
+          <div class="yd-weather-hint">数据来自 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · CC BY 4.0。天气为来源城市的模型估算，按当地时间显示；15 分钟内使用缓存。</div>
         </div>
       </div>
     </div>
@@ -1755,6 +1765,10 @@
       </div>
       <div class="yd-page-content yd-character-edit-content">
         <div class="yd-character-form">
+          <section class="terminal-role-options" aria-label="首页角色设置">
+            <label><span>加入首页助手<small>每天独立生成一条不超过100字的早间留言，不写入聊天主线</small></span><input type="checkbox" id="char-home-assistant"></label>
+            <label><span>加入特别关注<small>在首页未读中优先关注该角色的消息</small></span><input type="checkbox" id="char-special-focus"></label>
+          </section>
           <div class="yd-character-section">
             <h3 class="yd-character-section__title">基础信息</h3>
             <div class="yd-form-group">
@@ -2652,8 +2666,13 @@
   <script src="scripts/ta-experience.js"></script>
   <script src="scripts/sc-ui.js"></script>
   <script src="scripts/sc-chat.js"></script>
+  <script src="scripts/sc-moments.js"></script>
   <script src="scripts/sc-backup.js"></script>
   <script src="scripts/sc-sync.js"></script>
+  <script src="scripts/sc-edc.js"></script>
+  <script src="scripts/sc-daily.js"></script>
+  <script src="scripts/sc-appearance.js"></script>
+  <script src="scripts/sc-terminal.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 </html>

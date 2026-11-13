@@ -122,6 +122,8 @@ const Forum = {
       try { Storage.set(this._FORUMS_KEY, forums); } catch (e) {}
     }
 
+    if (typeof SCDaily !== 'undefined') SCDaily.ensureForum();
+
     // current forum
     try {
       const cur = Storage.get(this._CURRENT_FORUM_KEY);
@@ -1068,7 +1070,7 @@ const Forum = {
 
     const forum = this._getForums().find(f => f && f.id === targetForumId) || this._getCurrentForum();
     const forumName = String(forum?.name || '默认').trim() || '默认';
-    const worldbook = String(forum?.worldbook || '').trim();
+    const worldbook = String(forum?.worldbook || '').trim() + await SCDaily.newsContext(targetForumId);
     const icon = String(forum?.icon || '💬').trim() || '💬';
     try {
       const allMsgs = await Storage.dbGetAll('messages');
@@ -2642,7 +2644,7 @@ const Forum = {
     const forumId = String(thread?.forumId || '').trim() || this._getCurrentForumId();
     const forum = this._getForums().find((f) => f && String(f.id || '').trim() === forumId) || this._getCurrentForum();
     const forumName = String(forum?.name || '').trim();
-    const worldbook = String(forum?.worldbook || '').trim();
+    const worldbook = String(forum?.worldbook || '').trim() + await SCDaily.newsContext(forumId);
     let selectedCharacterProfiles = [];
     try {
       selectedCharacterProfiles = await this._getForumSelectedCharacterProfiles(forum);
@@ -2873,7 +2875,7 @@ const Forum = {
           <div id="yd-forum-user-account-list" style="width:100%;box-sizing:border-box;max-height:180px;overflow:auto;border:1px solid #E5E5EA;border-radius:12px;padding:8px 10px;background:#fff;"></div>
         </div>
         <div class="yd-forum-picker__footer yd-forum-picker__footer--sticky" style="justify-content:flex-end;gap:10px;">
-          ${isEdit ? '<button type="button" class="yd-forum-item__btn" id="yd-forum-edit-delete" style="margin-right:auto;color:#dc2626;border-color:rgba(220,38,38,.35);">删除</button>' : ''}
+          ${isEdit && !SCDaily.isNewsForum(forum.id) ? '<button type="button" class="yd-forum-item__btn" id="yd-forum-edit-delete" style="margin-right:auto;color:#dc2626;border-color:rgba(220,38,38,.35);">删除</button>' : ''}
           <button type="button" class="yd-forum-item__btn" data-close="1">取消</button>
           <button type="button" class="yd-forum-item__btn yd-forum-item__btn--primary" id="yd-forum-edit-save">保存</button>
         </div>
@@ -3068,6 +3070,7 @@ const Forum = {
 
     modal.querySelector('#yd-forum-edit-delete')?.addEventListener('click', () => {
       if (!isEdit || !forum?.id) return;
+      if (SCDaily.isNewsForum(forum.id)) { alert('首页新闻来源论坛不可删除，可以修改名称和描述。'); return; }
       const forumName = String(forum?.name || '该论坛').trim() || '该论坛';
       const ok = confirm(`确认删除「${forumName}」吗？删除后不可恢复。`);
       if (!ok) return;

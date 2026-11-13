@@ -77,6 +77,7 @@ const State = {
       }
     }
 
+    if (['page-session-beautify','page-beautify'].includes(nextId)) nextId = 'page-bubble-settings';
     if (['page-shop','page-shop-app-manager','page-wallet','page-takeout','page-ta-phone','page-ta-diary'].includes(nextId)) return;
     if (['page-live','page-share','page-notebook','page-notebook-detail','page-map','page-calendar','page-music','page-music-player','page-widgets','page-settings-beautify-new-widget'].includes(nextId) || nextId.startsWith('page-widget-')) return;
     const fromId = this.currentPage;
