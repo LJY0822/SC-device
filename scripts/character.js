@@ -30,7 +30,19 @@ const Character = {
     });
   },
 
-  async handleEditBack() {
+  async confirmEditExit() {
+    const dialog=await SCUI.modal('保存更改？','<p>角色有尚未保存的更改。</p><div class="sc-dialog-actions"><button type="button" data-edit-discard>不保存</button><button type="button" class="sc-primary" data-edit-save>保存</button></div>');
+    return new Promise(resolve=>{
+      dialog.querySelector('[data-edit-save]').onclick=()=>{resolve(true);dialog.close();};
+      dialog.querySelector('[data-edit-discard]').onclick=()=>{resolve(false);dialog.close();};
+      dialog.addEventListener('close',()=>resolve(null),{once:true});
+    });
+  },
+
+  async handleEditBack({save=false}={}) {
+    if(this._editExitPending)return;
+    this._editExitPending=true;
+    try {
     const backTo = () => {
       const target = State.characterEditReturnPage || 'page-character';
       const sid = State.characterEditReturnSessionId ? String(State.characterEditReturnSessionId) : '';
@@ -50,16 +62,19 @@ const Character = {
       State.switchPage(target);
     };
 
-    if (this.formDirty && confirm('数据已更新，是否要保存？')) {
-      await this.saveCharacter();
+    const decision=save?true:this.formDirty?await this.confirmEditExit():false;
+    if(decision===null)return;
+    if(decision){
+      if(await this.saveCharacter()!==true)return;
       await this.loadCharacters();
-      backTo();
-    } else {
-      this.resetEditForm();
-      backTo();
-    }
+    }else this.resetEditForm();
+    backTo();
+    }catch(error){
+      console.error('[角色保存]',error);
+      Chat._toast('保存失败，请重试；编辑内容已保留');
+    }finally{this._editExitPending=false;}
   },
-
+  
   setupEditFieldCollapses() {
     const root = document.getElementById('page-character-edit');
     if (root) this.bindCollapseEvents(root);
@@ -110,27 +125,7 @@ const Character = {
     });
 
     // 编辑页：保存按钮（顶部右侧）
-    document.getElementById('character-save').addEventListener('click', async () => {
-      await this.saveCharacter();
-      await this.loadCharacters();
-      // 保存后也按“入口来源”返回（例如从聊天头像进入角色详情）
-      const target = State.characterEditReturnPage || 'page-character';
-      const sid = State.characterEditReturnSessionId ? String(State.characterEditReturnSessionId) : '';
-      State.characterEditReturnPage = null;
-      State.characterEditReturnSessionId = null;
-      if (target === 'page-chat') {
-        State.switchPage('page-chat');
-        try {
-          if (sid && typeof Chat !== 'undefined' && Chat && typeof Chat.openSession === 'function') {
-            // 角色头像/名称可能变化：回到同一会话时强制全量重绘，避免增量渲染保留旧头像 DOM
-            try { Chat._forceFullRenderNext = true; } catch (e) {}
-            Chat.openSession(sid);
-          }
-        } catch (e) {}
-        return;
-      }
-      State.switchPage(target);
-    });
+    document.getElementById('character-save').addEventListener('click', () => this.handleEditBack({save:true}));
 
     // 编辑页：头像点击（只绑定一次，始终读当前 currentRawData，避免切换角色/新建后闭包仍是旧数据）
     const avatarThumb = document.getElementById('char-avatar-thumb');
@@ -484,6 +479,7 @@ const Character = {
     this.renderRoleVoicePreview(normalized);
     this._applyChatI18nToForm(normalized);
     this.setupChatI18nFormListeners();
+    this.formDirty = false;
   },
 
   renderAvatarPreview(normalized) {
@@ -1400,6 +1396,7 @@ const Character = {
     }
     const dp = document.getElementById('char-description-preview');
     if (dp) dp.textContent = '未填写';
+    this.formDirty = false;
   },
 
   // 将 v3 卡常见 data 包裹结构“拍平”为我们内部统一读取的结构
@@ -2480,7 +2477,7 @@ const Character = {
     
     if (!name) {
       alert('请输入角色名称');
-      return;
+      return false;
     }
     
     // 取“原始卡数据”并归一化（支持 data 包裹结构）
@@ -2515,13 +2512,13 @@ const Character = {
       }
     } catch (e) {
       alert('世界书 JSON 格式不正确');
-      return;
+      return false;
     }
     try {
       extensions = extText ? JSON.parse(extText) : (baseNorm.extensions || null);
     } catch (e) {
       alert('扩展配置 JSON 格式不正确');
-      return;
+      return false;
     }
     
     // 按“卡格式 v3”存：顶层保留基础字段，复杂字段放在 data 下（和你给的示例一致）
@@ -2565,6 +2562,7 @@ const Character = {
     this.formDirty = false;
     this.currentEditingData = null;
     this.resetEditForm();
+    return true;
   },
   
   // 加载角色列表

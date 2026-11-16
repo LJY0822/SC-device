@@ -401,20 +401,23 @@ const SessionMemory = {
     void this._openRoundRangePicker(String(sessionId || '').trim(), 'export');
   },
 
-  async _openRoundRangePicker(sessionId, mode) {
+  async _openRoundRangePicker(sessionId, mode, onSelect) {
     const sid = String(sessionId || '').trim();
     if (!sid) return;
     const isExport = mode === 'export';
+    const isMoments = mode === 'moments';
     const existed = document.getElementById('yd-session-memory-range-modal');
     if (existed) existed.remove();
 
-    const titleText = isExport ? '选择待导出的内容' : '选择待总结的内容';
+    const titleText = isMoments ? '选择配图聊天片段' : isExport ? '选择待导出的内容' : '选择待总结的内容';
     const ariaLabel = titleText;
-    const selectionPrefix = isExport ? '已选择导出' : '已选择总结';
+    const selectionPrefix = isMoments ? '已选择配图' : isExport ? '已选择导出' : '已选择总结';
     const footerClass = isExport
       ? 'yd-session-memory-range-actions yd-session-memory-range-actions--export'
       : 'yd-session-memory-range-actions';
-    const footerInner = isExport
+    const footerInner = isMoments
+      ? '<span class="yd-session-memory-range-chars yd-session-memory-range-chars--inline" id="yd-session-memory-range-chars">原始字数：?字</span><button type="button" class="yd-btn yd-session-memory-btn-sm sc-primary" data-act="select-moments">生成英文提示词</button>'
+      : isExport
       ? `
             <span class="yd-session-memory-range-chars yd-session-memory-range-chars--inline" id="yd-session-memory-range-chars">原始字数：?字</span>
             <button type="button" class="yd-btn yd-btn--secondary yd-session-memory-btn-sm" data-act="export-txt">纯文本导出</button>
@@ -435,11 +438,13 @@ const SessionMemory = {
           <button type="button" class="yd-btn-close" data-act="close" aria-label="关闭">×</button>
         </div>
         <div class="yd-session-memory-range-modal-inner">
+          ${isMoments ? '<p class="yd-session-memory-range-note">正序选择起始轮和结束轮，包含整段双方对话。只发送所选内容及本会话角色设定；先生成提示词，再确认生图。</p>' : ''}
           <div class="yd-session-memory-range-note" id="yd-session-memory-range-total">正在加载对话列表…</div>
           <div class="yd-sm-range-scroll" id="yd-sm-range-scroll">
             <div id="yd-sm-range-list" class="yd-sm-range-list"></div>
           </div>
           <div class="yd-session-memory-range-fields yd-session-memory-range-fields--echo" id="yd-session-memory-range-selection">${this._escape(`${selectionPrefix}：第 ? 轮到第 ? 轮`)}</div>
+          ${isMoments ? '<p id="sc-moments-status" role="status"></p>' : ''}
           <div class="${footerClass}" id="yd-session-memory-range-footer">
             ${footerInner}
           </div>
@@ -483,7 +488,7 @@ const SessionMemory = {
           if (totalUserRounds > 0) {
             totalEl.textContent = `总共${totalUserRounds}轮对话`;
           } else {
-            totalEl.textContent = isExport ? '本会话暂无可用对话，无法导出。' : '本会话暂无可用对话，无法总结。';
+            totalEl.textContent = isMoments ? '本会话暂无可选择的对话。' : isExport ? '本会话暂无可用对话，无法导出。' : '本会话暂无可用对话，无法总结。';
           }
         }
         if (listEl && rows.length) {
@@ -609,6 +614,18 @@ const SessionMemory = {
       }
       return { fr: Math.min(selFrom, selTo), tr: Math.max(selFrom, selTo) };
     };
+
+    const selectBtn=overlay.querySelector('[data-act="select-moments"]');
+    selectBtn?.addEventListener('click',async()=>{
+      const range=ensureRangeSelected();
+      if(!range || selectBtn.disabled)return;
+      const status=overlay.querySelector('#sc-moments-status');
+      selectBtn.disabled=true;status.textContent='正在根据所选剧情生成英文提示词…';
+      try {
+        if(await onSelect(range,overlay)!==false)close();
+      }catch(error){status.textContent=error.message || '生成失败，请重试';}
+      finally{selectBtn.disabled=false;}
+    });
 
     summarizeBtn?.addEventListener('click', async () => {
       const range = ensureRangeSelected();

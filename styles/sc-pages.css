@@ -225,3 +225,29 @@ html[data-sc-mode] .yd-page .yd-switch.yd-switch--on {
 html[data-sc-mode] .yd-page .yd-switch.yd-switch--off {
   background:#f4dddd!important; color:#803f3f!important; border:1px solid #d9b1b1!important;
 }
+
+html[data-sc-mode] #page-forum .yd-forum-bottom {
+  position:absolute; left:0; right:0; bottom:0;
+  padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--ui-bg)!important; pointer-events:auto;
+}
+#page-forum .yd-forum-content { padding-bottom:calc(86px + env(safe-area-inset-bottom)); }
+#sc-session-settings .sc-settings-divider { border:0; border-top:1px solid var(--ui-line); margin:20px 0 8px; }
+#sc-session-settings :is(#sc-retry-round,#sc-cancel-round) {
+  display:block; width:100%; max-width:100%; white-space:nowrap;
+  font-size:13px; padding:10px 8px; text-align:left;
+}
+html[data-sc-mode] #page-chat-settings .settings-card.sc-danger-card,
+html[data-sc-mode] #page-chat-settings .sc-danger-card .settings-label,
+html[data-sc-mode] #sc-delete-confirm button.sc-delete-action {
+  background:#f4dddd!important; color:#803f3f!important; border-color:#d9b1b1!important;
+}
+#sc-delete-confirm input { display:block; width:100%; margin-top:10px; padding:10px 12px; }
+#sc-delete-confirm button:disabled { opacity:.45; cursor:default; }
+html[data-sc-mode] #yd-session-memory-range-modal .yd-sm-range-scroll {
+  background:var(--ui-card); border-color:var(--ui-line);
+}
+html[data-sc-mode] #yd-session-memory-range-modal button.yd-sm-range-dot--on {
+  background:var(--ui-accent)!important; border-color:var(--ui-accent)!important;
+}
+#yd-session-memory-range-modal [data-act="select-moments"]:disabled { opacity:.5; }

@@ -122,10 +122,12 @@ const SCTerminal = {
     if(focus&&name!=='edc'){const panel=document.querySelector(`#sc-home [data-panel="${name}"]`);(panel?.querySelector('h1') || panel?.querySelector('button'))?.focus({preventScroll:true});}
   },
   bindSwipe(root) {
+    if(root.dataset.terminalSwipeBound)return;
+    root.dataset.terminalSwipeBound='true';
     let start=null;
-    root.addEventListener('touchstart',e=>{start=this.panel!=='edc'&&e.touches.length===1&&!e.target.closest('button,input,textarea,select,[role="tabpanel"]')?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
+    root.addEventListener('touchstart',e=>{start=this.panel!=='edc'&&e.touches.length===1&&!e.target.closest('input,textarea,select,[contenteditable="true"]')?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
     root.addEventListener('touchend',e=>{
-      if(!start)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
+      if(!start||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
       if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.5)return;
       if(this.panel==='home')this.setPanel(dx>0?'tactical':'edc',true);
       else if((this.panel==='tactical'&&dx<0)||(this.panel==='edc'&&dx>0))this.setPanel('home',true);
@@ -197,7 +199,9 @@ const SCTerminal = {
         body=`<div class="terminal-weather-list">${Weather.rows().map(({city,source,state})=>{
           const usable=Weather.valid(state?.data),current=state?.data?.current;
           const cached=state?.error || (state?.at && Date.now()-state.at>=900000);
-          return `<button type="button" class="terminal-weather-row" data-weather-open="${e(city.id)}" aria-label="${e(city.name)}，查看天气与城市设置"><span><strong>${e(city.name)}</strong><small>${city.fictional?e('绑定 '+(source?.name || '未设置')):usable?e(current.time.slice(11,16)+' 当地'):'现实城市'}${cached&&usable?' · 缓存':''}</small></span><span class="terminal-weather-reading"><b>${usable?e(current.temperature_2m+'°'):'--°'}</b><small>${usable?e(Weather.label(current.weather_code)):!source?'未绑定':state?.error?'暂不可用':'更新中'}</small></span></button>`;
+          const location=city.fictional?'绑定 '+(source?.name || '未设置'):'现实城市';
+          const detail=(city.fictional?location+' ':'')+(usable?current.time.slice(11,16)+' 当地':city.fictional?'':location)+(cached&&usable?' / 缓存':'');
+          return `<button type="button" class="terminal-weather-row" data-weather-open="${e(city.id)}" aria-label="${e(city.name)}，查看天气与城市设置"><span><strong>${e(city.name)}</strong><small>${e(detail.trim())}</small></span><span class="terminal-weather-reading"><b>${usable?e(current.temperature_2m+'°'):'--°'}</b><small>${usable?e(Weather.label(current.weather_code)):!source?'未绑定':state?.error?'暂不可用':'更新中'}</small></span></button>`;
         }).join('')}</div>`;action='<button data-feed-weather>城市与预报 '+this.icon('right')+'</button>';
       }else if(id==='pinned'){
         title='暂无未读消息';body='<p>这里的消息摘要不会被自动标为已读。</p>';
@@ -207,12 +211,20 @@ const SCTerminal = {
       }
     }
     if(item?.sessionId)action=`<button data-feed-session="${e(item.sessionId)}">进入会话 ${this.icon('right')}</button>`;
+    if(id==='assistants' && item?.characterId)action=`<button data-feed-assistant="${e(item.characterId)}">进入对话 ${this.icon('right')}</button>`;
     if(id==='bulletin' && item)action=`<button data-feed-forum>查看论坛讨论 ${this.icon('right')}</button>`;
     const generated=['menu','assistants','bulletin'].includes(id);
     const status=generated?({running:'正在更新',failed:'部分更新失败',api:'请配置文字 API',offline:'等待联网'}[SCDaily.status] || (item?'今日内容':'待更新')):(item?`${item.focused?'特别关注 · ':''}${item.unread} 条未读`:id==='weather'?'天气':'已读完');
     if(generated && ['api','failed','offline'].includes(SCDaily.status))action+=`<button data-feed-retry>${SCDaily.status==='api'?'配置文字 API':'重试未完成内容'}</button>`;
     card.innerHTML=`<div class="terminal-feed-heading"><strong>${en} <span>/ ${e(label)}</span></strong><span class="terminal-feed-status">${status}</span></div><h3>${e(title)}</h3><div class="terminal-feed-content">${body}${action}</div><div class="terminal-feed-summary">助手留言 <b>${this.items('assistants').length}</b><span>·</span>内部资讯 <b>${this.items('bulletin').length}</b></div><div class="terminal-feed-controls"><button data-feed-prev aria-label="上一条简报">${this.icon('left')}</button><button data-feed-pause aria-label="${this.paused?'继续轮播':'暂停轮播'}" aria-pressed="${this.paused}">${this.icon(this.paused?'play':'pause')}</button><button data-feed-next aria-label="下一条简报">${this.icon('right')}</button><span>${String(this.categories.findIndex(c=>c[0]===id)+1).padStart(2,'0')}<i>/05</i></span></div>`;
     card.querySelector('[data-feed-session]')?.addEventListener('click',event=>Chat.openSession(event.currentTarget.dataset.feedSession));
+    card.querySelector('[data-feed-assistant]')?.addEventListener('click',async event=>{
+      const id=event.currentTarget.dataset.feedAssistant;
+      const {sessionId}=await SCDaily.assistantContext(id);
+      if(sessionId){await Chat.openSession(sessionId);return;}
+      const character=await Storage.dbGet('characters',id);
+      if(character)await Character.startChatWithCharacter(id);
+    });
     card.querySelector('[data-feed-forum]')?.addEventListener('click',()=>{Storage.set(Forum._CURRENT_FORUM_KEY,Storage.get(SCDaily.forumKey));this.openModule('forum');});
     card.querySelector('[data-feed-retry]')?.addEventListener('click',()=>{if(SCDaily.status==='api'){State.apiSettingsReturnPage='page-homescreen';State.switchPage('page-settings-api');}else void SCDaily.run({startup:true,retry:true});});
     card.querySelector('[data-feed-weather]')?.addEventListener('click',()=>Homescreen.openIconTarget(CONFIG.DEFAULT_ICONS.find(i=>i.id==='weather')));

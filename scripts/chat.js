@@ -7813,6 +7813,20 @@ const Chat = {
     document.body.appendChild(overlay);
   },
 
+  async _confirmTypedDeletion(title) {
+    const dialog=await SCUI.modal(title,'<p>请输入小写 <strong>delete</strong> 后执行删除。操作前仍会按原流程备份到回收站。</p><label for="sc-delete-token">删除确认</label><input id="sc-delete-token" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="delete"><div class="sc-dialog-actions"><button type="button" data-delete-cancel>取消</button><button type="button" class="sc-delete-action" data-delete-apply disabled>删除</button></div>');
+    dialog.id='sc-delete-confirm';
+    return new Promise(resolve=>{
+      const input=dialog.querySelector('#sc-delete-token');
+      const apply=dialog.querySelector('[data-delete-apply]');
+      input.addEventListener('input',()=>{apply.disabled=input.value!=='delete';});
+      apply.onclick=()=>{if(input.value!=='delete')return;resolve(true);dialog.close();};
+      dialog.querySelector('[data-delete-cancel]').onclick=()=>dialog.close();
+      dialog.addEventListener('close',()=>resolve(false),{once:true});
+      input.focus();
+    });
+  },
+
   /** 删除聊天记录：选择「仅消息」或「消息+记忆」 */
   _openClearChatHistoryChoiceModal() {
     const old = document.getElementById('yd-chat-clear-history-modal');
@@ -8107,12 +8121,17 @@ const Chat = {
       if (clearLabelEl) clearLabelEl.textContent = '删除聊天记录';
     } catch (e) {}
     clearBtn?.addEventListener('click', async () => {
-      if (!this.currentSessionId) return;
+      if (!this.currentSessionId || this._settingsDeletionPending) return;
+      this._settingsDeletionPending=true;
+      try {
+      const sid=this.currentSessionId;
       const choice = await this._openClearChatHistoryChoiceModal();
       if (!choice) return;
 
       const clearMemory = choice === 'messages-and-memory';
-      await this._clearSessionChatHistory(this.currentSessionId, { clearMemory });
+      if(!await this._confirmTypedDeletion(clearMemory?'删除聊天记录和记忆':'删除聊天记录'))return;
+      if(this.currentSessionId!==sid)return;
+      await this._clearSessionChatHistory(sid, { clearMemory });
 
       if (typeof this._toast === 'function') {
         this._toast(clearMemory ? '已清空聊天框和聊天记忆' : '已清空聊天框');
@@ -8120,6 +8139,8 @@ const Chat = {
       await this.loadMessages();
       await this.renderChatList();
       State.switchPage('page-chat');
+      }catch(error){console.error('[删除聊天记录]',error);this._toast('删除未完成，请重试');}
+      finally{this._settingsDeletionPending=false;}
     });
 
     const deleteBtn = document.getElementById('yd-chat-settings-delete');
@@ -8129,19 +8150,23 @@ const Chat = {
       if (deleteLabelEl) deleteLabelEl.textContent = '删除会话';
     } catch (e) {}
     deleteBtn?.addEventListener('click', async () => {
-      if (!this.currentSessionId) return;
-      if (!confirm('确定删除此会话及其所有消息？')) return;
+      if (!this.currentSessionId || this._settingsDeletionPending) return;
+      this._settingsDeletionPending=true;
+      try {
+      const sid=this.currentSessionId;
+      if(!await this._confirmTypedDeletion('删除会话及其所有消息'))return;
+      if(this.currentSessionId!==sid)return;
 
       // 备份到回收站（七天冷静期）
       // 注意：备份失败时不阻断原删除流程
-      const sessionBefore = await Storage.dbGet('sessions', this.currentSessionId);
+      const sessionBefore = await Storage.dbGet('sessions', sid);
       const allMessages = await Storage.dbGetAll('messages');
-      const messagesForSession = allMessages.filter((msg) => msg && msg.sessionId === this.currentSessionId);
+      const messagesForSession = allMessages.filter((msg) => msg && msg.sessionId === sid);
       try {
         if (typeof Storage.recycleBinAddBackup === 'function') {
           await Storage.recycleBinAddBackup({
             kind: 'delete_session',
-            sessionId: this.currentSessionId,
+            sessionId: sid,
             sessionSnapshot: sessionBefore,
             messagesSnapshot: messagesForSession,
             days: 7
@@ -8151,8 +8176,10 @@ const Chat = {
         console.error('[recycle-bin] 删除会话备份失败:', e);
       }
 
-      await this.deleteCurrentSession();
+      await this.deleteCurrentSession(sid);
       State.switchPage('page-chat-list');
+      }catch(error){console.error('[删除会话]',error);this._toast('删除未完成，请重试');}
+      finally{this._settingsDeletionPending=false;}
     });
   },
 
@@ -8699,15 +8726,16 @@ const Chat = {
   },
 
   // 删除当前会话
-  async deleteCurrentSession() {
-    if (!this.currentSessionId) return;
+  async deleteCurrentSession(sessionId=this.currentSessionId) {
+    const sid=String(sessionId || '').trim();
+    if (!sid) return;
     
-    await Storage.dbDelete('sessions', this.currentSessionId);
+    await Storage.dbDelete('sessions', sid);
     
     // 删除该会话的所有消息
     const allMessages = await Storage.dbGetAll('messages');
     for (const msg of allMessages) {
-      if (msg.sessionId === this.currentSessionId) {
+      if (msg.sessionId === sid) {
         await Storage.dbDelete('messages', msg.id);
       }
     }

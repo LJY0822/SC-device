@@ -42,31 +42,22 @@ const SCMoments = {
     return this.parsePrompt(raw,characters);
   },
   async open(sessionId) {
-    const messages=(await Storage.dbGetAll('messages')).filter(m=>m.sessionId===sessionId&&['user','assistant'].includes(m.role)).sort((a,b)=>a.createdAt-b.createdAt);
-    const esc=SCUI.escape;
-    await SCUI.modal('朋友圈 · 从聊天生成配图',`<p>只发送你勾选的聊天片段及当前会话角色设定。先生成英文提示词，再到编辑页确认生图；成品自动存入本软件相册。</p><button id="sc-moments-older">加载更早记录</button><div id="sc-moments-history"></div><p id="sc-moments-status" role="status"></p><button id="sc-moments-prompt" class="sc-primary">生成英文提示词</button>`,d=>{
-      let start=messages.length, busy=false;
-      const list=d.querySelector('#sc-moments-history'),status=d.querySelector('#sc-moments-status'),older=d.querySelector('#sc-moments-older'),button=d.querySelector('#sc-moments-prompt');
-      const load=()=>{const from=Math.max(0,start-100),fragment=document.createElement('div');fragment.innerHTML=messages.slice(from,start).map(m=>`<label class="sc-history-choice"><input type="checkbox" value="${esc(m.id)}"><span><b>${esc(m.role==='user'?'我':m.characterName||'角色')}</b> · ${esc(new Date(m.createdAt).toLocaleString())}<br>${esc(m.content||'')}</span></label>`).join('');list.prepend(fragment);start=from;older.hidden=start===0;};
-      older.onclick=load;load();if(!messages.length)status.textContent='当前会话还没有聊天记录';
-      button.onclick=async()=>{
-        if(busy)return;const ids=[...list.querySelectorAll('input:checked')].map(el=>el.value);
-        if(!ids.length){status.textContent='请先勾选聊天片段';return;}
-        busy=true;button.disabled=true;status.textContent='正在根据所选剧情生成英文提示词…';
-        try {
-          const result=await this.createPrompt(sessionId,ids);if(!d.isConnected)return;
-          let refs=[],missing=[],referenceError='';
-          try{({refs,missing}=await this.references(result.characterIds));}catch(e){referenceError=e.message;}
-          if(!d.isConnected)return;
-          const rec=MomentsImageStudio._newRecord();rec.prompt=result.prompt;rec.scCharacterIds=result.characterIds;rec.scSourceSessionId=sessionId;rec.scSourceMessageIds=ids;rec.draft.refs=refs.map(r=>r.src);rec.draft.scDefaultRefs=rec.draft.refs.slice();
-          const bundle=await MomentsImageStudio._loadStandaloneBundle();MomentsImageStudio._upsertStandaloneRecord(bundle,rec);bundle.activeRecordId=rec.id;await MomentsImageStudio._saveStandaloneBundle(bundle);
-          State.momentsImageStudioStandalone=true;State.momentsImageStudioMomentId=null;State.momentsImageStudioRecordId=rec.id;State.momentsImageStudioReturnPage='page-chat-settings';
-          d.close();State.switchPage('page-moments-image-studio');
-          if(referenceError)Chat._toast(referenceError);
-          if(missing.length)Chat._toast(`以下角色未设置人设图：${missing.join('、')}。可在生图前手动添加垫图。`);
-        }catch(e){status.textContent=e.message||'生成失败，请重试';}
-        finally{busy=false;button.disabled=false;}
-      };
+    return SessionMemory._openRoundRangePicker(sessionId,'moments',async({fr,tr},overlay)=>{
+      const sorted=await Chat._getSortedMemoryEligibleMessages(sessionId);
+      const messages=Chat._sliceMessagesByUserRounds(sorted,fr,tr);
+      if(!messages?.length)throw new Error('所选对话已发生变化，请重新选择');
+      const ids=messages.filter(m=>['user','assistant'].includes(m.role)).map(m=>m.id);
+      const result=await this.createPrompt(sessionId,ids);if(!overlay.isConnected)return false;
+      let refs=[],missing=[],referenceError='';
+      try{({refs,missing}=await this.references(result.characterIds));}catch(e){referenceError=e.message;}
+      if(!overlay.isConnected)return false;
+      const rec=MomentsImageStudio._newRecord();rec.prompt=result.prompt;rec.scCharacterIds=result.characterIds;rec.scSourceSessionId=sessionId;rec.scSourceMessageIds=ids;rec.draft.refs=refs.map(r=>r.src);rec.draft.scDefaultRefs=rec.draft.refs.slice();
+      const bundle=await MomentsImageStudio._loadStandaloneBundle();MomentsImageStudio._upsertStandaloneRecord(bundle,rec);bundle.activeRecordId=rec.id;await MomentsImageStudio._saveStandaloneBundle(bundle);
+      State.momentsImageStudioStandalone=true;State.momentsImageStudioMomentId=null;State.momentsImageStudioRecordId=rec.id;State.momentsImageStudioReturnPage='page-chat-settings';
+      State.switchPage('page-moments-image-studio');
+      if(referenceError)Chat._toast(referenceError);
+      if(missing.length)Chat._toast(`以下角色未设置人设图：${missing.join('、')}。可在生图前手动添加垫图。`);
+      return true;
     });
   },
   async recordCharacterIds(mid,rid) {

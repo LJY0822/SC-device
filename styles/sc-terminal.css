@@ -7,6 +7,7 @@
 .sc-terminal button:focus-visible,.sc-terminal [tabindex]:focus-visible{outline:2px solid var(--term-accent);outline-offset:3px}
 .terminal-panel{height:100%;overflow:auto;overscroll-behavior:contain;padding:20px 20px max(16px,env(safe-area-inset-bottom));scrollbar-width:thin;animation:terminal-reveal .22s ease-out}
 .terminal-panel[hidden]{display:none!important}
+.terminal-panel:not(.terminal-edc){touch-action:pan-y}
 .sc-terminal::after{content:'';position:absolute;inset:6px;border:1px solid var(--term-line);border-radius:8px;box-shadow:0 0 0 8px var(--term-bg);pointer-events:none;z-index:50}
 body.edc-open .sc-terminal::after{display:none}
 .terminal-panel svg{width:20px;height:20px;flex-shrink:0;vertical-align:middle}
