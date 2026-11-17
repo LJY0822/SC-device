@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const local=new Map([['forum_forums',[{id:'existing',name:'暗影之家',worldbook:'用户原有描述'}]]]);
+const context=vm.createContext({Date,Map,console,setInterval(){},setTimeout(){},window:{addEventListener(){}},document:{addEventListener(){}},Storage:{get:key=>local.get(key),set:(key,value)=>local.set(key,value)},Forum:{_FORUMS_KEY:'forum_forums'}});
+vm.runInContext(fs.readFileSync('scripts/sc-daily.js','utf8'),context);
+const run=code=>vm.runInContext(code,context);
+assert.equal(run('SCDaily.dateKey(new Date(2026,10,12,5,59))'),'2026-11-12');
+assert.equal(run('SCDaily.dateKey(new Date(2026,10,12,6,0))'),'2026-11-12');
+assert.equal(run('SCDaily.dateKey(new Date(2026,10,13,0,1))'),'2026-11-13');
+assert.equal(run('SCDaily.ensureForum().id'),'existing');
+assert.equal(local.get('forum_forums').length,1,'reuse the existing forum without duplicating');
+local.get('forum_forums')[0].name='新名称';
+assert.equal(run('SCDaily.ensureForum().id'),'existing');
+assert.equal(run('SCDaily.ensureForum().worldbook'),'用户原有描述');
+assert.equal(run('SCDaily.isNewsForum("existing")'),true);
+assert.equal(run('Array.from(SCDaily.text("字".repeat(180),100)).length'),100);
+assert.throws(()=>run('SCDaily.menu({breakfast:["燕麦"]})'));
+assert.equal(run('SCDaily.menu({breakfast:["燕麦"],lunch:["鸡肉"],dinner:["蔬菜"]}).meals.length'),3);
+console.log('PASS daily: local dates, forum reuse/rename/description, 100-character cap, meal validation');

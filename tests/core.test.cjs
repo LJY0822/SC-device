@@ -1,0 +1,28 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const context=vm.createContext({console,Blob,Uint8Array,atob,Date,Math,Map,Set,setInterval,clearInterval,Promise,CustomEvent:class{},navigator:{},document:{hidden:false,addEventListener(){}},window:{dispatchEvent(){},addEventListener(){}},localStorage:{},Settings:{},State:{generateId:()=>String(++seq)}});
+let seq=0;const kv=new Map();const sessions=new Map([['s',{id:'s',scProactiveEnabled:true}]]);const messages=new Map();
+context.Storage={kvGet:async k=>structuredClone(kv.get(k)),kvSet:async(k,v)=>kv.set(k,structuredClone(v)),dbGet:async(s,k)=>sessions.get(k),db:{objectStoreNames:['sessions','messages','characters','album','kv']}};
+context.Chat={insertProactivePushMessage:async row=>{messages.set(row.taskId,row);return true;}};
+for(const file of ['sc-scheduler.js','sc-ui.js','sc-backup.js'])vm.runInContext(fs.readFileSync('scripts/'+file,'utf8'),context);
+const run=code=>vm.runInContext(code,context);
+(async()=>{
+ assert.equal(run('SCUI.normalizeMath("$\\\\rightarrow$")'),'→');
+ assert.equal(run('SCUI.normalizeMath("`$\\\\rightarrow$`")'),'`$\\rightarrow$`');
+ await run('ProactiveScheduler.saveConfig({enabled:true,proactiveMin:0,proactiveMax:0,dndStart:0,dndEnd:0})');
+ await run('ProactiveScheduler.scheduleFromSystemAction({sessionId:"s",body:"once",delayMinutes:0})');
+ await Promise.all([run('ProactiveScheduler._reconcileLocalDueTasks()'),run('ProactiveScheduler._reconcileLocalDueTasks()')]);
+ assert.equal(messages.size,1);assert.equal(kv.get('proactive_local_tasks_v1')[0].delivered,true);
+ const planned=Date.now()-7200000; kv.set('proactive_local_tasks_v1',[{taskId:'missed',sessionId:'s',body:'at sixteen',dueAt:planned}]);
+ await run('ProactiveScheduler._reconcileLocalDueTasks()');assert.equal(messages.get('missed').dueAt,planned);
+ await run('ProactiveScheduler.scheduleFromSystemAction({sessionId:"s",body:"obsolete",delayMinutes:20})');
+ await run('ProactiveScheduler.scheduleFromSystemAction({sessionId:"s",body:"replacement",delayMinutes:30})');
+ assert.equal((await run('ProactiveScheduler.getLocalPendingTasks()')).length,1);
+ await run('ProactiveScheduler.scheduleFromSystemAction({sessionId:"s",cancel:true})');assert.equal((await run('ProactiveScheduler.getLocalPendingTasks()')).length,0);
+ assert.throws(()=>run('ProactiveScheduler._parseAtDueAt("2026-02-30 12:00",Date.now())'));
+ assert.throws(()=>run('SCBackup.validate({version:1,exportMode:"empty",data:{}})'));
+ assert.throws(()=>run('SCBackup.validate({version:1,exportMode:"full",data:{sessions:[{id:"a"},{id:"a"}],messages:[],characters:[],album:[],localStorage:{}}})'));
+ assert.throws(()=>run('SCBackup.validate({version:1,exportMode:"full",data:{sessions:[],messages:[{id:"m",sessionId:"missing"}],characters:[],album:[],localStorage:{}}})'));
+ const blob=run('SCBackup.decode({__scBlob:true,type:"text/plain",data:"data:text/plain;base64,aGk="})');assert.equal(await blob.text(),'hi');
+ for(const dir of ['scripts','tools'])for(const name of fs.readdirSync(dir).filter(n=>/\.(js|cjs)$/.test(n)))new vm.Script(fs.readFileSync(dir+'/'+name,'utf8'),{filename:dir+'/'+name});
+ console.log('PASS: math, code spans, scheduler dedupe/recovery/replacement/cancel/date validation, backup validation/media, syntax');
+})().catch(e=>{console.error(e);process.exitCode=1;});

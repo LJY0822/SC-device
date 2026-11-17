@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const button={setAttribute(key,value){this[key]=value;}};const input={value:''};
+const context=vm.createContext({document:{getElementById(id){return id==='chat-send'?button:input;}}});
+vm.runInContext(fs.readFileSync('scripts/chat.js','utf8'),context);
+const run=code=>vm.runInContext(code,context);
+run('Chat._updateSendButtonState()');assert.equal(button.disabled,true);assert.equal(button['aria-label'],'发送');
+input.value='message';run('Chat._updateSendButtonState()');assert.equal(button.disabled,false);assert.match(button.innerHTML,/>加入</);assert.equal(button['aria-label'],'发送（入队）');
+input.value='';run('Chat._pendingUserQueue=["m"];Chat._updateSendButtonState()');assert.equal(button.disabled,false);assert.match(button.innerHTML,/>发送</);assert.equal(button['aria-label'],'发送待发送消息');
+run('Chat._flushingPending=true;Chat._updateSendButtonState()');assert.equal(button.disabled,true);assert.match(button.innerHTML,/>发送中</);
+assert.match(button.innerHTML,/stroke="currentColor"/,'send icon inherits day/night color');
+console.log('PASS send controls: idle, queue, flush and in-flight states preserve the two-step flow');
