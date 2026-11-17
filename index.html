@@ -538,6 +538,10 @@
                 <line x1="15" y1="9" x2="15.01" y2="9"></line>
               </svg>
             </button>
+            <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-upload" aria-label="上传档案" title="上传档案">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 13 4-4M8 16l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M16 8l2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0" transform="translate(1 -1) scale(.92)"/></svg>
+            </button>
+            <input id="chat-upload-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.xlsx,.docx,.pdf" hidden>
             <button class="yd-chat-toolbar__btn" type="button" id="chat-btn-image" aria-label="图片">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="16" rx="3" ry="3"></rect>
@@ -1766,7 +1770,7 @@
       <div class="yd-page-content yd-character-edit-content">
         <div class="yd-character-form">
           <section class="terminal-role-options" aria-label="首页角色设置">
-            <label><span>加入首页助手<small>每天独立生成一条不超过100字的早间留言，不写入聊天主线</small></span><input type="checkbox" id="char-home-assistant"></label>
+            <label><span>加入首页助手<small>手动刷新生成不超过100字的助手留言，不写入聊天主线</small></span><input type="checkbox" id="char-home-assistant"></label>
             <label><span>加入特别关注<small>在首页未读中优先关注该角色的消息</small></span><input type="checkbox" id="char-special-focus"></label>
           </section>
           <div class="yd-character-section">
@@ -2667,6 +2671,7 @@
   <script src="scripts/sc-ui.js"></script>
   <script src="scripts/sc-chat.js"></script>
   <script src="scripts/sc-moments.js"></script>
+  <script src="scripts/sc-uploads.js"></script>
   <script src="scripts/sc-backup.js"></script>
   <script src="scripts/sc-sync.js"></script>
   <script src="scripts/sc-edc.js"></script>

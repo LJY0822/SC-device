@@ -61,9 +61,9 @@ const SCDaily = {
   isNewsForum(id) { return !!id && id===Storage.get(this.forumKey); },
   async newsContext(id) {
     if(!this.isNewsForum(id))return '';
-    const daily=await Storage.kvGet(this.dayKey(this.dateKey()));
+    const daily=await this.readLatest();
     const news=Array.isArray(daily?.bulletin)?daily.bulletin:[];
-    return news.length?'\n【首页当日新闻：优先事实】\n'+news.map(n=>`${n.title}\n${n.body}`).join('\n\n')+'\n新闻优先于帖子中的猜测；讨论不得推翻新闻、编造冲突事件或把猜测当作新事实。':'';
+    return news.length?'\n【首页最近一次更新的新闻：优先事实】\n'+news.map(n=>`${n.title}\n${n.body}`).join('\n\n')+'\n新闻优先于帖子中的猜测；讨论不得推翻新闻、编造冲突事件或把猜测当作新事实。':'';
   },
   async request(task,context) {
     const data=await Chat.requestChatCompletions([
@@ -105,101 +105,82 @@ const SCDaily = {
     });
     window.dispatchEvent(new CustomEvent('sc:daily-updated',{detail:{date}}));
   },
+  async readLatest() {
+    const rows=(await Storage.dbGetAll('kv')).filter(r=>/^sc_terminal_daily_v1_\d{4}-\d{2}-\d{2}$/.test(r.key||'')&&r.key<=this.dayKey(this.dateKey())).sort((a,b)=>b.key.localeCompare(a.key));
+    const result={_dates:{}};
+    for(const category of ['menu','bulletin','assistants']){
+      const row=rows.find(r=>Array.isArray(r.value?.[category])&&(r.value[category].length||r.value._dates?.[category]));
+      if(row){result[category]=row.value[category];result._dates[category]=row.value._dates?.[category]||row.key.slice(-10);}
+    }
+    return result;
+  },
   run(options={}) {
+    if(options.manual!==true||!['menu','bulletin','assistants'].includes(options.category))return Promise.resolve();
     if(this.pending)return this.pending;
-    this.pending=this.exclusive(options).catch(()=>{this.status='failed';this.notify();}).finally(()=>this.pending=null);
+    this.activeCategory=options.category;
+    this.pending=this.exclusive(options).catch(error=>{this.status='failed';Chat._toast(error.message||'更新失败，保留原内容');}).finally(()=>{this.pending=null;this.activeCategory=null;this.notify();});
     return this.pending;
   },
   async exclusive(options) {
-    if(!options.startup && new Date().getHours()<6)return;
-    if(!Storage.db || !window.__ydAppReady)return;
-    if(navigator.onLine===false){this.status='offline';this.notify();return;}
-    if(!Storage.get(CONFIG.STORAGE_KEYS.API_KEY)){this.status='api';this.notify();return;}
+    if(!Storage.db||!window.__ydAppReady)return;
+    if(navigator.onLine===false){Chat._toast('当前离线，保留原内容；联网后可手动刷新');return;}
+    if(!Storage.get(CONFIG.STORAGE_KEYS.API_KEY)){this.status='api';return;}
     const owner=State.generateId();
     const work=async()=>{
-      if(!await this.lease(owner))return;
+      if(!await this.lease(owner)){Chat._toast('其他页面正在更新，请稍后查看');return;}
       const renewal=setInterval(()=>void this.lease(owner).catch(()=>{}),30000);
-      try{await this.generate(options,owner);}finally{clearInterval(renewal);await this.lease(owner,true);}
+      try{this.status='running';this.notify();await this.generate(options,owner);}
+      finally{clearInterval(renewal);await this.lease(owner,true);}
     };
     if(navigator.locks)await navigator.locks.request('sc-terminal-daily',{ifAvailable:true},lock=>lock?work():undefined);
     else await work();
   },
   notify() { window.dispatchEvent(new CustomEvent('sc:daily-status')); },
-  scheduleNext() {
-    const now=new Date(),next=new Date(now);
-    next.setHours(6,0,0,0);if(next<=now)next.setDate(next.getDate()+1);
-    setTimeout(()=>{void this.run();this.scheduleNext();},next-now);
-  },
-  async generate({retry=false}={},owner) {
-    const date=this.dateKey();const forum=this.ensureForum();
-    const characters=await Storage.dbGetAll('characters');const prefs=await this.roles(characters);
-    const daily=await Storage.kvGet(this.dayKey(date)) || {};
-    if(Array.isArray(daily.bulletin))daily.bulletin=daily.bulletin.map((n,i)=>({...n,id:n.id || `sc-news-${date}-${i}`,forumId:n.forumId || forum.id}));
-    daily._jobs=daily._jobs || {};
-    this.status='running';this.notify();
-    let failures=0;
-    const part=async(key,exists,produce,apply)=>{
-      if(exists)return;
-      const job=daily._jobs[key] || {attempts:0};
-      if(!retry && (job.attempts>=3 || job.retryAt>Date.now())){failures++;return;}
-      daily._jobs[key]={status:'running',attempts:retry?1:job.attempts+1,startedAt:Date.now()};
-      await this.commit(date,daily);
-      try {
-        const result=await produce();
-        if(!await this.lease(owner)){const error=new Error('任务锁已转移');error.code='SC_LEASE_LOST';throw error;}
-        const threads=await apply(result);
-        daily._jobs[key]={...daily._jobs[key],status:'done',finishedAt:Date.now()};
-        await this.commit(date,daily,threads || []);
-      }catch(error){
-        if(error.code==='SC_LEASE_LOST')throw error;
-        failures++;daily._jobs[key]={...daily._jobs[key],status:'failed',retryAt:Date.now()+900000};
-        await this.commit(date,daily);
-        console.warn('[每日内容]',key,'生成或保存失败；保留已有内容');
-      }
-    };
-    const context={date,forumName:forum.name,forumDescription:forum.worldbook || ''};
-    await part('menu',Array.isArray(daily.menu)&&daily.menu.length,
-      async()=>this.menu(await this.request('生成基地自助餐吧今日三餐，生活化、有变化，提供主食、荤素菜、饮品等。返回 {"breakfast":["菜品"],"lunch":["菜品"],"dinner":["菜品"]}，每餐4至6项。',context)),
-      result=>{daily.menu=[result];});
-    await part('bulletin',Array.isArray(daily.bulletin)&&daily.bulletin.length,
-      async()=>{
-        const data=await this.request('以指定论坛描述为主要世界背景，先确立今日公司与基地新闻，再供论坛讨论。生成2条克制的日常新闻，不从帖子反推事实，不编造伤亡或重大军事行动。返回 {"news":[{"title":"标题","body":"正文"}]}。',context);
-        if(!Array.isArray(data.news)||!data.news.length)throw new Error('新闻为空');
-        return data.news.slice(0,3).map((n,i)=>({id:`sc-news-${date}-${i}`,title:this.text(n.title,60),body:this.text(n.body,600),forumId:forum.id,source:'generated'}));
-      },result=>{daily.bulletin=result;});
-    for(const raw of characters){
-      if(!prefs.get(raw.id)?.assistant)continue;
-      const character=Character.normalizeCard(raw);
-      await part('assistant:'+raw.id,(daily.assistants || []).some(a=>a.characterId===raw.id),
-        async()=>{
-          const conversation=await this.assistantContext(raw.id);
-          const data=await this.request('按此角色卡口吻，结合 recentConversation 中最近的真实对话写一条独立早间留言，最多100个中文字。回应近期话题、关心或轻量建议；仅参考已有事实，不虚构后续进展，不代替用户行动。没有对话时只做日常问候。留言独立于对话主线。返回 {"body":"留言"}。',{date,characterName:character.name,characterCard:character.description,recentConversation:conversation.recentConversation});
-          return {characterId:raw.id,sessionId:conversation.sessionId,title:character.name+' · 早间留言',body:this.text(data.body,100),source:'generated'};
-        },async result=>{
-          const current=await Storage.kvGet(this.roleKey(raw.id));
-          if(!current?.assistant || !await Storage.dbGet('characters',raw.id))return;
-          daily.assistants=[...(daily.assistants || []).filter(a=>a.characterId!==raw.id),result];
-        });
+  async generate({manual=false,category}={},owner) {
+    if(!manual||!['menu','bulletin','assistants'].includes(category))return;
+    const date=this.dateKey();
+    let value,threads=[];
+    if(category==='menu')value=[this.menu(await this.request('生成基地自助餐吧今日三餐，生活化、有变化。返回 {"breakfast":["菜品"],"lunch":["菜品"],"dinner":["菜品"]}，每餐4至6项。',{date}))];
+    if(category==='assistants'){
+      const characters=await Storage.dbGetAll('characters'),prefs=await this.roles(characters);
+      const selected=characters.filter(c=>prefs.get(c.id)?.assistant);
+      if(!selected.length){this.status='idle';Chat._toast('请先在角色设置中加入首页助手');return;}
+      const assistants=await Promise.all(selected.map(async raw=>{
+        const c=Character.normalizeCard(raw),conversation=await this.assistantContext(raw.id);
+        return {characterId:raw.id,characterName:c.name,characterCard:c.description,...conversation};
+      }));
+      const data=await this.request('一次性为 assistants 中的每位角色各写一条独立留言，每位最多100个中文字。各角色只能参考自己的角色卡和 recentConversation，不得相互引用其他角色的私人对话，不推进剧情或代替用户行动。没有对话时做日常问候。必须按原 characterId 返回全部角色各一条，不能重复或遗漏。返回 {"assistants":[{"characterId":"原ID","body":"留言"}]}。',{date,assistants});
+      if(!Array.isArray(data.assistants)||data.assistants.length!==assistants.length)throw new Error('助手返回不完整，未保存，也不会自动重试');
+      const seen=new Set();
+      value=data.assistants.map(item=>{
+        const c=assistants.find(a=>a.characterId===item.characterId);
+        if(!c||seen.has(c.characterId))throw new Error('助手角色编号无效，原留言已保留');
+        seen.add(c.characterId);
+        return {characterId:c.characterId,sessionId:c.sessionId,title:c.characterName+' · 助手留言',body:this.text(item.body,100),source:'generated'};
+      });
+      const current=await Storage.dbGetAll('characters'),currentPrefs=await this.roles(current);
+      value=value.filter(a=>current.some(c=>c.id===a.characterId)&&currentPrefs.get(a.characterId)?.assistant);
     }
-    if(daily.bulletin?.length)await part('discussion',daily._jobs.discussion?.status==='done',
-      async()=>{
-        const data=await this.request('基于已发布新闻写2条驻地论坛讨论。新闻是优先且不可推翻的事实，论坛描述只补充背景。不要制造新事件；用普通论坛成员口吻。返回 {"threads":[{"title":"讨论标题","body":"讨论正文"}]}。',{...context,news:daily.bulletin});
-        if(!Array.isArray(data.threads)||!data.threads.length)throw new Error('讨论为空');
-        return data.threads.slice(0,2).map((t,i)=>({id:`sc-news-discussion-${date}-${i}`,forumId:forum.id,forumIcon:forum.icon || '💬',username:'驻地成员',socialText:'',status:'',watchingCharacterNames:[],topic:'今日新闻',title:this.text(t.title,70),content:this.text(t.body,800),createdAt:Date.now()+i,replyCount:0,sourceNewsIds:daily.bulletin.map(n=>n.id),source:'terminal-news'}));
-      },result=>result);
-    this.status=failures?'failed':'ready';this.notify();
-    window.dispatchEvent(new CustomEvent('sc:daily-updated',{detail:{date}}));
+    if(category==='bulletin'){
+      const forum=this.ensureForum();
+      const data=await this.request('以论坛描述为世界背景，先生成2条今日公司与基地日常新闻，再生成2条围绕这些新闻的论坛讨论。新闻是优先事实，讨论不能推翻新闻或编造新事件，不制造伤亡或重大军事行动。一次返回 {"news":[{"title":"标题","body":"正文"}],"threads":[{"title":"讨论标题","body":"讨论正文"}]}。',{date,forumName:forum.name,forumDescription:forum.worldbook||''});
+      if(!Array.isArray(data.news)||!data.news.length||!Array.isArray(data.threads)||!data.threads.length)throw new Error('资讯返回不完整，原内容已保留');
+      const batch=State.generateId();
+      value=data.news.slice(0,3).map((n,i)=>({id:'sc-news-'+date+'-'+batch+'-'+i,title:this.text(n.title,60),body:this.text(n.body,600),forumId:forum.id,source:'generated'}));
+      threads=data.threads.slice(0,2).map((t,i)=>({id:'sc-news-discussion-'+date+'-'+batch+'-'+i,forumId:forum.id,forumIcon:forum.icon||'💬',username:'驻地成员',socialText:'',status:'',watchingCharacterNames:[],topic:'今日新闻',title:this.text(t.title,70),content:this.text(t.body,800),createdAt:Date.now()+i,replyCount:0,sourceNewsIds:value.map(n=>n.id),source:'terminal-news'}));
+    }
+    if(!await this.lease(owner))throw new Error('任务锁已转移，原内容已保留');
+    const daily=await Storage.kvGet(this.dayKey(date))||{};
+    daily[category]=value;daily._dates={...daily._dates,[category]:date};
+    await this.commit(date,daily,threads);this.status='ready';
   },
   start() {
-    this.scheduleNext();
-    const boot=()=>{if(!window.__ydAppReady || !Storage.db)return false;try{this.ensureForum();}catch{this.status='failed';this.notify();return true;}void this.run({startup:true});return true;};
-    const wait=setInterval(()=>{if(boot())clearInterval(wait);},250);
-    setInterval(()=>{if(!document.hidden)void this.run();},60000);
-    window.addEventListener('focus',()=>void this.run({startup:true}));
-    window.addEventListener('online',()=>void this.run({startup:true}));
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void this.run({startup:true});});
-    window.addEventListener('sc:roles-updated',()=>void this.run({startup:true}));
-    window.addEventListener('yd:pagechange',event=>{if(event.detail?.to==='page-homescreen')void this.run({startup:true});});
+    const wait=setInterval(()=>{
+      if(!window.__ydAppReady||!Storage.db)return;
+      clearInterval(wait);
+      try{this.ensureForum();}catch{this.status='failed';}
+      this.notify();
+    },250);
   }
 };
 SCDaily.start();

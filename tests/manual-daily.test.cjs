@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const saved=new Map(),local=new Map(),events=[],timers=[];let requests=0,bad=false;
+const characters=[{id:'a',name:'Alpha',description:'A'},{id:'b',name:'Bravo',description:'B'}];
+const context=vm.createContext({Date,Map,Set,Promise,console,setInterval(fn){timers.push(fn);return timers.length;},clearInterval(){},window:{__ydAppReady:true,addEventListener(name){events.push(name);},dispatchEvent(){}},CustomEvent:class{},document:{addEventListener(name){events.push(name);}},Forum:{_FORUMS_KEY:'forums'},State:{generateId:()=>String(Date.now())},Chat:{_toast(){}},Character:{normalizeCard:c=>c},Storage:{db:{},get:k=>local.get(k),set:(k,v)=>local.set(k,v),kvGet:async k=>saved.get(k),dbGetAll:async store=>store==='characters'?characters:store==='kv'?[...saved].map(([key,value])=>({key,value})):[]}});
+vm.runInContext(fs.readFileSync('scripts/sc-daily.js','utf8'),context);
+const run=code=>vm.runInContext(code,context);
+context.request=async(task,input)=>{requests++;assert.equal(input.assistants.length,2);return {assistants:input.assistants.map((a,i)=>({characterId:bad?'a':a.characterId,body:a.characterName+'留言'.repeat(100)}))};};
+context.commit=async(date,value)=>saved.set('sc_terminal_daily_v1_'+date,structuredClone(value));
+run('SCDaily.request=request;SCDaily.commit=commit;SCDaily.lease=async()=>true;SCDaily.roles=async()=>new Map([["a",{assistant:true}],["b",{assistant:true}]]);SCDaily.assistantContext=async id=>({sessionId:id,recentConversation:[{role:"user",content:id}]});');
+(async()=>{
+ timers[0]();assert.deepEqual(events,[],'no focus/network/day scheduler registered');
+ await run('SCDaily.run({startup:true,retry:true})');await run('SCDaily.generate({})');assert.equal(requests,0,'all implicit update entry points are inert');
+ await run('SCDaily.generate({manual:true,category:"assistants"},"owner")');assert.equal(requests,1);
+ const date=run('SCDaily.dateKey()'),current=saved.get('sc_terminal_daily_v1_'+date);
+ assert.equal(current.assistants.length,2);assert.equal(current._dates.assistants,date);assert.ok(current.assistants.every(a=>Array.from(a.body).length<=100));
+ const before=JSON.stringify(current);bad=true;
+ await assert.rejects(run('SCDaily.generate({manual:true,category:"assistants"},"owner")'));
+ assert.equal(requests,2);assert.equal(JSON.stringify(saved.get('sc_terminal_daily_v1_'+date)),before,'invalid batch cannot partially overwrite assistants');
+ saved.set('sc_terminal_daily_v1_2000-01-01',{menu:[{title:'older menu',body:'retained'}]});
+ const latest=await run('SCDaily.readLatest()');assert.equal(latest.menu[0].title,'older menu');assert.equal(latest._dates.menu,'2000-01-01');assert.equal(latest.assistants.length,2);
+ assert.equal(requests,2,'reading stale content cannot generate or retry');
+ console.log('PASS manual daily: zero automatic triggers, one batched call, atomic validation, 100-character cap and stale-content fallback');
+})().catch(e=>{console.error(e);process.exitCode=1;});

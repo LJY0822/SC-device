@@ -54,6 +54,10 @@ body.edc-open .sc-terminal::after{display:none}
 .terminal-feed-heading{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .terminal-feed-heading>strong{font-size:13px;border-left:4px solid var(--term-accent);padding-left:9px}.terminal-feed-heading strong>span{font-weight:500}
 .terminal-feed-status{font-size:10px;color:var(--term-accent);border:1px solid var(--term-line);border-radius:3px;padding:3px 6px;white-space:nowrap}
+.terminal-feed-state{display:flex;align-items:center;gap:5px}
+.terminal-feed-refresh{display:grid;place-items:center;width:28px;height:28px;padding:4px;border:0;background:transparent;color:var(--term-accent)}
+.terminal-feed-refresh svg{width:17px;height:17px}
+.terminal-feed-refresh:disabled{opacity:.4;cursor:default}
 #terminal-feed-card h3{font-size:25px;letter-spacing:.5px;line-height:1.4;margin:15px 0 14px;font-weight:750}
 #terminal-feed-card p{font-size:12px;color:var(--term-muted);line-height:1.85}
 .terminal-feed-empty{border-top:1px solid color-mix(in srgb,var(--term-line) 45%,transparent);min-height:129px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:16px 0 20px;gap:6px}

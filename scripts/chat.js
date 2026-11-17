@@ -2490,7 +2490,7 @@ const Chat = {
       ChatMessageBuilder.isAutoVisionEnabled();
     const visionOk =
       !!rawVision &&
-      autoVisionOn &&
+      (autoVisionOn || opts?.attachment?.kind==='image') &&
       (typeof ChatMessageBuilder !== 'undefined' && ChatMessageBuilder.isVisionImageUrlForApi
         ? ChatMessageBuilder.isVisionImageUrlForApi(rawVision)
         : /^data:image\//i.test(rawVision) || /^https?:\/\//i.test(rawVision));
@@ -2511,8 +2511,10 @@ const Chat = {
       sessionForGroup.participantCharacterIds.length > 1
     );
     let storedContent = text;
-    const moneyInfo = this._parseMoneyMessage(text, isGroupQueue);
-    if (moneyInfo) {
+    const moneyInfo = opts?.attachment ? null : this._parseMoneyMessage(text, isGroupQueue);
+    if (opts?.attachment) {
+      storedContent=text;
+    } else if (moneyInfo) {
       storedContent = this._buildMoneyProtocolContent(moneyInfo, isGroupQueue, '', msgId);
     } else if (/\n/.test(text)) {
       storedContent = this.ensureMoneyMultilineContentWithMessageId(text, msgId, isGroupQueue);
@@ -2526,6 +2528,7 @@ const Chat = {
       createdAt: Date.now(),
       mode: this._getCurrentSessionMode(),
       _pending: true,
+      ...(opts?.attachment ? {attachment:opts.attachment} : {}),
       ...(safeVisionUrl ? { imageDataUrl: safeVisionUrl } : {}),
       // 如果当前处于引用模式，把引用内容挂在消息上，方便后续 flush 统一格式化
       replyTo: this._currentQuote && this._currentQuote.text
@@ -2552,6 +2555,7 @@ const Chat = {
     }
 
     try {
+      if(opts?.attachment)return userMsg.id;
       const info = this._parseMoneyMessage(storedContent, isGroupQueue);
       if (info) {
         this._registerPendingUserMoneyTx(userMsg.id, info, this.currentSessionId);
@@ -5489,6 +5493,7 @@ const Chat = {
 
   /** 与 _flushPendingMessages 中每条 pending 用户消息的装饰规则一致（用于合成 API 多模态 parts） */
   _decoratePendingUserLineForApi(m, wrapUserLineForApi) {
+    if(m?.attachment)return String(m.content || '');
     let base = String(m.content || '').trim();
     if (!base) return '';
     try {
@@ -5531,7 +5536,7 @@ const Chat = {
         url &&
         typeof ChatMessageBuilder !== 'undefined' &&
         ChatMessageBuilder.isAutoVisionEnabled &&
-        ChatMessageBuilder.isAutoVisionEnabled() &&
+        (m.attachment?.kind==='image' || ChatMessageBuilder.isAutoVisionEnabled()) &&
         ChatMessageBuilder.isVisionImageUrlForApi &&
         ChatMessageBuilder.isVisionImageUrlForApi(url)
       ) {
@@ -5644,7 +5649,7 @@ const Chat = {
       const userContentParts = this._buildUserContentPartsForApiFlush(pendingMsgs, wrapUserLineForApi);
       await this.callAI(combined, historyForApi, {
         ...(callOpts && typeof callOpts === 'object' ? callOpts : {}),
-        ...(userContentParts ? { userContentParts } : {})
+        ...(userContentParts ? { userContentParts,explicitVision:pendingMsgs.some(m=>m.attachment?.kind==='image') } : {})
       });
 
       if (sparkRelight || sparkFirstLight) {
@@ -9500,6 +9505,9 @@ const Chat = {
     const startIdx = canIncremental ? prevCount : 0;
     const msgsToRender = this.messages.slice(startIdx);
     msgsToRender.forEach((msg, localIdx) => {
+      if(msg?.role==='user' && msg.attachment && typeof SCUploads!=='undefined'){
+        appendTo(SCUploads.render(msg));return;
+      }
       const rawContentForDebug = String(msg?.content || '');
       const hasTogetherMarker = rawContentForDebug.includes('[分享]音乐|一起听|邀请|');
       if (hasTogetherMarker) {
@@ -13046,6 +13054,7 @@ const Chat = {
         history: Array.isArray(historyForApi) ? historyForApi : this.messages,
         userInput: userMessage,
         userContentParts: opts.userContentParts || null,
+        explicitVision: opts.explicitVision === true,
         conversationMode: requestMode,
         globalWorldBook,
         mask,

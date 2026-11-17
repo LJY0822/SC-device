@@ -251,3 +251,13 @@ html[data-sc-mode] #yd-session-memory-range-modal button.yd-sm-range-dot--on {
   background:var(--ui-accent)!important; border-color:var(--ui-accent)!important;
 }
 #yd-session-memory-range-modal [data-act="select-moments"]:disabled { opacity:.5; }
+#chat-upload-file[hidden]{display:none!important}
+#page-chat .sc-upload-message{justify-content:flex-end;padding:8px 12px}
+#page-chat .sc-upload-message>.yd-message__content{width:300px;flex:0 1 300px;min-width:0;max-width:90%;overflow-wrap:anywhere}
+#page-chat .sc-upload-message strong{display:block;font-size:14px}
+#page-chat .sc-upload-message img{display:block;max-width:100%;max-height:240px;object-fit:contain;margin:8px 0;border-radius:5px}
+#page-chat .sc-upload-message summary{cursor:pointer;margin:8px 0;font-size:13px}
+#page-chat .sc-upload-message pre{white-space:pre-wrap;max-height:240px;overflow:auto;font-size:13px}
+#page-chat .sc-upload-message :is(strong,summary,pre){color:var(--ui-ink)!important}
+#page-chat .sc-upload-message button{display:block;margin-top:8px;font-size:12px;padding:6px 8px;border:1px solid var(--ui-line)!important;background:var(--ui-card)!important}
+#chat-toolbar{flex-wrap:wrap}

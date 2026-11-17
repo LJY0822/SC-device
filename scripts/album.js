@@ -106,8 +106,7 @@ window.Album = {
     menu.id = 'yd-album-action-menu';
     menu.className = 'yd-album-action-menu';
     menu.innerHTML = `
-      <button type="button" class="yd-album-action-menu__item" data-action="batch-delete">批量删除</button>
-      <button type="button" class="yd-album-action-menu__item" data-action="beautify-phone">一键美化小手机（内测版）</button>
+      <button type="button" class="yd-album-action-menu__item" data-action="batch-delete">删除</button>
     `;
 
     const rect = anchorEl.getBoundingClientRect();
@@ -123,8 +122,6 @@ window.Album = {
       this.closeActionMenu();
       if (action === 'batch-delete') {
         this.enterBatchDeleteMode();
-      } else if (action === 'beautify-phone') {
-        this.showOneClickTargetPicker();
       }
     });
 

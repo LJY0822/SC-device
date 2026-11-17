@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+let queued=0,mode=0;const button={disabled:false};
+const context=vm.createContext({TextDecoder,Uint8Array,DataView,window:{},document:{getElementById(){return button;}},Chat:{currentSessionId:'a',_getCurrentSessionMode:()=>mode,_toast(){},_queueUserMessage(){queued++;}}});
+vm.runInContext(fs.readFileSync('scripts/sc-uploads.js','utf8'),context);
+const run=code=>vm.runInContext(code,context);
+assert.throws(()=>run('SCUploads.checkedText(" ")'));
+assert.throws(()=>run('SCUploads.checkedText("字".repeat(120001))'));
+assert.equal(run('SCUploads.decode(new Uint8Array([0xd6,0xd0,0xce,0xc4]).buffer)'),'中文');
+assert.equal(run('SCUploads.decode(new Uint8Array([0xff,0xfe,0x2d,0x4e]).buffer)'),'中');
+assert.throws(()=>run('SCUploads.checkZip(new ArrayBuffer(16))'));
+const zip=new ArrayBuffer(68),view=new DataView(zip);view.setUint32(0,0x02014b50,true);view.setUint32(24,65*1024*1024,true);view.setUint32(46,0x06054b50,true);view.setUint16(56,1,true);view.setUint32(62,0,true);context.zip=zip;
+assert.throws(()=>run('SCUploads.checkZip(zip)'),/64 MB/);
+(async()=>{
+ await assert.rejects(run('SCUploads.extract({name:"empty.txt",size:0})'));
+ await assert.rejects(run('SCUploads.extract({name:"large.txt",size:16*1024*1024})'));
+ await assert.rejects(run('SCUploads.extract({name:"old.doc",size:10})'));
+ let finish;context.wait=()=>new Promise(r=>{finish=r;});
+ run('SCUploads.extract=wait');const pending=run('SCUploads.upload({name:"draft.txt",size:10})');
+ run('Chat.currentSessionId="b"');finish({kind:'document',text:'private file'});await pending;
+ assert.equal(queued,0,'changing chats while parsing cannot send a file to the wrong chat');assert.equal(button.disabled,false);
+ mode=1;await run('SCUploads.upload({name:"draft.txt",size:10})');assert.equal(queued,0);
+ console.log('PASS uploads: text/size/type limits, Chinese encodings, invalid/archive expansion limits and session-switch privacy');
+})().catch(e=>{console.error(e);process.exitCode=1;});

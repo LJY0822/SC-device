@@ -28,7 +28,7 @@ const SCChat = {
       const key='sc_round_'+sid; const previous=await Storage.kvGet(key);
       if(previous && !previous.done) { Chat._toast('有未完成的群聊轮次，请到聊天设置继续或取消');return false; }
       if(s.scGroupMode==='independent' && (s.participantCharacterIds||[]).length>1 && !opts.voiceCallRequest) {
-        const round={id:State.generateId(),sessionId:sid,actorIds:[...s.participantCharacterIds],next:0,userMessage,history:history||[],userContentParts:opts.userContentParts||null,done:false};
+        const round={id:State.generateId(),sessionId:sid,actorIds:[...s.participantCharacterIds],next:0,userMessage,history:history||[],userContentParts:opts.userContentParts||null,explicitVision:opts.explicitVision===true,done:false};
         await Storage.kvSet(key,round);return await this.runRound(round);
       }
       return await this.original.call(Chat,userMessage,history,{...opts,scInternal:true,scSessionId:sid});
@@ -64,7 +64,7 @@ const SCChat = {
       const history=[...round.history,{role:'user',content:round.userMessage},...previous.map(m=>({role:'assistant',content:`${m.characterName}：${m.content}`}))];
       const mask=await Chat._getEffectiveMaskForSession(session);
       const messages=ChatMessageBuilder.buildChatMessages({mode:'single',characters:[actor],history,userInput:'',userContentParts:null,conversationMode:session.mode||0,mask,stickers:await Chat._getAlbumStickers(),globalWorldBook:await Storage.worldbookGlobalGet(),suggestedReplyEnabled:Chat._isSuggestedReplyEnabledGlobal()});
-      if(round.userContentParts && ChatMessageBuilder.isAutoVisionEnabled()){
+      if(round.userContentParts && (round.explicitVision || ChatMessageBuilder.isAutoVisionEnabled())){
         const idx=messages.findLastIndex(m=>m.role==='user');if(idx>=0)messages[idx].content=round.userContentParts;
       }
       messages.splice(1,0,{role:'system',content:`${this.rules.actor}\n当前角色：${actor.name}\n群成员：${(session.participantCharacterNames||[]).join('、')}\n${this.rules.money}`});

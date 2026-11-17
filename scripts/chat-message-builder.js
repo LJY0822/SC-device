@@ -9,7 +9,8 @@ const ChatMessageBuilder = {
    * @param {string} options.userInput  // 当前用户输入
    * @param {Object|Array|null} [options.globalWorldBook] // 全局世界书原始数据（仅来自 IndexedDB kv，由聊天侧预先读取）
    * @param {boolean} [options.appendApiUserTimeLine] // 仅线上：在当轮用户正文后再追加一条仅含 [YYYY-MM-DD HH:mm] 的 user（仅 API，不入库）
-   * @param {Array<{type:string}>|null} [options.userContentParts] // 当轮用户消息：多模态 parts（text + image_url）；仅 isAutoVisionEnabled() 时生效，否则忽略并走 userInput 字符串
+   * @param {Array<{type:string}>|null} [options.userContentParts] // 当轮多模态内容，默认遵循自动识图开关
+   * @param {boolean} [options.explicitVision] // 手动上传的图片需要明确传入视觉内容
     */
   buildChatMessages(options) {
     const mode = options?.mode === 'group' ? 'group' : 'single';
@@ -26,7 +27,7 @@ const ChatMessageBuilder = {
         ? options.userContentParts
         : null;
     // 关闭「多模态自动识图」时：不使用含 image_url 的 parts，避免误带入多模态 user 消息
-    if (userContentParts && !this.isAutoVisionEnabled()) {
+    if (userContentParts && !this.isAutoVisionEnabled() && options?.explicitVision!==true) {
       userContentParts = null;
     }
     // 角色发送图片：只允许引用“对话历史中用户已发送过的图片描述”
@@ -151,14 +152,14 @@ const ChatMessageBuilder = {
     if (!m || m.role !== 'user') return String(m?.content ?? '');
     let text = String(m.content || '');
     try {
-      if (typeof Chat !== 'undefined' && Chat && typeof Chat.ensureMoneyContentWithMessageId === 'function') {
+      if (!m.attachment && typeof Chat !== 'undefined' && Chat && typeof Chat.ensureMoneyContentWithMessageId === 'function') {
         text = /\n/.test(text)
           ? Chat.ensureMoneyMultilineContentWithMessageId(text, m.id, null)
           : Chat.ensureMoneyContentWithMessageId(text, m.id, null);
       }
     } catch (e) {}
     const url = String(m.imageDataUrl || '').trim();
-    if (url && this.isVisionImageUrlForApi(url) && this.isAutoVisionEnabled()) {
+    if (url && this.isVisionImageUrlForApi(url) && (m.attachment?.kind==='image' || this.isAutoVisionEnabled())) {
       return [
         { type: 'text', text },
         { type: 'image_url', image_url: { url } }

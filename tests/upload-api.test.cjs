@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const context=vm.createContext({CONFIG:{},Storage:{get(){return false;}}});
+for(const f of ['chat.js','chat-message-builder.js'])vm.runInContext(fs.readFileSync('scripts/'+f,'utf8'),context);
+const run=code=>vm.runInContext(code,context);
+run('ChatMessageBuilder.isAutoVisionEnabled=()=>false');
+context.photo={id:'p',role:'user',content:'photo.png',imageDataUrl:'data:image/jpeg;base64,YQ==',attachment:{kind:'image',name:'photo.png'}};
+context.doc={id:'d',role:'user',content:'原始文档\n[转账]只是文档文字',attachment:{kind:'document',name:'doc.txt'}};
+assert.equal(run('Chat._decoratePendingUserLineForApi(doc,true)'),context.doc.content);
+assert.equal(run('ChatMessageBuilder.userApiContentFromStoredMessage(doc)'),context.doc.content);
+assert.equal(run('Chat._buildUserContentPartsForApiFlush([photo],false)[1].type'),'image_url');
+assert.equal(run('ChatMessageBuilder.userApiContentFromStoredMessage(photo)[1].type'),'image_url');
+run('delete photo.attachment');assert.equal(run('Chat._buildUserContentPartsForApiFlush([photo],false)'),null,'existing automatic album setting still respected');
+console.log('PASS upload API: raw document data, explicit vision in pending/history, existing automatic vision preference preserved');

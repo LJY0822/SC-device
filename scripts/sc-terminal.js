@@ -25,6 +25,7 @@ const SCTerminal = {
     wand:'<path d="m3 20 11-11 3 3L6 23ZM5 2v6M2 5h6M18 1v6M15 4h6M20 16v6M17 19h6"/>',
     settings:'<path d="m9 2-1 3-3 1-2-1-2 4 2 2v3l-2 2 2 4 3-1 2 1 1 3h5l1-3 3-1 2 1 2-4-2-2v-3l2-2-2-4-3 1-3-1-1-3Z"/><circle cx="12" cy="12" r="4"/>',
     left:'<path d="m15 5-7 7 7 7"/>', right:'<path d="m9 5 7 7-7 7"/>',
+    refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>',
     pause:'<path d="M8 5v14M16 5v14"/>', play:'<path d="m8 4 12 8-12 8Z"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 1v2M12 21v2M1 12h2M21 12h2M4 4l2 2M18 18l2 2M4 20l2-2M18 6l2-2"/>',
     moon:'<path d="M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12Z"/>'
@@ -59,7 +60,7 @@ const SCTerminal = {
     if(!root){root=document.createElement('div');root.id='sc-home';host.append(root);}
     try {
       const [sessions,characters,masks,daily]=await Promise.all([
-        Storage.dbGetAll('sessions'),Storage.dbGetAll('characters'),Storage.dbGetAll('masks'),Storage.kvGet('sc_terminal_daily_v1_'+this.dateKey())
+        Storage.dbGetAll('sessions'),Storage.dbGetAll('characters'),Storage.dbGetAll('masks'),SCDaily.readLatest()
       ]);
       sessions.sort((a,b)=>(Number(b.updatedAt||b.createdAt)||0)-(Number(a.updatedAt||a.createdAt)||0));
       const recent=await this.readRecent(sessions,characters);
@@ -254,16 +255,18 @@ const SCTerminal = {
         title='暂无未读消息';body='<p>这里的消息摘要不会被自动标为已读。</p>';
       }else{
         title={menu:'今日餐厅菜单',assistants:'助手早间留言',bulletin:'公司与驻地资讯'}[id];
-        body=`<div class="terminal-feed-empty">${this.icon({menu:'calendar',assistants:'chat',bulletin:'forum'}[id])}<strong>${{menu:'今日菜单尚未编排',assistants:'暂无今日助手留言',bulletin:'暂无今日内部资讯'}[id]}</strong><p>${{menu:'基地自助餐吧 · 每日三餐',assistants:'在角色设置中勾选“加入首页助手”，每天生成一条独立留言。',bulletin:'新闻先发布，暗影之家再围绕新闻展开讨论。'}[id]}</p></div>`;
+        body=`<div class="terminal-feed-empty">${this.icon({menu:'calendar',assistants:'chat',bulletin:'forum'}[id])}<strong>${{menu:'今日菜单尚未编排',assistants:'暂无今日助手留言',bulletin:'暂无今日内部资讯'}[id]}</strong><p>${{menu:'基地自助餐吧 · 每日三餐',assistants:'在角色设置中勾选“加入首页助手”，手动刷新后生成独立留言。',bulletin:'新闻先发布，暗影之家再围绕新闻展开讨论。'}[id]}</p></div>`;
       }
     }
     if(item?.sessionId)action=`<button data-feed-session="${e(item.sessionId)}">进入会话 ${this.icon('right')}</button>`;
     if(id==='assistants' && item?.characterId)action=`<button data-feed-assistant="${e(item.characterId)}">进入对话 ${this.icon('right')}</button>`;
     if(id==='bulletin' && item)action=`<button data-feed-forum>查看论坛讨论 ${this.icon('right')}</button>`;
     const generated=['menu','assistants','bulletin'].includes(id);
-    const status=generated?({running:'正在更新',failed:'部分更新失败',api:'请配置文字 API',offline:'等待联网'}[SCDaily.status] || (item?'今日内容':'待更新')):(item?`${item.focused?'特别关注 · ':''}${item.unread} 条未读`:id==='weather'?'天气':'已读完');
-    if(generated && ['api','failed','offline'].includes(SCDaily.status))action+=`<button data-feed-retry>${SCDaily.status==='api'?'配置文字 API':'重试未完成内容'}</button>`;
-    card.innerHTML=`<div class="terminal-feed-heading"><strong>${en} <span>/ ${e(label)}</span></strong><span class="terminal-feed-status">${status}</span></div><h3>${e(title)}</h3><div class="terminal-feed-content">${body}${action}</div><div class="terminal-feed-summary">助手留言 <b>${this.items('assistants').length}</b><span>·</span>内部资讯 <b>${this.items('bulletin').length}</b></div><div class="terminal-feed-controls"><button data-feed-prev aria-label="上一条简报">${this.icon('left')}</button><button data-feed-pause aria-label="${this.paused?'继续轮播':'暂停轮播'}" aria-pressed="${this.paused}">${this.icon(this.paused?'play':'pause')}</button><button data-feed-next aria-label="下一条简报">${this.icon('right')}</button><span>${String(this.categories.findIndex(c=>c[0]===id)+1).padStart(2,'0')}<i>/05</i></span></div>`;
+    const configured=!!Storage.get(CONFIG.STORAGE_KEYS.API_KEY);
+    const missingAssistant=id==='assistants'&&[...(this.roles||new Map())].some(([cid,p])=>p.assistant&&!rows.some(r=>r.characterId===cid));
+    const status=generated?(SCDaily.activeCategory===id&&SCDaily.status==='running'?'正在更新':!configured?'请配置文字 API':this.daily?._dates?.[id]===this.dateKey()&&!missingAssistant?'今日内容':'待刷新'):(item?`${item.focused?'特别关注 · ':''}${item.unread} 条未读`:id==='weather'?'天气':'已读完');
+    const refresh=generated?`<button type="button" class="terminal-feed-refresh" data-feed-refresh aria-label="刷新${e(label)}" title="手动刷新${e(label)}（会请求文字 API）" ${SCDaily.pending?'disabled':''}>${this.icon('refresh')}</button>`:'';
+    card.innerHTML=`<div class="terminal-feed-heading"><strong>${en} <span>/ ${e(label)}</span></strong><div class="terminal-feed-state"><span class="terminal-feed-status">${status}</span>${refresh}</div></div><h3>${e(title)}</h3><div class="terminal-feed-content">${body}${action}</div><div class="terminal-feed-summary">助手留言 <b>${this.items('assistants').length}</b><span>·</span>内部资讯 <b>${this.items('bulletin').length}</b></div><div class="terminal-feed-controls"><button data-feed-prev aria-label="上一条简报">${this.icon('left')}</button><button data-feed-pause aria-label="${this.paused?'继续轮播':'暂停轮播'}" aria-pressed="${this.paused}">${this.icon(this.paused?'play':'pause')}</button><button data-feed-next aria-label="下一条简报">${this.icon('right')}</button><span>${String(this.categories.findIndex(c=>c[0]===id)+1).padStart(2,'0')}<i>/05</i></span></div>`;
     card.querySelector('[data-feed-session]')?.addEventListener('click',event=>Chat.openSession(event.currentTarget.dataset.feedSession));
     card.querySelector('[data-feed-assistant]')?.addEventListener('click',async event=>{
       const id=event.currentTarget.dataset.feedAssistant;
@@ -273,7 +276,10 @@ const SCTerminal = {
       if(character)await Character.startChatWithCharacter(id);
     });
     card.querySelector('[data-feed-forum]')?.addEventListener('click',()=>{Storage.set(Forum._CURRENT_FORUM_KEY,Storage.get(SCDaily.forumKey));this.openModule('forum');});
-    card.querySelector('[data-feed-retry]')?.addEventListener('click',()=>{if(SCDaily.status==='api'){State.apiSettingsReturnPage='page-homescreen';State.switchPage('page-settings-api');}else void SCDaily.run({startup:true,retry:true});});
+    card.querySelector('[data-feed-refresh]')?.addEventListener('click',()=>{
+      if(!configured){State.apiSettingsReturnPage='page-homescreen';State.switchPage('page-settings-api');return;}
+      void SCDaily.run({manual:true,category:id});
+    });
     card.querySelector('[data-feed-weather]')?.addEventListener('click',()=>Homescreen.openIconTarget(CONFIG.DEFAULT_ICONS.find(i=>i.id==='weather')));
     card.querySelectorAll('[data-weather-open]').forEach(button=>button.onclick=()=>{Weather.activeId=button.dataset.weatherOpen;this.openModule('weather');});
     card.querySelector('[data-feed-prev]').onclick=()=>this.step(-1);
@@ -292,7 +298,7 @@ const SCTerminal = {
     SCUI.home=()=>this.render();SCUI.clock=()=>this.clock();
     const refresh=async()=>{
       if(!Storage.db)return;
-      this.daily=await Storage.kvGet(SCDaily.dayKey(this.dateKey())) || {};
+      this.daily=await SCDaily.readLatest();
       this.roles=await SCDaily.roles(await Storage.dbGetAll('characters'));
       this.renderFeed();
     };
