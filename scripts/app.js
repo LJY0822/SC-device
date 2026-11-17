@@ -162,11 +162,9 @@
 if ('serviceWorker' in navigator) {
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // 首次启动未完成时不 reload，避免更新 SW 时卡在半初始化状态
-    if (!window.__ydAppReady) return;
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
+    const reload=()=>{if(refreshing)return;refreshing=true;window.location.reload();};
+    if(window.__ydAppReady)reload();
+    else {const wait=setInterval(()=>{if(window.__ydAppReady){clearInterval(wait);reload();}},250);}
   });
 
   navigator.serviceWorker
@@ -175,8 +173,9 @@ if ('serviceWorker' in navigator) {
       reg.update().catch(() => {});
     })
     .catch((err) => console.log('Service Worker注册失败:', err));
-
-
+  const warm=()=>navigator.serviceWorker.ready.then(reg=>reg.active?.postMessage({type:'CACHE_OPTIONAL'})).catch(()=>{});
+  window.addEventListener('online',warm);
+  warm();
 }
 
 // PWA 安装提示（Android Chrome 等）
