@@ -165,8 +165,7 @@ const SCEDC = {
       if(JSON.stringify(before)!==JSON.stringify(this.layout)){this.history.push(before);this.changed();}
     }else if(this.blankStart){
       const dx=event.clientX-this.blankStart.x,dy=event.clientY-this.blankStart.y;this.blankStart=null;
-      if(dx>80&&Math.abs(dx)>Math.abs(dy)*1.5)SCTerminal.setPanel('home',true);
-      else if(Math.hypot(dx,dy)<8&&this.selected)this.action('close');
+      if(Math.hypot(dx,dy)<8&&this.selected)this.action('close');
     }
   },
   cancelDrag() {if(this.drag){this.layout=this.drag.before;this.drag=null;this.changed();}this.blankStart=null;},

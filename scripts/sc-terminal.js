@@ -80,12 +80,12 @@ const SCTerminal = {
           <section class="terminal-identity"><div><time class="terminal-clock"></time><div class="terminal-date"></div></div><button data-module="mask" class="terminal-persona" aria-label="${e(mask?.name || '我的面具')}，打开面具"><span class="terminal-persona-photo">${personaPhoto?`<img src="${e(personaPhoto)}" alt="${e(mask?.name || '面具')}的照片" decoding="async">`:this.icon('mask')}</span><strong>${e(mask?.name || '我的面具')}</strong><span class="terminal-greeting" data-persona-set="${!!mask}"></span></button></section>
           <section class="terminal-comms"><header><h2>COMMS <span>/ 最近通讯</span></h2><button data-module="chat" aria-label="查看全部通讯">${this.icon('right')}</button></header><div class="terminal-recent">${recent.length ? recent.map(r=>`<button class="terminal-channel" data-session="${e(r.id)}"><span class="terminal-avatar">${r.avatar?`<img src="${e(r.avatar)}" alt="">`:e(r.name.slice(0,1))}</span><span class="terminal-message"><strong>${e(r.name)}</strong><span>${e(r.preview)}</span></span><span class="terminal-meta"><time>${r.time?e(new Date(r.time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})):''}</time>${r.unread?`<b aria-label="${r.unread} 条未读">${r.unread>99?'99+':r.unread}</b>`:''}</span></button>`).join(''):`<button class="terminal-no-comms" data-module="chat"><span>${this.icon('chat')}</span><strong>暂无近期通讯</strong><small>进入通讯中心，建立你的第一个会话 ${this.icon('right')}</small></button>`}</div></section>
           <section class="terminal-feed"><h2>BASE FEED <span>/ 驻地简报</span></h2><div class="terminal-categories" role="tablist" aria-label="简报分类">${this.categories.map(([id,label])=>`<button id="terminal-tab-${id}" role="tab" data-category="${id}" aria-controls="terminal-feed-card">${label}</button>`).join('')}</div><div id="terminal-feed-card" role="tabpanel" tabindex="0"></div></section>
-          <nav class="terminal-edges" aria-label="侧面板入口"><button data-panel-target="edc">${this.icon('left')}<span>左滑 · 私人 EDC</span></button><button data-panel-target="tactical"><span>右滑 · 业务操作面板</span>${this.icon('right')}</button></nav>
+          <nav class="terminal-edges" aria-label="侧面板入口"><button data-panel-target="edc">${this.icon('left')}<span>私人 EDC</span></button><button data-panel-target="tactical"><span>业务操作面板</span>${this.icon('right')}</button></nav>
         </section>
         <section class="terminal-panel" data-panel="tactical" aria-label="业务操作面板" hidden>
           ${brand}<header class="terminal-tactical-title"><div><h1 tabindex="-1">OPERATIONS PANEL</h1><span>业务操作面板</span></div><button data-panel-target="home" aria-label="返回首页">${this.icon('left')} 返回</button></header>
           <div class="terminal-groups">${this.groups.map(([en,cn,modules])=>`<section class="terminal-group"><h2>${en} <span>/ ${cn}</span></h2><div class="terminal-module-grid">${modules.map(([id,label,english,icon])=>`<button data-module="${id}"><span class="terminal-module-icon">${this.icon(icon)}</span><span class="terminal-module-label"><strong>${label}</strong><small>${english}</small></span></button>`).join('')}</div></section>`).join('')}</div>
-          <nav class="terminal-return"><button data-panel-target="home">${this.icon('left')} 左滑返回首页</button></nav>
+          <nav class="terminal-return"><button data-panel-target="home">${this.icon('left')} 返回首页</button></nav>
         </section>
         <section class="terminal-panel terminal-edc" data-panel="edc" aria-label="私人 EDC 纸质拼贴随身盒" hidden></section>`;
       void SCEDC.mount(root.querySelector('[data-panel="edc"]'));
@@ -116,6 +116,7 @@ const SCTerminal = {
   setPanel(name,focus=false) {
     if(!['home','tactical','edc'].includes(name))return;
     if(this.panel==='edc'&&name!=='edc'&&(SCEDC.dirty||SCEDC.saving)){SCEDC.requestLeave(()=>this.setPanel(name,focus));return;}
+    this.cancelPanelSwipe?.();
     this.panel=name;
     document.querySelectorAll('#sc-home [data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);
     SCEDC.onPanel(name);
@@ -124,15 +125,61 @@ const SCTerminal = {
   bindSwipe(root) {
     if(root.dataset.terminalSwipeBound)return;
     root.dataset.terminalSwipeBound='true';
-    let start=null;
-    root.addEventListener('touchstart',e=>{start=this.panel!=='edc'&&e.touches.length===1&&!e.target.closest('input,textarea,select,[contenteditable="true"]')?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
-    root.addEventListener('touchend',e=>{
-      if(!start||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
-      if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.5)return;
-      if(this.panel==='home')this.setPanel(dx>0?'tactical':'edc',true);
-      else if((this.panel==='tactical'&&dx<0)||(this.panel==='edc'&&dx>0))this.setPanel('home',true);
-    },{passive:true});
-    root.addEventListener('touchcancel',()=>start=null,{passive:true});
+    let drag=null,timer=null,suppressClickUntil=0;
+    const clean=()=>{
+      clearTimeout(timer);timer=null;
+      for(const panel of root.querySelectorAll('.terminal-swipe-page')){
+        panel.classList.remove('terminal-swipe-page','terminal-swipe-target');
+        panel.style.transform='';panel.style.transition='';
+      }
+      drag=null;this.cancelPanelSwipe=null;
+    };
+    const finish=commit=>{
+      if(!drag?.target){clean();return;}
+      const {page,target,width,sign,to}=drag;
+      const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      page.style.transition=target.style.transition=reduced?'none':'transform 180ms ease-out';
+      page.style.transform='translateX('+(commit?sign*width:0)+'px)';
+      target.style.transform='translateX('+(commit?0:-sign*width)+'px)';
+      const done=()=>{clean();if(commit)this.setPanel(to,true);};
+      if(reduced)done();else timer=setTimeout(done,190);
+    };
+    root.addEventListener('pointerdown',event=>{
+      if(timer||event.button!==0||!event.isPrimary||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+      if(this.panel==='edc'&&(SCEDC.saving||event.target.closest('.edc-context,.edc-item')||(SCEDC.stage&&SCEDC.hit(SCEDC.point(event)))))return;
+      drag={id:event.pointerId,x:event.clientX,y:event.clientY,page:root.querySelector('[data-panel="'+this.panel+'"]')};
+      this.cancelPanelSwipe=clean;
+    },true);
+    root.addEventListener('pointermove',event=>{
+      if(!drag||drag.id!==event.pointerId||timer)return;
+      const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
+      if(!drag.target){
+        if(Math.max(Math.abs(dx),Math.abs(dy))<10)return;
+        if(Math.abs(dx)<Math.abs(dy)*1.5){clean();return;}
+        const to=this.panel==='home'?(dx>0?'edc':'tactical'):
+          this.panel==='tactical'&&dx>0||this.panel==='edc'&&dx<0?'home':null;
+        if(!to){clean();return;}
+        Object.assign(drag,{to,sign:Math.sign(dx),width:root.clientWidth,target:root.querySelector('[data-panel="'+to+'"]')});
+        drag.page.classList.add('terminal-swipe-page');
+        drag.target.classList.add('terminal-swipe-page','terminal-swipe-target');
+        if(to==='edc')SCEDC.resize();
+        root.setPointerCapture(event.pointerId);
+      }
+      event.preventDefault();event.stopPropagation();
+      const offset=drag.sign*Math.min(drag.width,Math.max(0,dx*drag.sign));
+      drag.page.style.transform='translateX('+offset+'px)';
+      drag.target.style.transform='translateX('+(-drag.sign*drag.width+offset)+'px)';
+    },{capture:true,passive:false});
+    root.addEventListener('pointerup',event=>{
+      if(!drag||drag.id!==event.pointerId)return;
+      if(drag.target){
+        event.preventDefault();event.stopPropagation();suppressClickUntil=Date.now()+400;
+        const distance=(event.clientX-drag.x)*drag.sign;
+        finish(distance>=Math.min(85,drag.width*.22));
+      }else clean();
+    },true);
+    root.addEventListener('pointercancel',()=>finish(false),true);
+    root.addEventListener('click',event=>{if(Date.now()<suppressClickUntil){event.preventDefault();event.stopImmediatePropagation();}},true);
     root.addEventListener('keydown',e=>{if(e.key==='Escape'&&this.panel==='tactical')this.setPanel('home',true);});
   },
   openModule(id) {
