@@ -110,3 +110,5 @@ body.edc-open .sc-terminal::after{display:none}
 .terminal-weather-row{width:100%;border-top:0;border-left:0;border-right:0;background:none;color:inherit;text-align:left}
 @media(min-width:700px){.terminal-clock{font-size:66px}}
 @media(max-width:359px){.terminal-clock{font-size:44px}}
+
+.terminal-game-launch{margin:16px 0}.terminal-game-launch>button{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:1px solid var(--term-line);border-radius:8px;background:var(--term-card);text-align:left}.terminal-game-launch>button>span{flex:1}.terminal-game-launch strong{display:block;font-size:15px}.terminal-game-launch small{display:block;font-size:11px;color:var(--term-muted);margin-top:5px}.terminal-game-launch a{color:var(--term-accent)}
