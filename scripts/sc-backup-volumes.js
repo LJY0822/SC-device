@@ -260,6 +260,18 @@ const SCVolumes = {
         const r=await this.restore(staged.db,mode);this.status(`恢复完成：写入 ${r.added}，相同跳过 ${r.same}，冲突留存 ${r.conflicts}。请重新加载页面后使用。`);
       });}catch(err){this.status('恢复未完成：'+err.message);}finally{if(staged){const name=staged.db.name;staged.db.close();indexedDB.deleteDatabase(name);}setBusy(false);e.target.value='';}
     };
+    const cleanup=document.createElement('button');cleanup.textContent='清理中断后遗留的临时备份';body.append(cleanup);
+    cleanup.onclick=async()=>{
+      if(!indexedDB.databases){this.status('此浏览器不支持列出临时数据库。请勿通过清除站点数据清理，以免删除原记录。');return;}
+      if(!await SCBackup.confirm('只清理临时分卷和恢复暂存，不删除聊天、图片、设置、冲突副本或恢复日志。请先保存已生成文件并关闭其他 SC 标签页；清理后当前分卷需重新生成。继续？'))return;
+      setBusy(true);
+      try{await this.exclusive(async()=>{
+        if(activeDB){activeDB.close();activeDB=null;dialog.querySelector('#scv-files').replaceChildren();}
+        const names=(await indexedDB.databases()).map(d=>d.name).filter(n=>n&&(n.startsWith('sc-backup-export-')||n.startsWith('sc-backup-stage-')));
+        for(const name of names)await new Promise((resolve,reject)=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=resolve;request.onerror=()=>reject(request.error);request.onblocked=()=>reject(Error('其他标签页仍在使用临时备份，请关闭后重试'));});
+        this.status(`已清理 ${names.length} 个临时备份库，原数据未改动。`);
+      });}catch(e){this.status(e.message);}finally{setBusy(false);}
+    };
   }
 };
 // Preserve the legacy export as an explicit compatibility option.
