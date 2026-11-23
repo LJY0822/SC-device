@@ -1,2 +1,2 @@
-importScripts('../shared/random.js','../gomoku/engine.js','../mastermind/engine.js','../holdem/engine.js');
-onmessage=({data})=>{try{const result=data.game==='gomoku'?Gomoku.choose(data.state,data.personality):data.game==='mastermind'?Mastermind.solve(data.config,data.history,data.personality):Holdem.strategy(data.view,data.personality,data.difficulty);postMessage({id:data.id,result});}catch(e){postMessage({id:data.id,error:e.message});}};
+importScripts('../shared/random.js','../gomoku/engine.js','../mastermind/engine.js','../holdem/engine.js','../naval/engine.js');
+onmessage=({data})=>{try{const result=data.game==='naval'?{index:Naval.chooseShot(data.shots)}:data.game==='gomoku'?Gomoku.choose(data.state,data.personality):data.game==='mastermind'?Mastermind.solve(data.config,data.history,data.personality):Holdem.strategy(data.view,data.personality,data.difficulty);postMessage({id:data.id,result});}catch(e){postMessage({id:data.id,error:e.message});}};

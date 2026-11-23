@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "assets": {
+    "naval": {
+      "file": "naval-v1.webp",
+      "thumb": "naval-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 130064
+    },
+    "holdem": {
+      "file": "holdem-v1.webp",
+      "thumb": "holdem-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 179908
+    },
+    "gomoku": {
+      "file": "gomoku-v1.webp",
+      "thumb": "gomoku-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 183886
+    },
+    "mastermind": {
+      "file": "mastermind-v1.webp",
+      "thumb": "mastermind-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 181184
+    },
+    "miner": {
+      "file": "miner-v1.webp",
+      "thumb": "miner-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 139942
+    },
+    "duty": {
+      "file": "duty-v1.webp",
+      "thumb": "duty-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 121564
+    },
+    "train": {
+      "file": "train-v1.webp",
+      "thumb": "train-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 127986
+    },
+    "bar": {
+      "file": "bar-v1.webp",
+      "thumb": "bar-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 143454
+    },
+    "tent": {
+      "file": "tent-v1.webp",
+      "thumb": "tent-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 140226
+    },
+    "mess": {
+      "file": "mess-v1.webp",
+      "thumb": "mess-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 131600
+    },
+    "dark": {
+      "file": "dark-v1.webp",
+      "thumb": "dark-thumb-v1.webp",
+      "width": 1080,
+      "height": 720,
+      "bytes": 124426
+    }
+  }
+}

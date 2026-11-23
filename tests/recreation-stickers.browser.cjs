@@ -1,0 +1,26 @@
+const {chromium}=require(process.env.SC_PLAYWRIGHT_MODULE||'playwright');
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),screenshots=fs.mkdtempSync(path.join(require('os').tmpdir(),'sc-game-qa-'));
+const screenshotPath=name=>path.join(screenshots,name);
+let browser;
+(async()=>{
+ browser=await chromium.launch({channel:'chrome',headless:true});const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERROR',e.message)});page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text())});await context.route('http://127.0.0.1:4173/**',async route=>{const url=new URL(route.request().url()),file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':url.pathname));if(fs.existsSync(file)&&fs.statSync(file).isFile())await route.fulfill({path:file,contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':file.endsWith('.json')?'application/json':undefined});else await route.fulfill({status:404,body:''});});
+ await context.addInitScript(()=>{window.workerInputs=[];const old=Worker.prototype.postMessage;Worker.prototype.postMessage=function(data,...args){window.workerInputs.push(structuredClone(data));return old.call(this,data,...args);};});
+ await page.goto('http://127.0.0.1:4173/');await page.waitForFunction(()=>window.__ydAppReady&&typeof SCRecreation!=='undefined');
+ await page.evaluate(async()=>{for(let i=1;i<=3;i++){await Storage.dbPut('characters',{id:'game-c'+i,name:['','舰长','观察员','参谋'][i],description:i===1?'沉着、谨慎':i===2?'激进、喜欢竞争':'有耐心且冷静'});await Storage.dbPut('sessions',{id:'game-s'+i,title:'游戏测试会话'+i,participantCharacterIds:['game-c'+i]});}});
+ await page.locator('[data-module="games"]').first().click();await page.locator('.sc-game-directory img').first().waitFor();await page.waitForFunction(()=>[...document.querySelectorAll('.sc-game-directory img')].every(i=>i.complete&&i.naturalWidth>0));assert.equal(await page.locator('.sc-game-directory img').count(),5);await page.screenshot({path:screenshotPath('游戏目录-贴纸版.png')});await page.locator('dialog>header>button').click();
+ async function open(game,title){await page.locator('[data-module="games"]').first().click();await page.locator('[data-game="'+game+'"]').click();await page.locator('input[value="game-c1"]').check();await page.locator('#sc-game-enter').click();const f=page.frameLocator('iframe[title="'+title+'"]');await f.locator('#preview').waitFor({state:'visible'});const g=page.frames().find(x=>x.url().includes('/games/recreation/'));return {f,g};}
+ for(const [game,title]of [['naval','海上对弈'],['holdem','德州扑克'],['gomoku','五子棋'],['mastermind','代码破解'],['miner','双人黄金矿工']]){
+   const {f,g}=await open(game,title);await f.locator('#scene-preview-title').fill('末班车 · 一起玩一局');await f.locator('#scene-preview-text').fill('末班车驶过河面，你们把手机里的小游戏接在刚才的谈话后。');await g.waitForFunction(()=>document.getElementById('rp-location-art').complete&&document.getElementById('rp-location-art').naturalWidth>0);assert.ok((await f.locator('#rp-location-art').getAttribute('src')).includes('train-v1.webp'));
+   await f.locator('#rp-location-art').evaluate(async img=>{await img.decode();await new Promise(requestAnimationFrame);});if(game==='naval')console.log('RPART',await f.locator('#rp-location-art').evaluate(e=>({src:e.src,width:e.width,height:e.height,rect:e.getBoundingClientRect().toJSON()})));await page.screenshot({path:screenshots+'/'+game+'-RP开场预览.png'});await f.locator('#confirm').click();if(game==='naval'){await f.locator('#naval-random').click();await f.locator('#naval-start').click();}
+   await g.waitForFunction(()=>document.getElementById('game-sticker').complete&&document.getElementById('game-sticker').naturalWidth>0);assert.equal(await g.evaluate(()=>SCGamePage.session.scene.artId),'train');await g.evaluate(()=>scrollTo(0,0));
+   const dark=await f.locator('html').getAttribute('data-mode');if(dark!=='night')await f.locator('#theme').click();await page.screenshot({path:screenshots+'/'+game+'-贴纸深色.png'});await f.locator('#theme').click();await page.screenshot({path:screenshots+'/'+game+'-贴纸浅色.png'});assert.ok(await f.locator('body').evaluate(e=>e.scrollWidth<=innerWidth));
+   await f.locator('#scene').click();assert.ok((await f.locator('.saved-location img').getAttribute('src')).includes('train-v1.webp'));await f.locator('#options-close').click();
+   await g.goto(g.url());await g.waitForFunction(()=>SCGamePage.session);assert.equal(await g.evaluate(()=>SCGamePage.session.scene.artId),'train');
+   await f.locator('#back').click();
+ }
+ await page.setViewportSize({width:1280,height:900});await page.locator('[data-module="games"]').first().click();await page.screenshot({path:screenshotPath('游戏目录-桌面贴纸版.png')});assert.deepEqual(errors,[]);console.log('PASS five-game sticker UI: images decode, editable scene selects train, frozen art survives reload, light/dark/narrow screens, no horizontal overflow, desktop directory; no runtime errors');await browser.close();
+})().catch(async e=>{console.error(e);await browser?.close();process.exitCode=1;});
+
+

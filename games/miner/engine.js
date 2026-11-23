@@ -4,9 +4,9 @@ function settings(options={}){return {mode:options.mode==='coop'?'coop':'competi
 function layout(count){const out=[];for(let n=0;n<count;n++){const type=['small','big','stone','diamond','ore','dynamite'][n%6],spec=types[type];let placed=false;for(let tries=0;tries<250;tries++){const x=28+R.unit()*244,y=115+R.unit()*270;if(out.every(a=>Math.hypot(x-a.x,y-a.y)>spec.r+a.r+8)){out.push({id:n,type,...spec,x,y,taken:false});placed=true;break;}}if(!placed)break;}return out;}
 const hook=()=>({angle:0,direction:1,length:0,state:'aim',carrying:null,wait:0,target:null});
 function create(options={}){const config=settings(options),items=layout(config.count);return {config,remaining:config.duration,phase:'active',players:[0,1].map(()=>({score:0,ammo:1,hook:hook(),items:structuredClone(items),collected:[],attempts:0,misses:0})),ticks:0,events:[],result:null};}
-function point(h){return {x:150+Math.sin(h.angle)*h.length,y:35+Math.cos(h.angle)*h.length};}
+function point(h){const length=h.state==='aim'?38:h.length;return {x:150+Math.sin(h.angle)*length,y:35+Math.cos(h.angle)*length};}
 function distance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
-function fire(s,index){if(s.phase!=='active'||s.players[index].hook.state!=='aim')return false;s.players[index].hook.state='out';s.players[index].attempts++;return true;}
+function fire(s,index){if(s.phase!=='active'||s.players[index].hook.state!=='aim')return false;s.players[index].hook.state='out';s.players[index].hook.length=38;s.players[index].attempts++;return true;}
 function explode(s,index){const p=s.players[index],h=p.hook;if(s.phase!=='active'||p.ammo<1||!h.carrying)return false;p.ammo--;s.events.push({type:'explode',player:index,item:h.carrying.type,tick:s.ticks});h.carrying=null;return true;}
 function ai(s,personality={}){const p=s.players[1],h=p.hook,c=s.config,delay={easy:.8,normal:.35,hard:.15}[c.difficulty]*(1.3-(personality.reaction??.5)*.6),accuracy={easy:.09,normal:.045,hard:.02}[c.difficulty]*(1.2-(personality.timing??.5)*.4);h.wait+=1/60;
 if(h.state==='back'&&h.carrying?.type==='stone'&&p.ammo&&(personality.special??.5)>.3)explode(s,1);
