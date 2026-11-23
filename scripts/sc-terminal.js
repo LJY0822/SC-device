@@ -6,7 +6,7 @@ const SCTerminal = {
     ['OPERATIONS', '日常与任务', [['timer','定时','SCHEDULED OPS','timer'],['calendar','查日程','CALENDAR','calendar']]],
     ['MEDIA', '媒体', [['album','相册','ALBUM','image'],['mis-records','生图记录','IMAGE LOG','images']]],
     ['PERSONNEL & INTEL', '人员与情报', [['worldbook','世界书','WORLD BOOK','book'],['mask','我的面具','MY PERSONA','mask'],['card-assistant','制卡助手','CARD BUILDER','card'],['regex','正则','REGEX','code']]],
-    ['GAMES', '游戏', [['naval','海上对弈','NAVAL GRID','code']]],
+    ['GAMES', '游戏', [['games','游戏目录','RECREATION','code'],['naval','海上对弈','NAVAL GRID','code'],['holdem','德州扑克','TEXAS HOLD EM','card'],['gomoku','五子棋','GOMOKU','code'],['mastermind','代码破解','MASTERMIND','code'],['miner','双人黄金矿工','GOLD MINER','code']]],
     ['SYSTEM', '系统', [['settings','设置','SYSTEM','settings']]]
   ],
   categories: [['weather','天气','WEATHER'],['menu','菜单','DUTY'],['assistants','助手','DUTY'],['bulletin','资讯','BULLETIN'],['pinned','未读','UNREAD']],
@@ -80,7 +80,7 @@ const SCTerminal = {
         <section class="terminal-panel" data-panel="home" aria-label="终端首页">
           ${brand}
           <section class="terminal-identity"><div><time class="terminal-clock"></time><div class="terminal-date"></div></div><button data-module="mask" class="terminal-persona" aria-label="${e(mask?.name || '我的面具')}，打开面具"><span class="terminal-persona-photo">${personaPhoto?`<img src="${e(personaPhoto)}" alt="${e(mask?.name || '面具')}的照片" decoding="async">`:this.icon('mask')}</span><strong>${e(mask?.name || '我的面具')}</strong><span class="terminal-greeting" data-persona-set="${!!mask}"></span></button></section>
-          <section class="terminal-game-launch"><button data-module="naval">${this.icon('code')}<span><strong>游戏 · 海上对弈</strong><small>与角色开始或继续棋局</small></span>${this.icon('right')}</button><small>2026.11.24 · <a href="update.html">检查程序更新</a></small></section>
+          <section class="terminal-game-launch"><button data-module="games">${this.icon('code')}<span><strong>游戏</strong><small>海上对弈 · 德州扑克 · 五子棋 · 更多</small></span>${this.icon('right')}</button><small>2026.11.24 GAMES · <a href="update.html">检查程序更新</a></small></section>
           <section class="terminal-comms"><header><h2>COMMS <span>/ 最近通讯</span></h2><button data-module="chat" aria-label="查看全部通讯">${this.icon('right')}</button></header><div class="terminal-recent">${recent.length ? recent.map(r=>`<button class="terminal-channel" data-session="${e(r.id)}"><span class="terminal-avatar">${r.avatar?`<img src="${e(r.avatar)}" alt="">`:e(r.name.slice(0,1))}</span><span class="terminal-message"><strong>${e(r.name)}</strong><span>${e(r.preview)}</span></span><span class="terminal-meta"><time>${r.time?e(new Date(r.time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})):''}</time>${r.unread?`<b aria-label="${r.unread} 条未读">${r.unread>99?'99+':r.unread}</b>`:''}</span></button>`).join(''):`<button class="terminal-no-comms" data-module="chat"><span>${this.icon('chat')}</span><strong>暂无近期通讯</strong><small>进入通讯中心，建立你的第一个会话 ${this.icon('right')}</small></button>`}</div></section>
           <section class="terminal-feed"><h2>BASE FEED <span>/ 驻地简报</span></h2><div class="terminal-categories" role="tablist" aria-label="简报分类">${this.categories.map(([id,label])=>`<button id="terminal-tab-${id}" role="tab" data-category="${id}" aria-controls="terminal-feed-card">${label}</button>`).join('')}</div><div id="terminal-feed-card" role="tabpanel" tabindex="0"></div></section>
           <nav class="terminal-edges" aria-label="侧面板入口"><button data-panel-target="edc">${this.icon('left')}<span>私人 EDC</span></button><button data-panel-target="tactical"><span>业务操作面板</span>${this.icon('right')}</button></nav>
@@ -186,6 +186,8 @@ const SCTerminal = {
     root.addEventListener('keydown',e=>{if(e.key==='Escape'&&this.panel==='tactical')this.setPanel('home',true);});
   },
   openModule(id) {
+    if(id==='games'){SCRecreation.directory();return;}
+    if(['holdem','gomoku','mastermind','miner'].includes(id)){SCRecreation.select(id);return;}
     if(id==='naval'){SCNaval.open();return;}
     if(id==='calendar'){SCUI.modal('查日程','<p>旧版日历目前停用。此处已保留入口，日程页面将在后续接入。</p>');return;}
     const icon=CONFIG.DEFAULT_ICONS.find(i=>i.id===id);

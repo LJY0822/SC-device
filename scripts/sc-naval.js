@@ -31,22 +31,14 @@ const SCNaval = {
     const leave=()=>{frame.contentWindow.SCNavalGame?.pause();shell.remove();window.removeEventListener('popstate',leave);};
     back.onclick=()=>history.back();history.pushState({naval:true},'');window.addEventListener('popstate',leave,{once:true});shell.append(back,frame);document.body.append(shell);
   },
-  async request(messages,signal){
-    const apiKey=Storage.get(CONFIG.STORAGE_KEYS.API_KEY);
-    if(!apiKey)throw Error('未配置文字 API');
-    const baseUrl=(Storage.get(CONFIG.STORAGE_KEYS.BASE_URL)||'https://api.openai.com/v1').replace(/\/$/,'');
-    const response=await fetch(baseUrl+'/chat/completions',{method:'POST',signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+apiKey},body:JSON.stringify({model:Storage.get(CONFIG.STORAGE_KEYS.API_MODEL),messages,stream:false})});
-    if(!response.ok)throw Error('模型服务请求失败');
-    const data=await response.json();return data.choices?.[0]?.message?.content||'';
-  },
+  async request(messages,signal){return SCRecreation.request(messages,signal);},
   async generateBeat(event,{signal}){
     const c=window.SCNavalContext.character;
-    const raw=await this.request([{role:'system',content:`扮演${c.name}。人设：${c.description.slice(0,8000)}。正在与玩家下海战棋。只依据公开信息写1至3句中文动作或对白，不落子、不改判。仅返回JSON {"text":"正文","inviteRematch":false}。仅closing可以邀请再战，是否邀请由你决定。`},{role:'user',content:JSON.stringify(event)}],signal);
-    return JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g,''));
+    return SCRecreation.json('navalEvent',{role:c,event},signal);
   },
   async generateScene(context){
     const c=window.SCNavalContext.character;
-    const raw=await this.request([{role:'system',content:`为${c.name}与玩家下海战棋写一段不超过250字的开局场景，保持角色人设：${c.description.slice(0,4000)}。只返回JSON {"text":"场景正文"}。不要写落子或胜负。`},{role:'user',content:JSON.stringify({recent:window.SCNavalContext.recent,context:context||'延续最近情景，两人准备开始。'})}],AbortSignal.timeout(15000));
-    const result=JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g,''));if(typeof result.text!=='string'||!result.text.trim())throw Error('场景为空');return result;
+    const result=await SCRecreation.json('navalScene',{role:c,recent:window.SCNavalContext.recent,context:context||'延续最近情景，两人准备开始。'},AbortSignal.timeout(15000));
+    if(typeof result.text!=='string'||!result.text.trim())throw Error('场景为空');return result;
   }
 };

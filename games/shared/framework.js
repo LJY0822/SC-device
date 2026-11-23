@@ -1,0 +1,34 @@
+'use strict';
+const GameFramework={
+  version:1,host:window.parent!==window?window.parent.SCGameHost:null,
+  titles:{holdem:'德州扑克',gomoku:'五子棋',mastermind:'代码破解',miner:'双人黄金矿工'},
+  routes:{start:'PRESET',fold:'PRESET',raise:'PRESET',bigRaise:'LLM',allin:'LLM',bluff:'LLM',street:'PRESET',showdown:'LLM',threat:'PRESET',critical:'LLM',defend:'PRESET',feedback:'PRESET',breakthrough:'LLM',low:'LLM',collect:'PRESET',pause:'PRESET',return:'PRESET',reply:'LLM',closing:'LLM'},
+  presets:{start:'把游戏摆到两人中间，抬眼等你准备好。',fold:'将手里的牌扣回桌面，安静地等下一轮。',raise:'记下新的下注额，目光在桌边停了一瞬。',bigRaise:'指尖停在筹码旁，重新看了一眼公开的牌面。',allin:'看了一眼推到桌中的筹码，短暂地沉默下来。',bluff:'结算结束后，才开口复盘刚才公开的下注。',street:'视线落到新翻开的公共牌上。',showdown:'看清摊牌结果，点头记下这一手。',threat:'目光沿着刚刚形成的连线停了一下。',critical:'俯身看向棋盘，认真地重新梳理局面。',defend:'落子后收回手，示意你继续。',feedback:'把这轮反馈记下来，和之前的尝试对照。',breakthrough:'轻轻点了点新出现的反馈，神情专注起来。',low:'看了眼剩余的机会，重新集中精神。',collect:'看向刚刚收回的矿物，向你点了点头。',pause:'停下手上的动作，把当前进度留在原处。',return:'重新看向你，示意可以接着刚才的局面。',reply:'听完你的话，点点头，把注意力放回游戏。',closing:'看过最终结果，收好游戏。“今天就记到这里。”'},
+  clamp(v,fallback=.5){return Number.isFinite(v)?Math.max(0,Math.min(1,v)):fallback;},
+  async read(key){return this.host?this.host.read(key):JSON.parse(localStorage.getItem(key)||'null');},
+  async write(key,value){if(this.host)return this.host.write(key,value);localStorage.setItem(key,JSON.stringify(value));},
+  async context(game){const source=this.host?.context;if(source?.game===game)return structuredClone(source);return {game,roles:[{id:'offline',name:'对手',description:'沉着、愿意认真陪玩家完成游戏。',recent:[],sessionId:''}],user:{id:'user',name:'你'},key:game+'_offline',night:false,configured:false};},
+  async persona(role){const key='sc_game_persona_v1_'+role.id;let fixed=await this.read(key);if(!fixed){let n=2166136261;for(const c of role.id+role.description)n=Math.imul(n^c.charCodeAt(0),16777619);const base=.25+((n>>>0)%50)/100;fixed={aggression:/激进|冲动|aggress/i.test(role.description)?.85:base,risk:/谨慎|稳健|cautious/i.test(role.description)?.2:.85-base*.5,bluff:.15+base*.45,patience:1-base,observation:.4+base*.5,control:/冷静|沉着|calm/i.test(role.description)?.9:.5,reaction:base,value:.5+base*.4,weight:.5,timing:.4+base*.5,special:base};await this.write(key,fixed);}return fixed;},
+  async scene(context,config,signal){if(!this.host||!context.configured)throw Error('没有配置文字 API，使用本地开局');const memories=[];for(const r of context.roles){const rows=await this.read('sc_game_memory_v1_'+context.game+'_'+r.id+'@'+r.sessionId);memories.push({id:r.id,summaries:(rows||[]).slice(-5)});}return this.host.generate({game:context.game,roles:context.roles,user:context.user,config,memories,interactionPermissions:this.routes},signal);},
+  normalizeScene(result,context){const clean=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';if(!clean(result.scene,350))throw Error('场景格式无效');const presets={};for(const type of Object.keys(this.presets))if(clean(result.presets?.[type],300))presets[type]=clean(result.presets[type],300);const personalities={};for(const r of context.roles){const row=result.personalities?.find(p=>p.id===r.id);if(row){const p={};for(const k of Object.keys(r.personality))p[k]=this.clamp(row[k],r.personality[k]);personalities[r.id]=p;}}return {title:clean(result.title,60)||'稍作休息',scene:clean(result.scene,350),mood:clean(result.mood,80),opening:clean(result.opening,400),presets,personalities,suggestions:result.suggestions&&typeof result.suggestions==='object'?result.suggestions:{}};},
+  localScene(context){const names=context.roles.map(r=>r.name).join('、');return {title:'休息时间',scene:`你与${names}在休息室留出一块空地，准备开始${this.titles[context.game]}。这一局的节奏由你们自己决定。`,mood:'安静，带一点竞争心',opening:'“准备好了就开始。”',presets:{},personalities:{},suggestions:{}};},
+  async remember(context,session,summary){for(const role of context.roles){const key='sc_game_memory_v1_'+context.game+'_'+role.id+'@'+role.sessionId,old=await this.read(key)||[];const row={id:session.id,at:Date.now(),result:summary,comment:session.closing?.text||''};await this.write(key,[...old.filter(x=>x.id!==session.id),row].slice(-20));}},
+  async memories(context){return await this.read('sc_game_memory_v1_'+context.game+'_'+context.roles[0].id+'@'+context.roles[0].sessionId)||[];},
+  async event(page,type,detail={},force){
+    const session=page.session;if(!session||document.hidden&&type!=='pause')return;
+    let route=force||page.settings.routes?.[type]||this.routes[type]||'PRESET';if(page.game==='miner'&&!['closing','return','start'].includes(type))route='PRESET';if(route==='SILENT')return;
+    // Keep at most one model batch in flight; repeated key actions coalesce locally.
+    if(type==='closing'){for(const controller of page.controllers)controller.abort();page.modelBusy=false;}
+    if(page.modelBusy&&route==='LLM')route='PRESET';
+    const id=crypto.randomUUID(),matchId=session.id,actors=page.context.roles.slice(0,type==='showdown'||type==='allin'?2:1);
+    const publicState=structuredClone(page.publicState());
+    const fallback=type==='closing'?this.presets.closing:type==='start'&&session.scene.opening?session.scene.opening:(session.scene.presets[type]||this.presets[type]||this.presets.reply);
+    if(!page.guardNarrative(fallback))return;
+    const notes=actors.map(actor=>({id:id+actor.id,type,who:actor.name,text:fallback,at:Date.now()}));session.log.push(...notes);session.log=session.log.slice(-120);page.renderLog();page.save();
+    if(route!=='LLM'||!this.host||!page.context.configured){if(type==='closing'){session.closing={text:fallback,inviteRematch:false};await page.recordMemory();page.renderEnd();page.save();}return;}
+    const controller=new AbortController();page.controllers.add(controller);const timeout=setTimeout(()=>controller.abort(),8000);page.modelBusy=true;page.modelToken=controller;
+    try{for(let n=0;n<actors.length;n++){const role=actors[n],input={eventId:id,matchId,game:page.game,type,detail,role:{id:role.id,name:role.name,description:role.description},state:publicState,tableTalk:session.log.slice(-8).map(x=>({who:x.who,text:x.text}))};const result=await this.host.beat(input,type==='closing',controller.signal);if(page.destroyed||page.session?.id!==matchId||controller.signal.aborted)return;const text=typeof result.text==='string'?result.text.trim().slice(0,600):'';if(text){if(!page.guardNarrative(text))return;const note=page.session.log.find(x=>x.id===notes[n].id);if(note)note.text=text;if(type==='closing'){session.closing={text,inviteRematch:result.inviteRematch===true&&/再来|再战|下一局|再玩|再开|继续|again|another/i.test(text)};await page.recordMemory();}page.renderLog();page.renderEnd();page.save();}}}
+    catch{if(type==='closing'&&page.session?.id===matchId){session.closing={text:fallback,inviteRematch:false};await page.recordMemory();page.renderEnd();page.save();}}
+    finally{clearTimeout(timeout);page.controllers.delete(controller);if(page.modelToken===controller)page.modelBusy=false;}
+  }
+};
