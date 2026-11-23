@@ -6,6 +6,7 @@ const SCTerminal = {
     ['OPERATIONS', '日常与任务', [['timer','定时','SCHEDULED OPS','timer'],['calendar','查日程','CALENDAR','calendar']]],
     ['MEDIA', '媒体', [['album','相册','ALBUM','image'],['mis-records','生图记录','IMAGE LOG','images']]],
     ['PERSONNEL & INTEL', '人员与情报', [['worldbook','世界书','WORLD BOOK','book'],['mask','我的面具','MY PERSONA','mask'],['card-assistant','制卡助手','CARD BUILDER','card'],['regex','正则','REGEX','code']]],
+    ['GAMES', '游戏', [['naval','海战棋','NAVAL GRID','code']]],
     ['SYSTEM', '系统', [['settings','设置','SYSTEM','settings']]]
   ],
   categories: [['weather','天气','WEATHER'],['menu','菜单','DUTY'],['assistants','助手','DUTY'],['bulletin','资讯','BULLETIN'],['pinned','未读','UNREAD']],
@@ -184,6 +185,7 @@ const SCTerminal = {
     root.addEventListener('keydown',e=>{if(e.key==='Escape'&&this.panel==='tactical')this.setPanel('home',true);});
   },
   openModule(id) {
+    if(id==='naval'){SCNaval.open();return;}
     if(id==='calendar'){SCUI.modal('查日程','<p>旧版日历目前停用。此处已保留入口，日程页面将在后续接入。</p>');return;}
     const icon=CONFIG.DEFAULT_ICONS.find(i=>i.id===id);
     if(icon)Homescreen.openIconTarget(icon);

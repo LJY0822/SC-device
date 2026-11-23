@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>海战棋 · SC</title>
+<style>:root{font-family:Arial,'Microsoft YaHei',sans-serif;--ink:#202329;--muted:#72767c;--line:#e4e6e8;--panel:#fff;--bg:#f6f7f8;--gold:#947746;--sea:#edf1f3;--mint:#587569;--coral:#bc5549;color:var(--ink);background:var(--bg);color-scheme:light}
+:root[data-mode=night]{--ink:#e8ecdf;--muted:#aeb6a7;--line:#55604f;--panel:#242d26;--bg:#1d2420;--gold:#c7b482;--sea:#354231;--mint:#b0cdb8;--coral:#ff9b86;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0 auto;max-width:520px;min-width:280px;min-height:100dvh;background:var(--bg)}button,input,textarea,select{font:inherit;color:var(--ink)}button{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;min-height:40px}button:disabled{opacity:.45;cursor:default}:focus-visible{outline:2px solid var(--gold);outline-offset:2px}button.primary{background:var(--gold);color:white;border-color:var(--gold)}[hidden],.art{display:none!important}h1,h2,h3,p{margin:0}header{background:var(--panel);border-bottom:1px solid var(--line)}.top{display:flex;justify-content:space-between;padding:8px 14px;gap:8px}.top-actions,.actions{display:flex;gap:6px;flex-wrap:wrap}main{padding:16px 14px 100px}.hero{display:grid;grid-template-columns:1fr 100px;gap:6px 12px;align-items:center;margin-bottom:16px}.hero>div{grid-column:1}.hero h1{font-size:22px;font-weight:600}.sub{font-size:12px;line-height:1.6;color:var(--muted);margin-top:8px}.phase{font-size:12px;color:var(--gold);grid-column:1}.hero #mini-toggle{grid-column:2;grid-row:1/3;font-size:10px;padding:6px;min-height:0;border-radius:12px}#mini-toggle>span:first-child{display:block;margin-bottom:4px}#mini-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;aspect-ratio:1}#mini-grid i{background:var(--sea);border-radius:1px}#mini-grid i.ship{background:var(--mint)}#mini-grid i.hit,#mini-grid i.sunk{background:var(--coral)}#mini-grid i.miss{background:var(--line)}#mini-grid i.last{outline:2px solid var(--gold)}#mini-status{display:block;margin-top:4px;color:var(--muted);font-size:9px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}.bar{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid var(--line);gap:8px}h2{font-size:15px}h3{font-size:13px}.bar>span,.fine{font-size:12px;color:var(--muted)}.game-status{padding:12px 14px;background:var(--bg);font-size:13px;color:var(--gold)}#swap{margin:10px 12px 0}.latest{display:none}.maps{padding:12px}.map{padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:12px}.map-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:4px}.map-title output{font-size:11px;color:var(--muted)}.plot{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px;width:100%;aspect-ratio:1;grid-template-rows:repeat(9,minmax(0,1fr))}.axis,.cell{display:grid;place-items:center;min-width:0;min-height:0;height:100%;width:100%;padding:0;font:12px Arial,sans-serif}.axis{color:var(--muted)}.cell{border:1px solid var(--line);background:var(--sea);border-radius:4px;font-weight:bold}.cell.ship{background:var(--mint);color:var(--panel)}.cell.miss{color:var(--muted)}.cell.hit{background:#a04a3d;color:white;border-color:#a04a3d}.cell.sunk{background:#695b50;color:white;border-color:#695b50}.cell.last{box-shadow:inset 0 0 0 2px var(--gold)}.cell[aria-pressed=true]{outline:2px solid var(--gold);outline-offset:-2px;background:var(--panel)}.fleets{display:flex;gap:5px;margin-top:10px}.ship-meter{display:flex;gap:2px;padding:3px}.fleet{width:8px;height:5px;background:var(--mint);border-radius:2px}.fleet.down{background:var(--coral)}.fleet.wait{background:var(--line)}.tools .fine{margin-top:10px;line-height:1.6}.legend{border-top:1px solid var(--line);padding:12px;display:flex;gap:12px;font-size:10px;flex-wrap:wrap}.legend b{color:var(--gold)}.scene-body{padding:16px}.scene-body p{font-size:14px;line-height:1.8;color:var(--muted);white-space:pre-wrap}.scene-meta{display:flex;gap:8px;margin-top:16px}.tag{font-size:11px;color:var(--gold)}.log{padding:4px 14px;list-style:none;margin:0;max-height:55dvh;overflow:auto}.log li{padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.7;overflow-wrap:anywhere}.log small{display:block;font-size:10px;color:var(--muted);margin-bottom:6px}.log .rp{color:var(--ink)}.log .self{color:var(--gold)}.reply{display:flex;padding:12px;gap:8px;border-top:1px solid var(--line)}.reply input{min-width:0;flex:1}.bridge-entry{padding:0 12px 12px}.bridge-info{font-size:12px;line-height:1.6}input,select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px;font-size:14px;width:100%}textarea{min-height:100px}input[type=checkbox]{width:auto}.end{padding:16px;border-top:1px solid var(--line)}.end p{line-height:1.7;margin:12px 0;font-size:14px}footer{font-size:10px;color:var(--muted);margin-top:16px}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,520px);display:flex;padding:10px 12px max(10px,env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);gap:8px;z-index:10}.nav button{position:relative;flex:1;border:0;color:var(--muted)}.nav button[aria-pressed=true]{background:var(--bg);color:var(--gold)}.unread:after{content:'';position:absolute;right:12px;top:6px;width:7px;height:7px;border-radius:50%;background:#d9554f}dialog{color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:20px;width:min(92vw,480px);max-height:85dvh;padding:0}dialog::backdrop{background:#10151b60}.dialog-body{display:grid;padding:20px;gap:14px}.dialog-body p,.dialog-body li{font-size:13px;line-height:1.7;color:var(--muted)}label{display:grid;gap:7px;font-size:13px}.dialog-body label:has(input[type=checkbox]){display:flex;align-items:center}.preview{padding:14px;background:var(--bg);border-radius:12px;line-height:1.7}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line)}#message-pop{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),488px);text-align:left;box-shadow:0 8px 30px #0002;z-index:12;border-color:var(--gold);padding:14px 16px}#message-pop strong{display:block;font-size:11px;color:var(--gold);margin-bottom:6px}#pop-text{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6}#combat-feedback{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:14px 20px;z-index:30;width:max-content;max-width:90%;box-shadow:0 4px 24px #0002;font-size:14px}.damaged #mini-toggle{animation:damage .65s ease 2}.sinking{animation:sink .75s ease}.firework{position:fixed;left:var(--x);top:var(--y);width:5px;height:5px;background:var(--c);border-radius:50%;animation:spark 1.4s ease-out forwards;pointer-events:none;z-index:40}@keyframes damage{50%{box-shadow:0 0 0 5px #d9554f66;transform:translateX(3px)}}@keyframes sink{50%{transform:scale(.75);filter:brightness(1.8)}}@keyframes spark{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.firework{display:none}}
+header{position:sticky;top:0;z-index:15}.hero{position:sticky;top:58px;z-index:8;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}@media(max-width:350px){.top-actions{gap:3px}.top-actions button{padding:8px;font-size:12px}.hero{top:58px}} </style>
+</head>
+<body>
+<header><div class="top">
+<button id="theme-toggle" aria-label="切换深浅色模式">☾</button>
+<div class="top-actions"><button id="role-settings">设置</button><button id="help">规则</button><button id="pause" hidden>暂停</button><button id="new">新对局</button></div>
+</div></header>
+<main>
+<div class="hero"><div><h1>海上对弈</h1><p class="sub" id="subtitle">与 Graves 在棋盘上交手</p></div><span class="phase" id="phase"></span><button id="mini-toggle" aria-label="查看己方完整海域"><span>己方海域</span><span id="mini-grid"></span><small id="mini-status">等待布阵</small></button></div>
+<div class="layout">
+<section class="panel" aria-labelledby="battle-heading">
+<div class="bar"><h2 id="battle-heading">作战海图</h2><span id="round"></span></div>
+<div class="game-status" id="status" role="status"></div>
+<button id="swap" hidden>查看己方海域</button><p class="latest" id="latest" aria-live="polite"></p><div class="maps" id="maps">
+  <section class="map own" aria-labelledby="own-title"><div class="map-title"><h3 id="own-title">己方舰队</h3><output id="own-count"></output></div><div class="plot" id="own-grid" role="group" aria-label="己方海域"></div><div class="fleets" id="own-fleet"></div></section>
+  <section class="map foreign" aria-labelledby="opp-title"><div class="map-title"><h3 id="opp-title">对手海域</h3><output id="opp-count"></output></div><div class="plot" id="opp-grid" role="group" aria-label="对手海域"></div><div class="fleets" id="opp-fleet"></div></section>
+<div class="tools">
+  <div class="actions" id="deploy-actions"><button id="rotate">转向 · 横向</button><button id="undo">撤回一艘</button><button id="random">随机布阵</button><button class="primary" id="begin">开始对局</button></div>
+  <div class="actions" id="fire-actions" hidden><button class="primary" id="fire">确认标记</button></div>
+  <div class="actions" id="resume-actions" hidden><button class="primary" id="resume">继续对局</button></div>
+  <p class="fine" id="action-hint"></p>
+</div>
+</div>
+<div class="legend fine"><span><b>▬</b>己方舰格</span><span><b>·</b>落空</span><span><b class="impact">×</b>命中</span><span><b class="wreck">◆</b>击沉</span></div>
+<section id="ending" class="end" hidden aria-labelledby="end-title"><h2 id="end-title"></h2><p id="end-line"></p><button class="primary" id="rematch">再来一局</button></section>
+</section>
+<aside class="rail">
+<section class="panel" aria-labelledby="scene-heading">
+<div class="bar"><h2 id="scene-heading">开局卡片</h2><button id="preview-open">预览</button></div>
+<img class="art" id="scene-art" alt=""><div class="scene-body"><h3 id="scene-title"></h3><p id="scene-text"></p><div class="scene-meta"><span class="tag" id="character"></span><span class="tag" id="chaos"></span></div></div>
+</section>
+<section class="panel" aria-labelledby="log-heading">
+<div class="bar"><h2 id="log-heading">桌边记录</h2><span id="dialogue-source">内置角色</span></div>
+<ol id="log" class="log" aria-live="polite" aria-relevant="additions"></ol>
+<form id="reply" class="reply"><input id="reply-text" maxlength="180" autocomplete="off" aria-label="回应角色" placeholder="回应角色…"><button id="send">发送</button></form>
+<div class="bridge-entry"><button id="bridge-open" hidden></button></div>
+</section>
+</aside>
+</div>
+<footer id="storage"></footer>
+</main><button id="message-pop" hidden aria-label="打开桌边新消息"><strong id="pop-author"></strong><span id="pop-text"></span></button><div id="combat-feedback" role="status" aria-live="polite" hidden></div><div id="fireworks" aria-hidden="true"></div><nav class="nav" aria-label="对局导航"><button data-tab="board" aria-pressed="true">海图</button><button data-tab="log">桌边记录</button><button data-tab="scene">场景卡</button></nav>
+<dialog id="scene-dialog" aria-labelledby="preview-title">
+<form id="scene-form">
+<div class="bar"><h2 id="preview-title">开局预览</h2></div>
+<div class="dialog-body">
+<img class="art" id="preview-art" alt=""><label>近期 RP 情境（选填）<input id="rp" maxlength="180" placeholder="例如：两人刚上末班车，周围很安静"></label><button id="generate" type="button">根据情境生成开局</button><label>场景<select id="scene-choice"><option value="quiet">值班室 · 夜间</option><option value="rain">休息室 · 雨夜</option><option value="rowdy">休息室 · 散场后</option><option value="bar">酒吧 · 靠窗座位</option><option value="train">列车 · 在途</option><option value="dark">暗处 · 手机微光</option><option value="tent">帐篷 · 雨幕</option><option value="mess">餐厅 · 午后</option><option value="custom">自定义场景</option></select></label>
+<label>对手名称<input id="scene-character" maxlength="30" required></label>
+<label id="custom-wrap" hidden>自定义场景<textarea id="scene-custom" maxlength="500" placeholder="例如：两人刚喝完酒，把棋盘搬到空桌上。"></textarea></label>
+<div class="preview"><h3 id="preview-scene"></h3><p id="preview-text"></p><p id="preview-chaos"></p></div>
+<p>混乱度会改变桌边插曲的频率。双方始终轮流标记，每回合一格。</p>
+<p id="replace-warning" hidden>确认后会结束当前对局并重新布阵。</p>
+</div>
+<div class="dialog-actions"><button type="button" id="scene-close">返回</button><button class="primary" id="scene-apply">确认并布阵</button></div>
+</form>
+</dialog>
+<dialog id="help-dialog" aria-labelledby="help-title">
+<div class="bar"><h2 id="help-title">对局规则</h2></div>
+<div class="dialog-body"><ul><li>双方使用 8×8 海图，各有四艘舰艇，舰长为 4、3、3、2 格。舰艇只能横放或竖放，允许相邻，禁止重叠。</li><li>玩家先手。点选对手海域的一个未标记坐标，再按“确认标记”。命中或落空都交替行动，先击沉对方全部舰艇者获胜。</li><li>布阵或选格时，可以用方向键在棋盘上移动焦点。手机上，进入对局后对手海域排在前面。</li><li>暂停、关闭或切走页面时，下次可以从保存的回合继续。</li></ul></div>
+<form method="dialog" class="dialog-actions"><button class="primary">返回</button></form>
+</dialog>
+<dialog id="role-dialog" aria-labelledby="role-title">
+<div class="bar"><h2 id="role-title">互动设置</h2></div>
+<div class="dialog-body">
+<label>主动互动间隔<select id="frequency"><option value="0">随混乱度调整</option><option value="1">每回合</option><option value="3">每三回合</option><option value="-1">关闭定期互动</option></select></label>
+<label><input type="checkbox" id="onSunk">击沉时评论</label><label><input type="checkbox" id="onReturn">离开半分钟再回来时回应</label><label><input type="checkbox" id="outside">允许情境相关的场外插曲</label><h3>角色来源</h3><p><strong>内置角色</strong>会根据情景和落点给出本地互动，打开文件即可游玩。</p>
+<p><strong>独立对话</strong>可复制本局提示词到一条新的 ChatGPT 对话，再贴回角色回应。棋局在本页独立运行。</p>
+<p id="role-info"></p>
+</div>
+<div class="dialog-actions"><button id="role-close">返回</button><button id="role-local">使用内置角色</button><button class="primary" id="role-manual">使用独立对话</button></div>
+</dialog>
+<dialog id="bridge-dialog" aria-labelledby="bridge-title">
+<div class="bar"><h2 id="bridge-title">独立对话</h2></div>
+<form id="bridge-form">
+<div class="dialog-body">
+<p>把提示词复制到一条新对话。后续可以继续使用那条对话，以保留这局的互动记忆。</p>
+<label>本次角色提示词<textarea id="bridge-prompt" readonly rows="5"></textarea></label>
+<div><button type="button" id="bridge-copy">复制提示词</button></div>
+<label>粘贴角色返回的 JSON<textarea id="bridge-reply" rows="4" required placeholder='{"eventId":"…","text":"…","inviteRematch":false}'></textarea></label>
+<p class="bridge-info" id="bridge-info" role="status"></p>
+</div>
+<div class="dialog-actions"><button type="button" id="bridge-close">返回棋局</button><button class="primary">写入桌边记录</button></div>
+</form>
+</dialog>
+<script id="naval-engine">
+"use strict";
+
+const NavalRules = (() => {
+  const size = 8;
+  const lengths = [4, 3, 3, 2];
+  const cells = Array.from({ length: size * size }, (_, index) => index);
+
+  function coordinate(index) {
+    return String.fromCharCode(65 + Math.floor(index / size)) + (index % size + 1);
+  }
+
+  function placement(start, length, vertical, ships) {
+    if (!cells.includes(start)) return null;
+    const row = Math.floor(start / size);
+    const column = start % size;
+    if ((vertical ? row : column) + length > size) return null;
+    const ship = Array.from({ length }, (_, index) => start + index * (vertical ? size : 1));
+    return ship.some(index => ships.some(other => other.includes(index))) ? null : ship;
+  }
+
+  function randomFleet() {
+    const ships = [];
+    for (const length of lengths) {
+      const choices = cells.flatMap(index =>
+        [placement(index, length, false, ships), placement(index, length, true, ships)].filter(Boolean)
+      );
+      if (!choices.length) return randomFleet();
+      ships.push(choices[Math.floor(Math.random() * choices.length)]);
+    }
+    return ships;
+  }
+
+  function isSunk(ship, shots) {
+    return ship.every(index => shots[index]);
+  }
+
+  function takeShot(index, ships, shots) {
+    if (!cells.includes(index) || shots[index]) return null;
+    const ship = ships.find(candidate => candidate.includes(index));
+    shots[index] = ship ? "hit" : "miss";
+    if (!ship || !isSunk(ship, shots)) return shots[index];
+    for (const cell of ship) shots[cell] = "sunk";
+    return ships.every(candidate => isSunk(candidate, shots)) ? "win" : "sunk";
+  }
+
+  function chooseShot(shots) {
+    const available = cells.filter(index => !shots[index]);
+    const adjacent = available.filter(index => {
+      const row = Math.floor(index / size);
+      const column = index % size;
+      return [
+        row > 0 && index - size, row < size - 1 && index + size,
+        column > 0 && index - 1, column < size - 1 && index + 1
+      ].some(neighbor => neighbor !== false && shots[neighbor] === "hit");
+    });
+    const pool = adjacent.length ? adjacent : available;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  return { size, lengths, cells, coordinate, placement, randomFleet, isSunk, takeShot, chooseShot };
+})();
+</script>
+<script id="naval-app">
+"use strict";
+
+const $ = id => document.getElementById(id);
+const rules = NavalRules;
+const hostContext = window.parent !== window ? window.parent.SCNavalContext : null;
+const key = "sc.naval-grid.v2." + (hostContext?.sessionId || "offline");
+const scenes = {
+  quiet: { title: "值班室 · 夜间", text: "值班室只剩下桌灯亮着。Graves 把折叠棋盘摊开，把装着标记的盒子向你推了推。走廊里偶尔传来脚步声。", chaos: 1 },
+  rain: { title: "休息室 · 雨夜", text: "雨声敲着休息室的窗。Graves 擦掉桌上的水痕，把棋盘挪到干燥的一边。背景广播正断断续续地响着。", chaos: 2 },
+  rowdy: { title: "休息室 · 散场后", text: "聚会刚散，桌上还有几只没收走的杯子。Graves 从桌角捞起棋盒。隔壁的人聊到兴头上，笑声隔着门也听得见。", chaos: 3 },
+  bar:{title:"酒吧 · 靠窗座位",text:"Graves 把杯垫叠在一旁，腾出能放下棋盘的那半张桌子。吧台后有人开始收杯。",chaos:3},
+  train:{title:"列车 · 在途",text:"车窗映出两块手机屏幕。Graves 拉低屏幕亮度，隔着过道朝你点了点头。",chaos:2},
+  dark:{title:"暗处 · 手机微光",text:"灯熄了。Graves 靠在墙边，手机屏幕照亮了他的手套。你的设备收到一条对局邀请。",chaos:1},
+  tent:{title:"帐篷 · 雨幕",text:"雨点打在篷布上。Graves 把棋盘摆到折叠桌中央，压平了卷起来的一角。",chaos:2},
+  mess:{title:"餐厅 · 午后",text:"午餐的人群散去，窗边还剩一张空桌。Graves 放下餐盘，从外套里取出棋盒。",chaos:1},
+  custom: { title: "自定义场景", text: "", chaos: 1 }
+};
+const chaosLabels = ["", "低", "中", "高"];
+const shotLabels = { miss: "落空", hit: "命中", sunk: "击沉", win: "击沉最后一艘" };
+const visual = {
+  unknown: ["", "未标记", ""], ship: ["▬", "舰格", "ship"], miss: ["·", "落空", "miss"],
+  hit: ["×", "命中", "hit"], sunk: ["◆", "击沉", "sunk"]
+};
+const gestures = [
+  "把手肘从桌沿抬起来，给你留出摆棋的地方。“轮到你了。”",
+  "一边记下坐标，一边抬眼看你。“我想看看你接下来怎么选。”",
+  "把一枚滚到桌边的标记拢回盒里，偏头示意你继续。",
+  "指节在自己的那张记录纸边上轻敲两下。“这次我得再想想。”"
+];
+const interruptions = {
+  2: ["窗外一阵响动。他停了一下，等动静过去，才把视线移回棋盘。", "门外有人经过。他等脚步声远了，才接着看你的落点。"],
+  3: ["桌沿被碰了一下。他扶住棋盒，转头朝门口扬了扬眉。“给我们留张安静的桌子。”", "旁边突然爆出一阵笑声。他把手里的标记扣到桌上，等他们安静下来。"]
+};
+const replies = [
+  "听你把话说完，才低头看向棋盘。“好，我听见了。你继续。”",
+  "把棋盒往你手边推近一点。“等这轮结束，我们再接着说。”",
+  "抬起眼，停了半拍。“这句我先记下。看你这手怎么走。”"
+];
+const choose = values => values[Math.floor(Math.random() * values.length)];
+const clean = (value, limit) => typeof value === "string" ? value.trim().slice(0, limit) : "";
+const newId = () => globalThis.crypto?.randomUUID?.() ?? String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+const defaultScene = { ...scenes.quiet, kind: "quiet", character: hostContext?.character?.name || "对手" };
+
+function inferChaos(text) {
+  if (/喝了|喝完|醉|酒精|酒局|聚会|起哄|喧闹|嘈杂|混乱|吵闹/.test(text)) return 3;
+  if (/雨|广播|脚步|打断|来往|忙碌|音乐|电话|门外/.test(text)) return 2;
+  return 1;
+}
+
+function freshMatch(scene = defaultScene) {
+  return {
+    version: 1, id: newId(), scene, phase: "deploy", player: [], enemy: [],
+    outgoing: {}, incoming: {}, turn: "player", round: 1, vertical: false,
+    lastPlayer: null, lastEnemy: null, events: [], notes: [], serial: 0,
+    winner: null, ending: null, awayAt: null, updated: Date.now()
+  };
+}
+
+let storageOK = true;
+function loadMatch() {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    if (value?.version === 1 && Array.isArray(value.player) && Array.isArray(value.events)
+        && Array.isArray(value.notes) && value.scene?.character && ["deploy", "battle", "paused", "end"].includes(value.phase)) {
+      if (value.phase === "battle") {
+        value.phase = "paused";
+        value.awayAt ??= value.updated;
+      }
+      return value;
+    }
+  } catch {
+    // Unavailable or unreadable storage starts a new match.
+  }
+  return freshMatch();
+}
+
+const prefs={frequency:0,onSunk:true,onReturn:true,outside:true};
+try{Object.assign(prefs,JSON.parse(localStorage.getItem(key+".prefs")))}catch{}
+const extras={quiet:"走廊的门锁响了一声。",rain:"窗上的雨声忽然密了起来。",rowdy:"隔壁桌传来一阵笑声。",bar:"吧台那头响起碰杯声。",train:"车厢广播开始报站。",dark:"远处一道手电光扫过地面。",tent:"一阵风把篷布压低了几寸。",mess:"餐盘车从桌边经过。"};
+const scenePatterns=[[ /列车|地铁|车厢|末班车|交通|火车/,"train"],[/酒吧|酒馆|喝酒/,"bar"],[/熄灯|漆黑|停电|黑暗/,"dark"],[/帐篷|营地/,"tent"],[/餐厅|餐盘|食堂/,"mess"],[/值班|办公室/,"quiet"],[/雨/,"rain"],[/散场|聚会/,"rowdy"]];
+function pickSetting(text){return scenePatterns.find(([pattern])=>pattern.test(text))?.[1]}
+let match = loadMatch();
+let mode = readMode();
+let adapter = null;
+let selected = null;
+let timer = 0;
+let notice = "";
+let focusCells = { own: 0, opp: 0 };
+let lastRenderedLog = null;
+let previewMode = "new";
+let manualRequest = null;
+
+function readMode() {
+  try { return localStorage.getItem(key + ".dialogue") === "manual" ? "manual" : "local"; }
+  catch { return "local"; }
+}
+
+function persist() {
+  match.updated = Date.now();
+  try {
+    localStorage.setItem(key, JSON.stringify(match));
+    storageOK = true;
+  } catch {
+    storageOK = false;
+  }
+}
+
+function addNote(text, who = "system", round = match.round) {
+  if (!text) return;
+  match.notes.push({ id: ++match.serial, round, who, text });
+  if(who === "role") queueMicrotask(()=>notifyDialogue(text));
+  if (match.notes.length > 120) match.notes.shift();
+}
+
+function fleetCount(ships, shots) {
+  return ships.filter(ship => !rules.isSunk(ship, shots)).length;
+}
+
+function publicState() {
+  return {
+    id: match.id, round: match.round, phase: match.phase, turn: match.turn,
+    scene: { ...match.scene }, winner: match.winner,
+    afloat: { player: fleetCount(match.player, match.incoming), opponent: fleetCount(match.enemy, match.outgoing) },
+    recent: match.notes.slice(-10).map(({ round, who, text }) => ({ round, who, text }))
+  };
+}
+
+function createEvent(type, detail = {}) {
+  const event = { id: match.id + ":" + (++match.serial), type, detail, state: publicState() };
+  match.events.push(event);
+  if (match.events.length > 12) match.events.shift();
+  return event;
+}
+
+function localBeat(event) {
+  const { type, detail, state } = event;
+  if(detail.outside) return {text:detail.outside+" 他停了一下，抬眼看向你。“我们继续。”"};
+  if(["train","dark"].includes(state.scene.kind)){
+    const lines={closing:"他锁上屏幕，又抬眼望过来。“再来一局？”",return:"他把手机重新点亮。“接着刚才那局？”",reply:"他看完你的消息，向你轻轻点头。",gesture:detail.sunk?"他看了眼屏幕上的击沉提示，向你扬了扬眉。":"他用拇指擦去屏幕上的指印。“轮到你了。”"};
+    return {text:lines[type],inviteRematch:type==="closing"};
+  }
+  if (type === "closing") {
+    const text = detail.winner === "player"
+      ? "他把手里的标记放下，盯着最后一个坐标看了一会儿。“这盘你赢得很干净。再来一局？”"
+      : "他把记号笔横放在棋盘旁。“这一盘算我的。还想试一次吗？”";
+    return { text, inviteRematch: true };
+  }
+  if (type === "return") {
+    return { text: detail.minutes >= 5
+      ? "听见你回来，他把椅子勾回桌边。“我把棋盘留在原位了。要接着下吗？”"
+      : "他把棋盒推回你手边。“你刚才那步我记着。接着来？”" };
+  }
+  if (type === "reply") return { text: choose(replies) };
+  if (detail.sunk) {
+    return { text: detail.actor === "player"
+      ? "他把被击沉的舰艇旁边那枚多余的标记拨开。“行，这一艘归你。”"
+      : "他把记号笔的盖子扣上，抬眼看你。“这一艘算我的。你还有机会。”" };
+  }
+  return { text: choose(gestures) };
+}
+
+function applyBeat(result, event) {
+  const text = clean(result?.text, 600);
+  if (event.state.id !== match.id || !text || match.notes.some(note => note.eventId === event.id)) return false;
+  addNote(text, "role", event.state.round);
+  match.notes.at(-1).eventId = event.id;
+  if (event.type === "closing") match.ending = { text, inviteRematch: result.inviteRematch === true };
+  persist();
+  render();
+  return true;
+}
+
+async function roleEvent(type, detail) {
+  const event = createEvent(type, detail);
+  if (mode === "manual") return;
+  if (mode !== "adapter" || !adapter) {
+    applyBeat(localBeat(event), event);
+    return;
+  }
+  const activeAdapter = adapter;
+  const controller = new AbortController();
+  let timeout;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => activeAdapter.generateBeat(structuredClone(event), { signal: controller.signal })),
+      new Promise(resolve => { timeout = setTimeout(() => { controller.abort(); resolve(null); }, 8000); })
+    ]);
+    if (activeAdapter === adapter && mode === "adapter") {
+      if (!applyBeat(result, event)) applyBeat(localBeat(event), event);
+    }
+  } catch {
+    if (activeAdapter === adapter && mode === "adapter") applyBeat(localBeat(event), event);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function activeEvent() {
+  if (match.phase === "end") return match.ending ? null : match.events.findLast(event => event.type === "closing");
+  const latest = match.events.at(-1);
+  return latest && !match.notes.some(note => note.eventId === latest.id) ? latest : null;
+}
+
+let generated=null;
+async function generateScene(){
+  if(hostContext){
+    const button=$("generate");button.disabled=true;button.textContent="正在生成…";
+    try{
+      const draft=await window.parent.SCNaval.generateScene($("rp").value);
+      if(!$("scene-dialog")?.open && !document.querySelector('dialog[open]'))return;
+      $("scene-choice").value="custom";$("scene-custom").value=draft.text;
+      $("scene-character").value=hostContext.character.name;
+      generated=null;updatePreview();return;
+    }catch{notice="场景生成失败，可填写情境或使用本地开局。";}
+    finally{button.disabled=false;button.textContent="根据情境生成开局";}
+  }
+
+  const context=$("rp").value.trim();
+  const kind=pickSetting(context)||choose(Object.keys(extras));
+  $("scene-choice").value=kind;
+  generated={kind,context,detail:choose(["他把腕表调到静音。","他卷起袖口，抬眼确认你已经准备好了。","他稍稍侧过身，给你让出一些光线。"])};
+  updatePreview();
+}
+function draftScene() {
+  const kind = $("scene-choice").value;
+  const character = clean($("scene-character").value, 30) || "Graves";
+  const text = kind === "custom"
+    ? clean($("scene-custom").value, 500)
+    : scenes[kind].text.replaceAll("Graves", () => character);
+  if(generated?.kind===kind) return {...scenes[kind],kind,character,text:[generated.context,text,generated.detail].filter(Boolean).join(" "),chaos:generated.context?inferChaos(generated.context):scenes[kind].chaos};
+  return { ...scenes[kind], text, kind: kind === "custom" ? (pickSetting(text) || "custom") : kind, character, chaos: kind === "custom" ? inferChaos(text) : scenes[kind].chaos };
+}
+
+function updatePreview() {
+  const draft = previewMode === "review" && match.phase !== "deploy" ? match.scene : draftScene();
+  $("custom-wrap").hidden = draft.kind !== "custom";
+  $("scene-custom").required = draft.kind === "custom";
+  $("preview-art").src=artFor(draft);
+  $("preview-scene").textContent = draft.title;
+  $("preview-text").textContent = draft.text || "输入当前 RP 的情景，生成开局卡片。";
+  $("preview-chaos").textContent = "混乱度 · " + chaosLabels[draft.chaos];
+}
+
+function openPreview(kind) {
+  previewMode = kind;
+  generated=null;$("rp").value="";
+  const scene = match.scene;
+  $("scene-choice").value = scene.kind;
+  $("scene-character").value = scene.character;
+  $("scene-custom").value = scene.kind === "custom" ? scene.text : "";
+  $("replace-warning").hidden = !["battle", "paused"].includes(match.phase);
+  $("scene-custom").setCustomValidity("");
+  $("scene-apply").textContent = kind === "review" ? "确认修改" : "确认并布阵";
+  const locked = kind === "review" && match.phase !== "deploy";
+  for (const id of ["scene-choice", "scene-character", "scene-custom"]) $(id).disabled = locked;
+  $("generate").hidden=locked;$("rp").disabled=locked;
+  if(kind==="new")generateScene();
+  $("scene-apply").hidden = locked;
+  $("replace-warning").hidden ||= locked;
+  updatePreview();
+  $("scene-dialog").showModal();
+}
+
+function setNewMatch(scene) {
+  clearTimeout(timer);
+  timer = 0;
+  showBoard();
+  match = freshMatch(scene);
+  selected = null;
+  notice = "";
+  focusCells = { own: 0, opp: 0 };
+  $("reply-text").value = "";
+  persist();
+  render();
+}
+
+function boardAction(side, index) {
+  focusCells[side] = index;
+  if (side === "own" && match.phase === "deploy") {
+    const length = rules.lengths[match.player.length];
+    if (!length) return;
+    const ship = rules.placement(index, length, match.vertical, match.player);
+    if (ship) match.player.push(ship);
+    notice = ship ? "" : "这个位置无法放下舰艇，请更换起点或转向。";
+    persist();
+    render();
+  }
+  if (side === "opp" && match.phase === "battle" && match.turn === "player" && !match.outgoing[index]) {
+    selected = index;
+    render();
+  }
+}
+
+function buildBoard(side) {
+  const grid = $(side + "-grid");
+  for (let row = -1; row < rules.size; row++) {
+    for (let column = -1; column < rules.size; column++) {
+      const axis = row < 0 || column < 0;
+      const cell = document.createElement(axis ? "span" : "button");
+      cell.className = axis ? "axis" : "cell";
+      if (axis) {
+        cell.textContent = row < 0 ? (column < 0 ? "" : column + 1) : String.fromCharCode(65 + row);
+        cell.setAttribute("aria-hidden", "true");
+      } else {
+        const index = row * rules.size + column;
+        cell.type = "button";
+        cell.dataset.cell = index;
+        cell.addEventListener("click", () => boardAction(side, index));
+        cell.addEventListener("keydown", event => {
+          const delta = { ArrowUp: -rules.size, ArrowDown: rules.size, ArrowLeft: -1, ArrowRight: 1 }[event.key];
+          if (delta === undefined) return;
+          event.preventDefault();
+          if (event.key === "ArrowLeft" && column === 0 || event.key === "ArrowRight" && column === rules.size - 1) return;
+          const target = index + delta;
+          if (!rules.cells.includes(target)) return;
+          cell.tabIndex = -1;
+          focusCells[side] = target;
+          const next = grid.querySelector('[data-cell="' + target + '"]');
+          next.tabIndex = 0;
+          next.focus();
+        });
+      }
+      grid.append(cell);
+    }
+  }
+}
+
+function drawBoard(side) {
+  const own = side === "own";
+  const shots = own ? match.incoming : match.outgoing;
+  const ships = own ? match.player : match.enemy;
+  const plot = $(side + "-grid");
+  const active = own
+    ? match.phase === "deploy" && match.player.length < rules.lengths.length
+    : match.phase === "battle" && match.turn === "player";
+  const last = own ? match.lastEnemy : match.lastPlayer;
+  const fleet = $(side + "-fleet");
+  for (const cell of plot.querySelectorAll("button")) {
+    const index = Number(cell.dataset.cell);
+    const state = shots[index] || (own && ships.some(ship => ship.includes(index)) ? "ship" : "unknown");
+    const [glyph, label, styling] = visual[state];
+    const picked = !own && selected === index;
+    cell.textContent = picked ? "+" : glyph;
+    cell.className = ["cell", styling, last === index ? "last" : ""].filter(Boolean).join(" ");
+    cell.setAttribute("aria-label", rules.coordinate(index) + " " + (picked ? "待确认" : label));
+    cell.setAttribute("aria-disabled", String(!active || Boolean(shots[index])));
+    if (!own && match.phase === "battle") cell.setAttribute("aria-pressed", String(picked));
+    else cell.removeAttribute("aria-pressed");
+    cell.tabIndex = focusCells[side] === index ? 0 : -1;
+  }
+  fleet.replaceChildren(...rules.lengths.map((length, index) => {
+    const meter = document.createElement("span");
+    const placed = ships[index];
+    const down = placed && rules.isSunk(placed, shots) && (own || match.phase === "end");
+    const waiting = own && !placed;
+    meter.className = "ship-meter";
+    meter.setAttribute("aria-label", length + " 格舰艇" + (down ? "已击沉" : waiting ? "待布置" : ""));
+    for (let i = 0; i < length; i++) {
+      const mark = document.createElement("i");
+      mark.className = "fleet" + (down ? " down" : waiting ? " wait" : "");
+      meter.append(mark);
+    }
+    return meter;
+  }));
+  const remaining = fleetCount(ships, shots);
+  $(side + "-count").textContent = match.phase === "deploy"
+    ? (own ? match.player.length + " / 4 艘已布置" : "4 艘 · 未交战")
+    : remaining + " / 4 艘在场";
+}
+
+function drawLog() {
+  const log = $("log");
+  const renderKey = match.id + "/" + (match.notes.at(-1)?.id ?? 0);
+  if (lastRenderedLog === renderKey) return;
+  lastRenderedLog = renderKey;
+  if (log.dataset.match !== match.id) {
+    log.replaceChildren();
+    log.dataset.match = match.id;
+  }
+  if (!match.notes.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "对局开始后，这里会记录落点和桌边互动。";
+    log.replaceChildren(empty);
+    return;
+  }
+  log.querySelector(".empty")?.remove();
+  const retained = new Set(match.notes.map(note => String(note.id)));
+  for (const item of log.children) {
+    if (!retained.has(item.dataset.note)) item.hidden = true;
+  }
+  for (const item of Array.from(log.children).filter(child => child.hidden)) item.remove();
+  for (const note of match.notes) {
+    if (log.querySelector('[data-note="' + note.id + '"]')) continue;
+    const item = document.createElement("li");
+    const meta = document.createElement("small");
+    item.dataset.note = note.id;
+    item.className = note.who === "role" ? "rp" : note.who === "player" ? "self" : "";
+    meta.textContent = "第 " + note.round + " 回合 · " + (note.who === "role" ? match.scene.character : note.who === "player" ? "你" : "棋局");
+    item.append(meta, document.createTextNode(note.text));
+    log.append(item);
+  }
+  log.scrollTop = log.scrollHeight;
+}
+
+function render() {
+  const { phase, round, scene } = match;
+  const deploying = phase === "deploy";
+  const playing = phase === "battle";
+  const paused = phase === "paused";
+  const ended = phase === "end";
+  const playerTurn = playing && match.turn === "player";
+  $("subtitle").textContent = "与 " + scene.character + " 在棋盘上交手";
+  $("phase").textContent = { deploy: "布阵中", battle: "对局中", paused: "已暂停", end: "已结束" }[phase];
+  $("round").textContent = deploying ? "8 × 8" : "第 " + round + " 回合";
+  $("pause").hidden = !playing;
+  $("status").textContent = notice || (deploying
+    ? (rules.lengths[match.player.length] ? "布置 " + rules.lengths[match.player.length] + " 格舰艇" : "舰队已就绪")
+    : paused ? "棋局已暂停" : ended ? (match.winner === "player" ? "你赢得了这场对局" : scene.character + " 赢得了这场对局")
+      : playerTurn ? (selected === null ? "轮到你标记坐标" : "已选中 " + rules.coordinate(selected)) : scene.character + " 正在选择坐标");
+  $("deploy-actions").hidden = !deploying;
+  $("fire-actions").hidden = !playing;
+  $("resume-actions").hidden = !paused;
+  $("rotate").textContent = "转向 · " + (match.vertical ? "竖向" : "横向");
+  $("rotate").disabled = match.player.length === rules.lengths.length;
+  $("undo").disabled = !match.player.length;
+  $("begin").disabled = match.player.length !== rules.lengths.length;
+  $("fire").disabled = !playerTurn || selected === null;
+  $("action-hint").textContent = deploying ? "点选己方海域的起始格，舰艇沿所选方向延伸。" :
+    paused ? "继续后从上次保存的回合开始。" :
+    ended ? "" : "选择未标记的坐标，再确认本回合的落点。";
+  $("maps").classList.toggle("deploy", deploying);
+  $("opp-grid").parentElement.classList.toggle("active", playerTurn);
+  $("swap").hidden=match.phase==="deploy";
+  $("scene-art").src=artFor(scene);
+  $("latest").textContent=match.notes.findLast(n=>n.who==="role")?.text || (mode==="manual" && activeEvent()?"新互动已就绪 · 打开桌边记录查看":"");
+  $("scene-title").textContent = scene.title;
+  $("scene-text").textContent = scene.text;
+  $("character").textContent = "对手 · " + scene.character;
+  $("chaos").textContent = "混乱度 · " + chaosLabels[scene.chaos];
+  $("dialogue-source").textContent = { local: "内置角色", manual: "独立对话", adapter: "SC 角色接口" }[mode];
+  $("bridge-open").hidden = mode !== "manual" || (ended && Boolean(match.ending));
+  $("bridge-open").disabled = deploying;
+  $("bridge-open").textContent = activeEvent() ? "传递角色提示词" : "请角色互动";
+  $("reply-text").disabled = !playing;
+  $("send").disabled = !playing;
+  $("ending").hidden = !ended;
+  if (ended) {
+    $("end-title").textContent = match.ending?.inviteRematch ? scene.character + " 邀你再来一局" : "对局结语";
+    $("end-line").textContent = match.ending?.text || (mode === "manual" ? "可把结局交给独立对话，让角色决定是否邀约再战。" : "等待角色回应…");
+    $("rematch").textContent = match.ending?.inviteRematch ? "接受再战" : "再来一局";
+  }
+  $("storage").textContent = storageOK ? "本浏览器自动保存 · 单人离线棋局" : "浏览器存储不可用 · 当前棋局仅保留在此页";
+  drawBoard("own");
+  drawBoard("opp");
+  drawLog();
+  updateMini();
+  syncViews();
+}
+
+function scheduleOpponent() {
+  clearTimeout(timer);
+  timer = 0;
+  if (match.phase !== "battle" || match.turn !== "opponent" || document.hidden) return;
+  timer = setTimeout(() => {
+    timer = 0;
+    if (match.phase !== "battle" || match.turn !== "opponent" || document.hidden) return;
+    playShot("opponent", rules.chooseShot(match.incoming));
+  }, 650);
+}
+
+function playShot(actor, index) {
+  if (match.phase !== "battle" || match.turn !== actor) return;
+  const player = actor === "player";
+  const result = rules.takeShot(index, player ? match.enemy : match.player, player ? match.outgoing : match.incoming);
+  if (!result) return;
+  combatFeedback(actor, index, result);
+  selected = null;
+  if (player) match.lastPlayer = index;
+  else match.lastEnemy = index;
+  const coordinate = rules.coordinate(index);
+  addNote((player ? "你" : match.scene.character) + "标记 " + coordinate + " · " + shotLabels[result]);
+  if (result === "win") {
+    match.winner = actor;
+    match.phase = "end";
+    roleEvent("closing", { winner: actor, coordinate });
+  } else {
+    match.turn = player ? "opponent" : "player";
+    const lastGestureRound = match.events.findLast(event => event.type === "gesture")?.state.round ?? 0;
+    const interval = Number(prefs.frequency) || { 1: 5, 2: 3, 3: 2 }[match.scene.chaos];
+    const ambient = !player && prefs.outside && extras[match.scene.kind] && Math.random()<match.scene.chaos/10;
+    if (ambient || (prefs.onSunk && result === "sunk") || (!player && interval>0 && match.round - lastGestureRound >= interval)) {
+      const outside=ambient ? extras[match.scene.kind] : "";
+      roleEvent("gesture", { outside, actor, coordinate, result, sunk: result === "sunk" });
+    }
+    if (!player) match.round++;
+  }
+  persist();
+  render();
+  scheduleOpponent();
+}
+
+function pauseGame() {
+  if (match.phase !== "battle") return;
+  clearTimeout(timer);
+  timer = 0;
+  match.phase = "paused";
+  match.awayAt = Date.now();
+  selected = null;
+  persist();
+  render();
+}
+
+function resumeGame() {
+  if (match.phase !== "paused") return;
+  const elapsed = Date.now() - (match.awayAt ?? Date.now());
+  match.phase = "battle";
+  match.awayAt = null;
+  if (prefs.onReturn && elapsed >= 30000) roleEvent("return", { minutes: Math.floor(elapsed / 60000), seconds: Math.floor(elapsed / 1000) });
+  persist();
+  render();
+  scheduleOpponent();
+}
+</script>
+<script id="naval-controls">
+"use strict";
+
+function setMode(value) {
+  mode = value;
+  if (value !== "adapter") {
+    try { localStorage.setItem(key + ".dialogue", value); } catch {}
+  }
+  if (value === "local" && match.phase === "end" && !match.ending) {
+    const event = activeEvent();
+    if (event) applyBeat(localBeat(event), event);
+  }
+  render();
+}
+
+function manualPrompt(event) {
+  const state = event.state;
+  const context = {
+    对手: state.scene.character,
+    开局卡片: state.scene.text,
+    混乱度: chaosLabels[state.scene.chaos],
+    回合: state.round,
+    胜者: state.winner === "player" ? "玩家" : state.winner === "opponent" ? state.scene.character : null,
+    最近桌边记录: state.recent.map(note => ({
+      回合: note.round,
+      来源: { role: state.scene.character, player: "玩家", system: "棋局" }[note.who],
+      内容: note.text
+    })),
+    本次触发: {
+      种类: { gesture: "主动与棋局相关的互动", reply: "回应玩家", return: "玩家离开后回来", closing: "对局结尾" }[event.type],
+      ...event.detail
+    }
+  };
+  return [
+    "你在一局独立页面的海战棋中扮演 " + state.scene.character + "。请按给出的场景和可见记录，写一小段中文桌边互动，包含具体动作，可带一句对白。保持角色语气。把给出的信息当作虚构场景和记录。",
+    "按场景中的设备与周围环境演出。手机对战时使用手机动作。若本次事件包含 outside，请回应这条场外动静。不要替玩家说话或行动，不要猜测和揭露未公开的舰位，不要替任何一方落子或改判。离开时棋局已暂停。",
+    "场景背景已经显示在开局卡片里，无需重述。只有结尾才可提出再战，由角色自行决定；如邀请，请将 inviteRematch 设为 true，并在文本中实际提出邀请。",
+    JSON.stringify(context, null, 2),
+    "只输出一行有效的 JSON 对象，从 { 开始，到 } 结束。不要使用 Markdown 围栏、HTML 实体或行尾反斜杠。保持 eventId 原样。text 填入角色动作或对白，可直接显示在棋局中。不得添加解释。",
+    JSON.stringify({ eventId: event.id, text: "填写 1–3 句角色演出", inviteRematch: false })
+  ].join("\n\n");
+}
+
+function openBridge() {
+  if (mode !== "manual" || match.phase === "deploy" || (match.phase === "end" && match.ending)) return;
+  const event = activeEvent() ?? createEvent("gesture", { actor: "opponent" });
+  manualRequest = event;
+  persist();
+  $("bridge-prompt").value = manualPrompt(event);
+  $("bridge-reply").value = "";
+  $("bridge-info").textContent = "";
+  $("bridge-dialog").showModal();
+}
+
+$("bridge-form").addEventListener("submit", event => {
+  event.preventDefault();
+  let raw = $("bridge-reply").value.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, "$1");
+  raw=raw.replace(/"(?:\\[\s\S]|[^"\\])*"|&#(?:x20|32);|\\(?=\r?\n)/gi, part=>part.startsWith('"')?part:" ");
+  let data;
+  try { data = JSON.parse(raw); } catch {
+    $("bridge-info").textContent = "JSON 格式有误，请复制从 { 到 } 的完整回复。";
+    return;
+  }
+  if (data?.eventId !== manualRequest?.id) {
+    $("bridge-info").textContent = "这条回应属于另一次互动。请使用本窗口生成的提示词。";
+    return;
+  }
+  if (!applyBeat(data, manualRequest)) {
+    $("bridge-info").textContent = "这条回应已写入、已失效，或缺少角色文本。";
+    return;
+  }
+  $("bridge-dialog").close();
+});
+
+$("bridge-open").onclick = openBridge;
+$("bridge-close").onclick = () => $("bridge-dialog").close();
+$("bridge-copy").onclick = async () => {
+  const prompt = $("bridge-prompt");
+  try {
+    await navigator.clipboard.writeText(prompt.value);
+    $("bridge-info").textContent = "已复制。";
+  } catch {
+    prompt.focus();
+    prompt.select();
+    $("bridge-info").textContent = "提示词已选中，可按 Ctrl+C 或 Command+C 复制。";
+  }
+};
+$("new").onclick = () => openPreview("new");
+$("preview-open").onclick = () => openPreview("review");
+$("scene-close").onclick = () => $("scene-dialog").close();
+$("help").onclick = () => $("help-dialog").showModal();
+$("role-settings").onclick = () => {
+  $("role-info").textContent = mode === "adapter" ? "当前连接 SC 角色接口。" :
+    mode === "manual" ? "当前使用独立对话。" : "当前使用内置角色。";
+  $("role-dialog").showModal();
+};
+$("role-close").onclick = () => $("role-dialog").close();
+$("role-local").onclick = () => { setMode("local"); $("role-dialog").close(); };
+$("role-manual").onclick = () => { setMode("manual"); $("role-dialog").close(); };
+$("scene-form").addEventListener("input", updatePreview);
+$("scene-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const scene = previewMode==="review" && $("scene-choice").value===match.scene.kind && !generated && match.scene.kind!=="custom" ? {...match.scene, character:$("scene-character").value.trim(), text:match.scene.text.replaceAll(match.scene.character,()=>$("scene-character").value.trim())} : draftScene();
+  if (!scene.text) {
+    $("scene-custom").setCustomValidity("请输入开局场景。");
+    $("scene-custom").reportValidity();
+    return;
+  }
+  if (previewMode === "review" && match.phase === "deploy") {
+    match.scene = scene;
+    persist();
+    render();
+  } else {
+    setNewMatch(scene);
+  }
+  $("scene-dialog").close();
+});
+$("scene-custom").addEventListener("input", () => $("scene-custom").setCustomValidity(""));
+$("rotate").onclick = () => { match.vertical = !match.vertical; notice = ""; persist(); render(); };
+$("undo").onclick = () => { match.player.pop(); notice = ""; persist(); render(); };
+$("random").onclick = () => { match.player = rules.randomFleet(); notice = ""; persist(); render(); };
+$("begin").onclick = () => {
+  showBoard();
+  if (match.phase !== "deploy" || match.player.length !== rules.lengths.length) return;
+  match.enemy = rules.randomFleet();
+  match.phase = "battle";
+  notice = "";
+  persist();
+  render();
+  $("opp-grid").querySelector('[tabindex="0"]').focus({ preventScroll: true });
+};
+$("fire").onclick = () => { if (selected !== null) playShot("player", selected); };
+$("pause").onclick = pauseGame;
+$("resume").onclick = resumeGame;
+$("rematch").onclick = () => openPreview("new");
+$("reply").addEventListener("submit", event => {
+  event.preventDefault();
+  const input = $("reply-text");
+  const text = clean(input.value, 180);
+  if (!text || match.phase !== "battle") return;
+  input.value = "";
+  addNote(text, "player");
+  roleEvent("reply", { text });
+  persist();
+  render();
+  if (mode === "manual") openBridge();
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden) pauseGame(); });
+window.addEventListener("pagehide", pauseGame);
+
+window.SCNavalGame = Object.freeze({
+  apiVersion: 1,
+  getPublicState: publicState,
+  pause: pauseGame,
+  setRoleAdapter(nextAdapter) {
+    if (nextAdapter != null && typeof nextAdapter.generateBeat !== "function") throw new TypeError("generateBeat is required");
+    adapter = nextAdapter;
+    setMode(nextAdapter ? "adapter" : readMode());
+  },
+  prepareScene({ title, text, character, chaos, sceneId } = {}) {
+    if (match.phase !== "deploy") return false;
+    const sceneText = clean(text, 500);
+    if (!sceneText) return false;
+    match.scene = {
+      kind: scenes[sceneId] ? sceneId : (pickSetting(sceneText) || "custom"), title: clean(title, 60) || scenes.custom.title, text: sceneText,
+      character: clean(character, 30) || match.scene.character,
+      chaos: [1, 2, 3].includes(chaos) ? chaos : inferChaos(sceneText)
+    };
+    persist();
+    render();
+    return true;
+  }
+});
+
+let popTimer, feedbackTimer;
+function showBoard(){
+ document.querySelector('.layout').dataset.tab='board';
+ document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab==='board')));
+ $('maps').classList.remove('home');
+}
+function syncViews(){
+ const tab=document.querySelector('.layout').dataset.tab||'board';
+ document.querySelector('.layout>.panel').hidden=tab!=='board';
+ document.querySelectorAll('.rail>.panel').forEach((p,i)=>p.hidden=tab!==(i===0?'scene':'log'));
+ const own=match.phase==='deploy'||$('maps').classList.contains('home');
+ document.querySelector('.map.own').hidden=!own;
+ document.querySelector('.map.foreign').hidden=own;
+ $('swap').textContent=own?'查看对手海域':'查看己方海域';
+}
+function updateMini(){
+ const nodes=[];
+ for(let i=0;i<64;i++){const n=document.createElement('i');n.className=match.incoming[i]||(match.player.some(ship=>ship.includes(i))?'ship':'');if(i===match.lastEnemy)n.classList.add('last');nodes.push(n);}
+ $('mini-grid').replaceChildren(...nodes);
+ $('mini-status').textContent=match.lastEnemy===null?'己方舰队':rules.coordinate(match.lastEnemy)+' · '+(shotLabels[match.incoming[match.lastEnemy]]||'未交战');
+}
+function notifyDialogue(text){
+ if(document.querySelector('.layout').dataset.tab==='log')return;
+ const tab=document.querySelector('button[data-tab="log"]');tab.classList.add('unread');tab.setAttribute('aria-description','有未读桌边消息');
+ $('pop-author').textContent=match.scene.character+' · 桌边新消息';$('pop-text').textContent=text;$('message-pop').hidden=false;
+ clearTimeout(popTimer);popTimer=setTimeout(()=>$('message-pop').hidden=true,8000);
+}
+function combatFeedback(actor,index,result){
+ const own=actor!=='player';
+ if(result==='miss')return;
+ $('combat-feedback').textContent=(own?'己方 '+rules.coordinate(index)+' 遭到命中':result==='hit'?'命中对方 '+rules.coordinate(index):'击沉对方舰艇！')+(result==='win'?(own?' · 本局结束':' · 你获胜了！'):own&&result==='sunk'?' · 舰艇被击沉':'');
+ $('combat-feedback').hidden=false;clearTimeout(feedbackTimer);feedbackTimer=setTimeout(()=>$('combat-feedback').hidden=true,3500);
+ if(own){document.body.classList.remove('damaged');void document.body.offsetWidth;document.body.classList.add('damaged');setTimeout(()=>document.body.classList.remove('damaged'),1500);}
+ if(result==='sunk'||result==='win')requestAnimationFrame(()=>{const grid=$(own?'own-grid':'opp-grid');grid.querySelectorAll('.sunk').forEach(c=>{c.classList.remove('sinking');void c.offsetWidth;c.classList.add('sinking');});});
+ if(result==='win'&&!own&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  for(let burst=0;burst<3;burst++)for(let i=0;i<24;i++){const p=document.createElement('i'),a=i/24*Math.PI*2;p.className='firework';p.style.cssText=`--x:${25+burst*25}%;--y:${24+burst%2*16}%;--dx:${Math.cos(a)*90}px;--dy:${Math.sin(a)*90+30}px;--c:${['#c7a454','#7bb9a0','#de8e81'][i%3]};animation-delay:${burst*.2}s`;$('fireworks').append(p);setTimeout(()=>p.remove(),2200);}
+ }
+}
+$('theme-toggle').onclick=()=>{const night=document.documentElement.dataset.mode!=='night';document.documentElement.dataset.mode=night?'night':'day';try{localStorage.setItem('sc.naval.theme',night?'night':'day')}catch{}$('theme-toggle').textContent=night?'☀':'☾';const shell=window.parent.document.querySelector('[data-naval-shell]');if(shell){shell.style.background=night?'#1d2420':'#fff';shell.style.color=night?'#e8ecdf':'#202329';}};
+$('mini-toggle').onclick=()=>{showBoard();$('maps').classList.add('home');syncViews();};
+$('message-pop').onclick=()=>document.querySelector('[data-tab="log"]').click();
+
+const artwork=[];
+function artFor(scene){const i={quiet:0,bar:1,rowdy:1,train:2,dark:3,tent:4,rain:4,mess:5};return artwork[i[scene.kind]??i[pickSetting(scene.text)]??0]}
+for(const button of document.querySelectorAll(".nav button"))button.onclick=()=>{
+ document.querySelector(".layout").dataset.tab=button.dataset.tab;
+ if(button.dataset.tab==="log"){button.classList.remove("unread");button.removeAttribute("aria-description");$("message-pop").hidden=true;}
+ syncViews();
+ document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-pressed",String(b===button)));
+ window.scrollTo(0,0);
+};
+$("swap").onclick=()=>{$("maps").classList.toggle("home");syncViews();};
+$("generate").onclick=generateScene;
+$("scene-choice").onchange=()=>{generated=null;updatePreview()};
+for(const id of Object.keys(prefs)){const el=$(id);if(id==="frequency")el.value=prefs[id];else el.checked=prefs[id];el.onchange=()=>{prefs[id]=id==="frequency"?Number(el.value):el.checked;try{localStorage.setItem(key+".prefs",JSON.stringify(prefs))}catch{}}}
+buildBoard("own");
+buildBoard("opp");
+if (mode === "local" && match.phase === "end" && !match.ending) setMode("local");
+else render();
+if(hostContext) {
+  window.SCNavalGame.setRoleAdapter({generateBeat: (event, options)=>window.parent.SCNaval.generateBeat(event, options)});
+  document.documentElement.dataset.mode=localStorage.getItem('sc.naval.theme') || (hostContext.night?'night':'day');
+}
+syncViews();updateMini();
+if(match.phase==="deploy"&&!match.player.length&&!match.serial)openPreview("new");
+</script>
+</body>
+</html>
+
+
+

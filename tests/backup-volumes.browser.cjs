@@ -1,0 +1,56 @@
+const {chromium}=require(process.env.SC_PLAYWRIGHT_MODULE || 'playwright');
+const root=require('path').resolve(__dirname,'..');
+const assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true});
+ const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('http://127.0.0.1:4173/**',async route=>{const fs=require('fs'),path=require('path');const url=new URL(route.request().url());const file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':url.pathname));if(fs.existsSync(file)&&fs.statSync(file).isFile())await route.fulfill({path:file,contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':undefined});else await route.fulfill({status:404,body:''});}); await page.goto('http://127.0.0.1:4173/');await page.waitForFunction(()=>typeof SCNaval!=='undefined'&&Storage.db);
+ await page.waitForFunction(()=>typeof SCVolumes!=='undefined'&&Storage.db);
+ const result=await page.evaluate(async()=>{
+  const check=(v,msg)=>{if(!v)throw Error(msg);};
+  const stores=Array.from(Storage.db.objectStoreNames).filter(n=>n!=='fontCache');
+  const tx=Storage.db.transaction(stores,'readwrite');for(const name of stores)tx.objectStore(name).clear();await SCVolumes.done(tx);
+  const bytes=new Uint8Array(3*1024*1024+37);for(let i=0;i<bytes.length;i++)bytes[i]=(i*37+11)%251;
+  const original=new Blob([bytes],{type:'image/png'});
+  await Storage.dbPut('characters',{id:'c',name:'舰长',description:'测试人设'});
+  await Storage.dbPut('sessions',{id:'s',title:'备份测试',participantCharacterIds:['c']});
+  await Storage.dbPut('sessions',{id:'other',title:'不选中的会话',participantCharacterIds:['c']});
+  for(let i=0;i<160;i++)await Storage.dbPut('messages',{id:'m'+String(i).padStart(3,'0'),sessionId:'s',role:i%2?'assistant':'user',content:'中文测试\\"\n'.repeat(130)+i,createdAt:i});
+  await Storage.dbPut('album',{id:'a',data:original,label:'原图'});
+  await Storage.dbPut('tracks',{id:'t',data:new Blob([bytes.slice(0,1024*1024)],{type:'audio/mpeg'})});
+  await Storage.dbPut('notes',{id:'n',image:'data:image/png;base64,AQIDBA==',custom:{field:undefined,date:new Date('2026-01-01'),array:new Uint8Array([5,9])}});
+  await Storage.kvSet('unknown_future',{test:'必须保留'});localStorage.setItem('backup-test','原始设置');localStorage.setItem('sc.naval-grid.v2.test','棋局');
+  const snap=await SCVolumes.temp('qa-export-'+crypto.randomUUID());
+  const meta=await SCVolumes.snapshot(snap);check(meta.counts.messages===160,'快照消息数');check(meta.counts.album===1,'快照媒体数');
+  const manifest=await SCVolumes.build(snap,1024*1024);check(manifest.volumes.length>4,'大附件应分卷');check(manifest.volumes.every(v=>v.size<=1024*1024),'分卷不能超过目标');
+  const files=[new File([JSON.stringify(manifest)],'test.scmanifest.json')];
+  for(const v of manifest.volumes){const saved=await SCVolumes.get(snap,'volumes',v.index);files.push(new File([saved.blob],v.filename));}
+  const before=await Storage.dbGet('album','a');check(await SCVolumes.digest(before.data)===await SCVolumes.digest(original),'导出改变了原图');
+  let rejected=false;try{await SCVolumes.stageFiles(files.slice(0,-1));}catch{rejected=true;}check(rejected,'缺卷必须拒绝');
+  const corrupt=files.slice();const broken=corrupt[1];corrupt[1]=new File([new Uint8Array(broken.size)],broken.name);rejected=false;try{await SCVolumes.stageFiles(corrupt);}catch{rejected=true;}check(rejected,'损坏卷必须拒绝');
+  const staged=await SCVolumes.stageFiles(files);const restoredPhoto=await SCVolumes.get(staged.db,'rows',['album','a']);check(await SCVolumes.digest(restoredPhoto.value.data)===await SCVolumes.digest(original),'原图字节不一致');
+  const note=await SCVolumes.get(staged.db,'rows',['notes','n']);check(note.value.image==='data:image/png;base64,AQIDBA==','Base64 不一致');check(note.value.custom.date instanceof Date,'日期类型丢失');check(note.value.custom.array[1]===9,'typed array 丢失');check('field' in note.value.custom,'undefined 字段丢失');
+  const same=await SCVolumes.restore(staged.db,'merge');check(same.conflicts===0,'相同数据不应产生冲突');check(same.same>=166,'相同数据未跳过');
+  await Storage.dbPut('messages',{id:'m000',sessionId:'s',content:'本机新版本'});await Storage.dbPut('notes',{id:'local-only',content:'本机独有，不能删除'});
+  localStorage.setItem('backup-test','本机新设置');
+  const merged=await SCVolumes.restore(staged.db,'merge');check(merged.conflicts>=2,'冲突应另存');check((await Storage.dbGet('messages','m000')).content==='本机新版本','合并覆盖了原消息');check(await Storage.dbGet('notes','local-only'),'合并删除原记录');check(localStorage.getItem('backup-test')==='本机新设置','合并覆盖原设置');
+  const conflicts=(await Storage.dbGetAll('kv')).filter(r=>r.key.startsWith('__sc_backup_conflict_v2_'));check(conflicts.some(r=>r.value.key==='m000'),'冲突副本未落库');
+  const oldRestore=SCVolumes.restoreLS;SCVolumes.restoreLS=function(v){if(v['backup-test']==='原始设置')throw Error('模拟设置写入失败');return oldRestore.call(this,v);};
+  rejected=false;try{await SCVolumes.restore(staged.db,'replace');}catch{rejected=true;}SCVolumes.restoreLS=oldRestore;
+  check(rejected,'模拟失败应中止');check(await Storage.dbGet('notes','local-only'),'事务回滚未保留旧记录');check((await Storage.dbGet('messages','m000')).content==='本机新版本','事务回滚失败');
+  await SCVolumes.recover();check(localStorage.getItem('backup-test')==='本机新设置','重启恢复设置失败');
+  await SCVolumes.restore(staged.db,'replace');check(!await Storage.dbGet('notes','local-only'),'完整替换未清除旧条目');check((await Storage.dbGet('messages','m000')).content.startsWith('中文测试'),'完整恢复消息失败');check(localStorage.getItem('backup-test')==='原始设置','完整设置恢复失败');
+  const partial=await SCVolumes.temp('qa-partial-'+crypto.randomUUID());const pm=await SCVolumes.snapshot(partial,'chat','s');check(pm.counts.sessions===1&&pm.counts.messages===160,'按会话筛选错误');check(pm.counts.characters===1&&pm.counts.kv>0,'分类依赖缺失');
+  await SCVolumes.build(partial,1024*1024);rejected=false;try{await SCVolumes.restore(partial,'replace');}catch{rejected=true;}check(rejected,'分类包不许完整替换');
+  await SCVolumes.open();document.querySelector('#scv-analyze').click();
+  return {volumes:manifest.volumes.length,records:meta.counts.messages,conflicts:merged.conflicts,bytes:original.size};
+ });
+ await page.waitForFunction(()=>document.querySelector('#scv-status')?.textContent==='容量统计完成。');
+ await page.screenshot({path:require('path').join(require('os').tmpdir(),'sc-backup-diagnostics.png')});
+ await page.selectOption('#scv-limit','10');await page.click('#scv-export');await page.waitForFunction(()=>document.querySelector('#scv-status')?.textContent.startsWith('生成成功'),{timeout:60000});
+ const downloading=page.waitForEvent('download');await page.getByText('保存备份清单',{exact:true}).click();const downloaded=await downloading;await downloaded.saveAs(require('path').join(require('os').tmpdir(),'sc-test.scmanifest.json'));
+ await page.screenshot({path:require('path').join(require('os').tmpdir(),'sc-backup-volumes.png')});
+ assert.equal(errors.length,0,errors.join('\n'));console.log('PASS backup-v2',JSON.stringify(result),'UI diagnostics, generated volumes, manifest download; no runtime errors');
+ await browser.close();
+})().catch(e=>{console.error(e);process.exitCode=1;});
+

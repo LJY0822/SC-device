@@ -14,6 +14,7 @@
   try {
     // 初始化存储
     await Storage.init();
+    await SCVolumes.recover();
     // 图标美化：后台加载，不阻塞首屏（大图数据读 IndexedDB 可能较慢）
     Storage._iconStylesCache = {};
     void Storage.hydrateIconStylesCache()
@@ -512,4 +513,5 @@ window.addEventListener('appinstalled', () => {
     { capture: true, passive: true }
   );
 })();
+
 
