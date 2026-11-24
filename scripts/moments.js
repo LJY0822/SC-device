@@ -5,7 +5,8 @@ const Moments = {
   maxImages: 9,
   _momentEngagementInFlight: new Set(),
   _momentImageGenInFlight: new Set(),
-  _MOMENTS_AI_LAST_UPDATE_KEY: 'moments_ai_last_update_v1',
+  _MOMENTS_SELECTION_KEY: 'moments_generation_characters_v1',
+  _momentsUpdateInFlight: false,
   _momentsUpdateCandidates: [],
   _MOMENTS_ROLE_SIGNAL_KEY_PREFIX: 'moments_role_social_signals_',
 
@@ -18,6 +19,9 @@ const Moments = {
     });
     document.getElementById('moments-new')?.addEventListener('click', () => {
       this.openComposer();
+    });
+    document.getElementById('moments-settings')?.addEventListener('click', () => {
+      void this.openGenerationSettings().catch(error => alert('设置未保存：' + error.message));
     });
     document.getElementById('moments-refresh')?.addEventListener('click', async () => {
       try {
@@ -71,7 +75,7 @@ const Moments = {
         this.renderList();
         this._loadCoverBg();
         try { this._setUpdateBarVisible(false); } catch (e1) {}
-        void this._syncMomentsUpdateButton();
+        void this._syncMomentsUpdateButton().catch(error => console.warn(error));
       }
     });
   },
@@ -83,7 +87,7 @@ const Moments = {
     if (!bar || !btn) return;
     const v = !!visible;
     bar.hidden = !v;
-    btn.disabled = !v;
+    btn.disabled = !v || this._momentsUpdateInFlight;
     const textEl = btn.querySelector('.yd-moments-updatebar__text');
     const text = String(opts?.text || '').trim();
     const count = opts?.count != null ? Math.max(0, Math.floor(Number(opts.count) || 0)) : 0;
@@ -97,23 +101,44 @@ const Moments = {
     }
   },
 
-  async _getMomentsAiLastUpdateState() {
-    try {
-      const row = await Storage.kvGet(this._MOMENTS_AI_LAST_UPDATE_KEY);
-      if (!row || typeof row !== 'object') return { byCharacterId: {}, lastRunAt: 0 };
-      const by = row.byCharacterId && typeof row.byCharacterId === 'object' ? row.byCharacterId : {};
-      const lastRunAt = Number(row.lastRunAt || 0) || 0;
-      return { byCharacterId: { ...by }, lastRunAt };
-    } catch (e) {
-      return { byCharacterId: {}, lastRunAt: 0 };
-    }
+  async _getGenerationCharacters() {
+    const [characters, saved] = await Promise.all([
+      Storage.dbGetAll('characters'), Storage.kvGet(this._MOMENTS_SELECTION_KEY)
+    ]);
+    const selected = new Set(Array.isArray(saved) ? saved.map(String) : []);
+    return (Array.isArray(characters) ? characters : [])
+      .filter(c => c && c.id && String(c.name || '').trim())
+      .map(character => ({ character, characterId: String(character.id), selected: selected.has(String(character.id)) }));
   },
 
-  async _setMomentsAiLastUpdateState(next) {
-    const obj = next && typeof next === 'object' ? next : null;
-    const by = obj?.byCharacterId && typeof obj.byCharacterId === 'object' ? obj.byCharacterId : {};
-    const lastRunAt = Number(obj?.lastRunAt || 0) || 0;
-    await Storage.kvSet(this._MOMENTS_AI_LAST_UPDATE_KEY, { byCharacterId: { ...by }, lastRunAt });
+  async openGenerationSettings() {
+    const rows = await this._getGenerationCharacters();
+    const e = SCUI.escape;
+    await SCUI.modal('朋友圈生成设置',
+      '<p>勾选下次刷新的候选角色，每次最多生成 3 人。按最近 48 小时消息数排序，无消息角色随机补足。名单会保留，直到你再次修改。</p>' +
+      '<p>无消息角色仅使用人设和已启用的总结记忆；没有总结记忆时使用人设。</p>' +
+      '<div class="moments-generation-roster">' + (rows.length ? rows.map(row =>
+        '<label><input type="checkbox" name="moments-character" value="' + e(row.characterId) + '" ' + (row.selected ? 'checked' : '') + '><span>' + e(row.character.name) + '</span></label>'
+      ).join('') : '<p>暂无角色，请先创建角色。</p>') + '</div>' +
+      '<p data-roster-count></p><div class="sc-dialog-actions"><button type="button" data-roster-cancel>取消</button><button type="button" data-roster-save>保存</button></div>', dialog => {
+        const inputs = [...dialog.querySelectorAll('input[name="moments-character"]')];
+        const count = () => { dialog.querySelector('[data-roster-count]').textContent = '已选 ' + inputs.filter(i => i.checked).length + ' 人 · 每次最多生成 3 人'; };
+        inputs.forEach(input => input.addEventListener('change', count));
+        count();
+        dialog.querySelector('[data-roster-cancel]').onclick = () => dialog.close();
+        dialog.querySelector('[data-roster-save]').onclick = async event => {
+          const saveButton = event.currentTarget;
+          saveButton.disabled = true;
+          try {
+            await Storage.kvSet(this._MOMENTS_SELECTION_KEY, inputs.filter(i => i.checked).map(i => i.value));
+            dialog.close();
+            await this._syncMomentsUpdateButton();
+          } catch (error) {
+            saveButton.disabled = false;
+            alert('设置未保存：' + error.message);
+          }
+        };
+      });
   },
 
   _sessionInvolvesCharacter(session, characterId) {
@@ -129,78 +154,39 @@ const Moments = {
 
   async _syncMomentsUpdateButton() {
     try {
-      this._setUpdateBarVisible(false);
+      const [roster, sessions, messages] = await Promise.all([
+        this._getGenerationCharacters(), Storage.dbGetAll('sessions'), Storage.dbGetAll('messages')
+      ]);
+      const now = Date.now(), cutoff = now - 48 * 60 * 60 * 1000;
+      const sessionById = new Map((sessions || []).filter(Boolean).map(s => [String(s.id), s]));
+      const recent = (messages || []).filter(m => m && ['user', 'assistant'].includes(m.role) &&
+        !m._pending && !m._localOnly && Number(m.createdAt) >= cutoff && Number(m.createdAt) <= now);
+      this._momentsUpdateCandidates = roster.filter(row => row.selected).map(row => ({
+        characterId: row.characterId, character: row.character,
+        newCount: recent.filter(m => this._sessionInvolvesCharacter(sessionById.get(String(m.sessionId)), row.characterId)).length
+      })).sort((a, b) => b.newCount - a.newCount);
+      const count = Math.min(3, this._momentsUpdateCandidates.length);
+      this._setUpdateBarVisible(true, {
+        text: this._momentsUpdateInFlight ? '正在更新…' : count ? '刷新角色朋友圈' : '请先点右上角齿轮选择角色', count
+      });
+      const button = document.getElementById('moments-refresh');
+      if (button) button.disabled = this._momentsUpdateInFlight || !count;
+    } catch (error) {
       this._momentsUpdateCandidates = [];
-
-      const lastState = await this._getMomentsAiLastUpdateState();
-      const byCharacterId = lastState.byCharacterId || {};
-
-      const sessions = await Storage.dbGetAll('sessions');
-      const allSessions = Array.isArray(sessions) ? sessions.filter(Boolean) : [];
-      const messages = await Storage.dbGetAll('messages');
-      const allMessages = Array.isArray(messages) ? messages.filter(Boolean) : [];
-
-      const chars = await Storage.dbGetAll('characters');
-      const allChars = Array.isArray(chars) ? chars.filter(Boolean) : [];
-      const charById = new Map(allChars.map((c) => [String(c?.id || ''), c]));
-
-      // 先收集“出现过会话”的角色 id，避免无会话角色参与计算
-      const candidateIds = new Set();
-      for (const s of allSessions) {
-        const ids = Array.isArray(s?.participantCharacterIds) ? s.participantCharacterIds.filter(Boolean) : [];
-        ids.forEach((x) => candidateIds.add(String(x)));
-        const legacy = String(s?.characterId || '').trim();
-        if (legacy) candidateIds.add(legacy);
-      }
-      if (!candidateIds.size) {
-        this._setUpdateBarVisible(false);
-        return;
-      }
-
-      const sessionById = new Map(allSessions.map((s) => [String(s?.id || ''), s]));
-      const newCountByChar = new Map();
-
-      for (const cid of candidateIds) {
-        const c = charById.get(String(cid));
-        if (!c) continue;
-        const lastAt = Number(byCharacterId[String(cid)] || 0) || 0;
-        let count = 0;
-        for (const m of allMessages) {
-          if (!m) continue;
-          if (m.role === 'memory') continue;
-          if (m._pending || m._localOnly) continue;
-          const createdAt = Number(m.createdAt || 0) || 0;
-          if (createdAt <= lastAt) continue;
-          const sid = String(m.sessionId || '');
-          const s = sessionById.get(sid);
-          if (!s) continue;
-          if (!this._sessionInvolvesCharacter(s, cid)) continue;
-          count += 1;
-        }
-        if (count > 0) newCountByChar.set(String(cid), count);
-      }
-
-      const list = Array.from(newCountByChar.entries())
-        .map(([characterId, newCount]) => ({
-          characterId,
-          newCount,
-          character: charById.get(String(characterId)) || null
-        }))
-        .filter((x) => x.character && x.newCount > 5)
-        .sort((a, b) => (b.newCount || 0) - (a.newCount || 0));
-
-      this._momentsUpdateCandidates = list;
-      if (!list.length) {
-        this._setUpdateBarVisible(false);
-        return;
-      }
-      const topN = Math.min(3, list.length);
-      this._setUpdateBarVisible(true, { text: '有新内容更新', count: topN });
-    } catch (e) {
-      console.warn('[Moments] _syncMomentsUpdateButton failed:', e);
       this._setUpdateBarVisible(false);
-      this._momentsUpdateCandidates = [];
+      console.warn('[Moments] candidate refresh failed:', error);
+      throw error;
     }
+  },
+
+  _pickGenerationCandidates(candidates) {
+    const active = candidates.filter(c => c.newCount > 0).sort((a, b) => b.newCount - a.newCount);
+    const inactive = candidates.filter(c => c.newCount === 0);
+    for (let i = inactive.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [inactive[i], inactive[j]] = [inactive[j], inactive[i]];
+    }
+    return [...active, ...inactive].slice(0, 3);
   },
 
   _safeParseJson(text) {
@@ -507,10 +493,21 @@ const Moments = {
   },
 
   async runMomentsUpdateFromChats() {
+    if (this._momentsUpdateInFlight) return;
+    this._momentsUpdateInFlight = true;
+    try {
+      return await this._runMomentsUpdateFromChats();
+    } finally {
+      this._momentsUpdateInFlight = false;
+      await this._syncMomentsUpdateButton();
+    }
+  },
+
+  async _runMomentsUpdateFromChats() {
     // 确保候选是最新的（允许用户停留页面期间继续聊天）
     await this._syncMomentsUpdateButton();
     const candidates = Array.isArray(this._momentsUpdateCandidates) ? this._momentsUpdateCandidates : [];
-    const picked = candidates.slice(0, 3);
+    const picked = this._pickGenerationCandidates(candidates);
     if (!picked.length) {
       this._setUpdateBarVisible(false);
       return;
@@ -539,8 +536,6 @@ const Moments = {
         selected.map((x) => this._generateMomentForCharacter(x))
       );
       const now = Date.now();
-      const lastState = await this._getMomentsAiLastUpdateState();
-      const by = lastState.byCharacterId || {};
       let wrote = 0;
       let successCount = 0;
 
@@ -586,15 +581,12 @@ const Moments = {
         await Storage.dbAdd('moments', moment);
         wrote += 1;
         successCount += 1;
-        const cid = String(selectedOne.characterId || '').trim();
-        if (cid) by[cid] = now;
         try {
           window.dispatchEvent(new CustomEvent('yd:moments:changed', { detail: { source: 'moments_update_ai', momentId: moment.id } }));
         } catch (e) {}
       }
 
       if (successCount > 0) {
-        await this._setMomentsAiLastUpdateState({ byCharacterId: by, lastRunAt: now });
         this._notifyMomentEngagementResult(`已更新 ${wrote} 条朋友圈`);
       } else {
         this._notifyMomentEngagementResult('已请求更新，但未生成有效朋友圈');
@@ -615,27 +607,35 @@ const Moments = {
     const characterName = String(selectedOne?.characterName || '').trim();
     if (!characterId || !characterName) throw new Error('角色信息缺失');
 
-    // 真正复用 TaPages 标准上下文：角色设定 + 线上聊天摘录 +（未来可扩展的）统一“隐藏线索”注入
-    if (typeof TaPages === 'undefined' || !TaPages || typeof TaPages._buildFeatureContextForCharacter !== 'function') {
-      throw new Error('标准上下文构造器不可用');
+    const inactive = Number(selectedOne.newCount) === 0;
+    let ctx;
+    if (inactive) {
+      // 此分支不调用会附带聊天原文和社交信号的通用上下文。
+      const character = await Storage.dbGet('characters', characterId);
+      if (!character) throw new Error('角色已删除');
+      const maskId = Storage.get(CONFIG.STORAGE_KEYS.DEFAULT_MASK_ID);
+      const mask = maskId ? await Storage.dbGet('masks', maskId) : null;
+      const profile = TaPages._buildCharacterProfileText(character).replace(/\{\{user\}\}/g, String(mask?.name || '用户'));
+      const sessions = await Storage.dbGetAll('sessions');
+      const memories = (sessions || []).filter(s => this._sessionInvolvesCharacter(s, characterId))
+        .map(s => Chat._buildSessionMemorySummarySystemForApi(s)).filter(Boolean);
+      ctx = { charProfile: profile, chatTranscript: memories.join('\n\n') };
+    } else {
+      ctx = await TaPages._buildFeatureContextForCharacter(characterId, { maxMsgs: 56 });
     }
-    const ctx = await TaPages._buildFeatureContextForCharacter(characterId, { maxMsgs: 56 });
     const profile = String(ctx?.charProfile || '').trim();
     const transcript = String(ctx?.chatTranscript || '').trim();
     const roleBlock = [
-      '【角色】',
-      `characterName: ${characterName || '未命名角色'}`,
-      '',
-      '【角色设定】',
-      profile || '（无）',
-      '',
-      '【近期聊天摘录（按线上聊天加载上下文逻辑整理）】',
-      transcript || '（无）'
-    ].join('\n');
+      '【角色】', 'characterName: ' + characterName, '',
+      '【角色设定】', profile || '（无）', '',
+      inactive ? '【已启用的总结记忆】' : '【近期聊天摘录】',
+      transcript || (inactive ? '（暂无总结记忆，仅依据人设）' : '（无）'),
+      inactive ? '本角色最近48小时没有新增消息。仅依据人设与以上总结记忆创作生活动态，不引用聊天原文，不声称刚与用户聊过。' : ''
+    ].filter(Boolean).join('\n');
 
     const systemPrompt = [
       '你是「手机里的朋友圈内容生成器」。',
-      '你会收到 1 个角色：包含 characterName、角色设定、以及与用户的近期聊天摘录。',
+      '你会收到 1 个角色：包含 characterName、角色设定，以及近期聊天或已启用的总结记忆。资料缺失时仅依据人设创作，不编造与用户的既往对话。',
       '你的任务：只为这个角色生成 1 条“角色自己发的朋友圈”。',
       '要求：',
       '- 输出必须是严格 JSON，且只能输出 JSON（禁止 markdown、禁止解释、禁止多余文本）。',

@@ -1,0 +1,33 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function fixture(){
+ const db={characters:[],sessions:[],messages:[],masks:[],moments:[]},kv=new Map();let calls=[],activeReads=0,seq=0;
+ const badge={},text={},bar={},button={querySelector:()=>text};
+ const context=vm.createContext({console,Date,Math:Object.create(Math),Map,Set,Promise,CONFIG:{STORAGE_KEYS:{DEFAULT_MASK_ID:'mask'}},document:{getElementById:id=>({'moments-updatebar':bar,'moments-refresh':button,'moments-refresh-badge':badge}[id]||null)},window:{dispatchEvent(){}},CustomEvent:class{},State:{generateId:()=>String(++seq)},Storage:{get:()=>null,kvGet:async k=>kv.get(k),kvSet:async(k,v)=>kv.set(k,v),dbGetAll:async store=>db[store],dbGet:async(store,id)=>db[store].find(r=>r.id===id),dbAdd:async(store,row)=>db[store].push(row)},TaPages:{_buildCharacterProfileText:c=>'PROFILE '+c.name,_buildFeatureContextForCharacter:async id=>{activeReads++;return {charProfile:'ACTIVE PROFILE '+id,chatTranscript:'ACTIVE_CHAT'};},_buildAiFeatureSpec:x=>x,_runAiFeatureTask:async spec=>{calls.push(spec);const name=spec.userMessage.match(/characterName: ([^\n]+)/)[1];return {raw:JSON.stringify({characterName:name,text:'生活动态',publishTime:Date.now(),imageDesc:''})};}}});
+ vm.runInContext(fs.readFileSync('scripts/chat.js','utf8'),context);vm.runInContext(fs.readFileSync('scripts/moments.js','utf8'),context);const run=s=>vm.runInContext(s,context),moments=run('Moments');moments.renderList=async()=>{};moments._notifyMomentEngagementResult=()=>{};
+ const char=id=>({id,name:id});const msg=(id,sid,age=0,extra={})=>({id,sessionId:sid,role:'user',createdAt:Date.now()-age,...extra});
+ return {db,kv,context,run,moments,bar,button,text,badge,calls,char,msg,get activeReads(){return activeReads;}};
+}
+test('48h counts include low activity and legacy/offline sessions but exclude non-chat, pending, old and future rows',async()=>{
+ const f=fixture();f.db.characters=['a','b','c','never'].map(f.char);f.kv.set('moments_generation_characters_v1',['a','b','c','never','deleted']);
+ f.db.sessions=[{id:'sa',characterId:'a',mode:1},{id:'sb',participantCharacterIds:['b']}];const twoDays=48*3600000;
+ f.db.messages=[f.msg('a1','sa'),f.msg('b1','sb'),f.msg('b2','sb',0,{role:'assistant'}),f.msg('old','sa',twoDays+1000),f.msg('future','sa',-60000),...['system','memory'].map(role=>f.msg(role,'sa',0,{role})),f.msg('pending','sa',0,{_pending:true}),f.msg('local','sa',0,{_localOnly:true})];
+ await f.moments._syncMomentsUpdateButton();const rows=f.moments._momentsUpdateCandidates;assert.deepEqual(Array.from(rows,r=>[r.characterId,r.newCount]),[['b',2],['a',1],['c',0],['never',0]]);assert.equal(f.button.disabled,false);assert.equal(f.badge.textContent,'3');
+ await f.moments._syncMomentsUpdateButton();assert.equal(f.moments._momentsUpdateCandidates[0].characterId,'b','repeat refresh keeps active characters eligible');
+});
+test('zero selection prompts settings; saved selections survive reads and deleted characters are ignored',async()=>{
+ const f=fixture();f.db.characters=['a','b'].map(f.char);await f.moments._syncMomentsUpdateButton();assert.equal(f.button.disabled,true);assert.match(f.text.textContent,/齿轮/);f.kv.set('moments_generation_characters_v1',['b','deleted']);assert.deepEqual(Array.from(await f.moments._getGenerationCharacters(),r=>r.selected),[false,true]);await f.moments._syncMomentsUpdateButton();assert.equal(f.button.disabled,false);assert.equal(f.moments._momentsUpdateCandidates.length,1);
+});
+test('top active characters win; inactive choices shuffle without mutating the roster; up to three returns everyone',()=>{
+ const f=fixture(),rows=[{characterId:'a',newCount:1},{characterId:'b',newCount:4},{characterId:'c',newCount:0},{characterId:'d',newCount:0}];f.context.Math.random=()=>0;const first=f.moments._pickGenerationCandidates(rows);assert.deepEqual(Array.from(first,r=>r.characterId),['b','a','d']);f.context.Math.random=()=>.999;assert.deepEqual(Array.from(f.moments._pickGenerationCandidates(rows),r=>r.characterId),['b','a','c']);assert.deepEqual(rows.map(r=>r.characterId),['a','b','c','d']);assert.equal(f.moments._pickGenerationCandidates(rows.slice(0,2)).length,2);assert.equal(f.moments._pickGenerationCandidates([]).length,0);
+});
+test('inactive generation contains only profile and enabled summaries from related sessions, never raw chat or other-role memory',async()=>{
+ const f=fixture();f.db.characters=['a'].map(f.char);f.db.sessions=[{id:'s',characterId:'a',memoryEnhanceEnabled:true,memoryEnhanceHistory:[{text:'ALLOWED_MEMORY',enabled:true},{text:'DISABLED_SECRET',enabled:false}]},{id:'off',characterId:'a',memoryEnhanceEnabled:false,memoryEnhanceHistory:[{text:'OFF_MEMORY'}]},{id:'other',characterId:'b',memoryEnhanceEnabled:true,memoryEnhanceHistory:[{text:'OTHER_SECRET'}]}];f.db.messages=[{sessionId:'s',content:'RAW_SECRET'}];
+ await f.moments._generateMomentForCharacter({characterId:'a',characterName:'a',newCount:0});const prompt=f.calls[0].userMessage;assert.match(prompt,/PROFILE a/);assert.match(prompt,/ALLOWED_MEMORY/);assert.doesNotMatch(prompt,/RAW_SECRET|DISABLED_SECRET|OTHER_SECRET|OFF_MEMORY|ACTIVE_CHAT/);assert.equal(f.activeReads,0);
+});
+test('inactive without memory uses profile; active uses existing conversation context',async()=>{
+ const f=fixture();f.db.characters=['a'].map(f.char);await f.moments._generateMomentForCharacter({characterId:'a',characterName:'a',newCount:0});assert.match(f.calls[0].userMessage,/暂无总结记忆/);await f.moments._generateMomentForCharacter({characterId:'a',characterName:'a',newCount:1});assert.equal(f.activeReads,1);assert.match(f.calls[1].userMessage,/ACTIVE_CHAT/);
+});
+test('concurrent refresh requests run once; partial failure does not block other selected posts; button and lock recover',async()=>{
+ const f=fixture();f.db.characters=['a','b'].map(f.char);f.kv.set('moments_generation_characters_v1',['a','b']);let release;const gate=new Promise(r=>release=r);let requested=[];f.moments._generateMomentForCharacter=async r=>{requested.push(r.characterId);await gate;if(r.characterId==='a')throw Error('simulated failure');return {text:'posted',publishTime:Date.now()};};
+ const first=f.moments.runMomentsUpdateFromChats();const second=f.moments.runMomentsUpdateFromChats();release();await Promise.all([first,second]);assert.equal(requested.length,2);assert.equal(f.db.moments.length,1);assert.equal(f.moments._momentsUpdateInFlight,false);assert.equal(f.button.disabled,false);await f.moments.runMomentsUpdateFromChats();assert.equal(f.db.moments.length,2,'repeated refresh remains allowed');
+});
