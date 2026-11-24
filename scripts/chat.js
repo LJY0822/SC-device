@@ -5633,6 +5633,15 @@ const Chat = {
       const proactiveFlushSessionId = String(this.currentSessionId || '');
       // 点击“真实发送”后应立即恢复按钮图标（不等待 API 返回）。
       // 先基于 pending 快照构造好 combined/historyForApi，再立刻清队列并刷新按钮状态。
+      // 游戏记录的待发送状态需要持久化，刷新后也不能提前进入 API 历史。
+      for (const message of pendingMsgs.filter(m => m.scGamePending)) {
+        const row = await Storage.dbGet('messages', message.id);
+        if (row) {
+          const next = {...row, scGamePending: false}; delete next._pending;
+          await Storage.dbPut('messages', next);
+        }
+        message.scGamePending = false;
+      }
       const idsToClear = Array.from(pendingSet);
         this.messages.forEach(m => {
         if (m && pendingSet.has(m.id) && m._pending) delete m._pending;
@@ -8961,7 +8970,7 @@ const Chat = {
     // 否则 historyForApi 会把这些历史 user 消息过滤掉，造成请求体缺失 user 历史。
     // 这里先全部去除 _pending，再仅对“末尾连续 user”重新打回 pending（作为待 flush 队列）。
     for (const m of this._sessionAllMessages) {
-      if (!m || !m._pending) continue;
+      if (!m || !m._pending || m.scGamePending) continue;
       delete m._pending;
       try {
         const row = await Storage.dbGet('messages', m.id);
@@ -8976,10 +8985,13 @@ const Chat = {
     // 恢复待发送队列：末尾连续的用户消息（后无 AI 回复）视为未真实发送
     const pendingIds = [];
     for (let i = this.messages.length - 1; i >= 0; i--) {
+      if (this.messages[i]?.scGameRecord) continue;
       if (this.messages[i] && (this.messages[i]._localOnly || this.messages[i].role === 'memory')) continue;
       if (this.messages[i].role !== 'user') break;
       pendingIds.unshift(this.messages[i].id);
     }
+    for (const m of this.messages) if(m.scGamePending && !pendingIds.includes(m.id)) pendingIds.push(m.id);
+    pendingIds.sort((a,b) => this.messages.findIndex(m=>m.id===a) - this.messages.findIndex(m=>m.id===b));
     this._pendingUserQueue = pendingIds;
     this.messages.forEach(m => {
       if (m && pendingIds.includes(m.id)) m._pending = true;
@@ -9501,6 +9513,9 @@ const Chat = {
     const startIdx = canIncremental ? prevCount : 0;
     const msgsToRender = this.messages.slice(startIdx);
     msgsToRender.forEach((msg, localIdx) => {
+      if(msg?.scGameRecord && typeof SCRecreation !== 'undefined'){
+        appendTo(SCRecreation.renderResultMessage(msg));return;
+      }
       if(msg?.role==='user' && msg.attachment && typeof SCUploads!=='undefined'){
         appendTo(SCUploads.render(msg));return;
       }
@@ -12156,6 +12171,7 @@ const Chat = {
   /** 聊天列表渲染：当前会话 mode + 切换边界时间，决定是否展示该条消息 */
   _shouldShowMessageInCurrentMode(m, session, currentMode) {
     if (!m) return false;
+    if (m.scGameRecord) return true;
     const cm = currentMode === 1 ? 1 : 0;
     const msgMode = this._msgModeForDisplayFilter(m, session, currentMode);
 
@@ -12493,7 +12509,7 @@ const Chat = {
     const maxMessages = Math.max(2, (Math.max(1, Number(rounds) || 1) * 2));
     let list = (Array.isArray(messages) ? messages : [])
       .filter((m) => m && String(m.sessionId || '') === sid)
-      .filter((m) => !m._localOnly)
+      .filter((m) => !m._localOnly && !m.scGamePending)
       .filter((m) => !skipPending.has(String(m.id || '')))
       .filter((m) => m.role === 'user' || m.role === 'assistant')
       .sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
@@ -14399,6 +14415,9 @@ h1{font-size:16px;margin:0 0 12px;font-weight:800;}
       const id = String(msg.id);
       if (!pendingIdSet.has(msg.id) && !pendingIdSet.has(id)) continue;
       if (String(msg.role || '') !== 'user') continue;
+      if(msg.scGameRecord){
+        scroll.querySelectorAll('[data-msg-id="' + CSS.escape(id) + '"] [data-game-state]').forEach(el=>el.textContent=msg.scGamePending?'待发送':'已发送');
+      }
       const readText = this._getMessageReadStatusText(msg);
       if (!readText) continue;
       let nodes;

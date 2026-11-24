@@ -43,18 +43,18 @@ const SCRecreation={
     return new Promise((resolve,reject)=>{
       const rows=[],r=Storage.db.transaction('messages','readonly').objectStore('messages').index('sessionId').openCursor(IDBKeyRange.only(sessionId));
       r.onerror=()=>reject(r.error);r.onsuccess=()=>{const cursor=r.result;if(!cursor){resolve(rows.reverse().map(m=>({role:m.role,text:m.text})));return;}
-        const m=cursor.value;if(['user','assistant'].includes(m.role)&&typeof m.content==='string'){
+        const m=cursor.value;if(['user','assistant'].includes(m.role)&&!m._pending&&!m._localOnly&&typeof m.content==='string'){
           rows.push({id:String(m.id),role:m.role,text:m.content.slice(0,1200),at:Number(m.createdAt)||Date.parse(m.createdAt)||0});
           rows.sort((a,b)=>b.at-a.at||b.id.localeCompare(a.id));if(rows.length>10)rows.pop();
         }cursor.continue();};
     });
   },
   async directory(){
-    return SCUI.modal('游戏',`<p>选择一种游戏，与角色开始或继续。对局数据与聊天分开保存。</p><div class="sc-game-directory">${Object.entries(this.titles).map(([id,name])=>`<button data-game="${id}"><img class="directory-sticker" src="assets/game-stickers/${id}-thumb-v1.webp" alt="" decoding="async"><span><strong>${name}</strong><small>${{naval:'8 × 8 海域 · 与一位角色交手',holdem:'2–4 人 · SC Chips 虚拟计分',gomoku:'15 × 15 · 本地棋类对手',mastermind:'猜测与反馈 · 可交换出题身份',miner:'双人实时 · 竞争或合作'}[id]}</small></span></button>`).join('')}</div>`,d=>{d.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>{d.close();this.select(b.dataset.game);});});
+    return SCUI.modal('游戏',`<p>选择一种游戏，与角色开始或继续。结束记录仅加入所选情境会话的待发送队列；不读取情境时不写入聊天。</p><div class="sc-game-directory">${Object.entries(this.titles).map(([id,name])=>`<button data-game="${id}"><img class="directory-sticker" src="assets/game-stickers/${id}-thumb-v1.webp" alt="" decoding="async"><span><strong>${name}</strong><small>${{naval:'8 × 8 海域 · 与一位角色交手',holdem:'2–4 人 · SC Chips 虚拟计分',gomoku:'15 × 15 · 本地棋类对手',mastermind:'猜测与反馈 · 可交换出题身份',miner:'双人实时 · 竞争或合作'}[id]}</small></span></button>`).join('')}</div>`,d=>{d.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>{d.close();this.select(b.dataset.game);});});
   },
   async select(game){
     const chars=await Storage.dbGetAll('characters'),sessions=(await Storage.dbGetAll('sessions')).sort((a,b)=>(Number(b.updatedAt||b.createdAt)||0)-(Number(a.updatedAt||a.createdAt)||0));const esc=SCUI.escape;
-    await SCUI.modal(this.titles[game]+' · 选择角色',`<p>${game==='holdem'?'选择1至3位角色，共2至4人入座。':'选择一位对手。'}生成开局时只读取所选会话最近十条文字、人设及对应游戏摘要，不写入 COMMS。</p><div id="sc-game-roster">${chars.map(c=>`<label class="sc-game-choice"><input type="${game==='holdem'?'checkbox':'radio'}" name="game-character" value="${esc(c.id)}">${esc(c.name||'未命名角色')}<select data-role="${esc(c.id)}"><option value="">不读取聊天情境</option>${sessions.filter(s=>s.participantCharacterIds?.length===1&&s.participantCharacterIds[0]===c.id).map(s=>`<option value="${esc(s.id)}" ${s.id===(Chat.currentSessionId&&sessions.some(v=>v.id===Chat.currentSessionId&&v.participantCharacterIds?.[0]===c.id)?Chat.currentSessionId:sessions.find(v=>v.participantCharacterIds?.length===1&&v.participantCharacterIds[0]===c.id)?.id)?'selected':''}>${esc(s.title||'角色会话')}</option>`).join('')}</select></label>`).join('')||'<p>请先在角色页面建立角色卡。</p>'}</div><p id="sc-game-select-error" role="status"></p><button id="sc-game-enter" class="sc-primary">进入游戏</button>`,d=>{
+    await SCUI.modal(this.titles[game]+' · 选择角色',`<p>${game==='holdem'?'选择1至3位角色，共2至4人入座。':'选择一位对手。'}生成开局时只读取所选会话最近十条文字、人设及对应游戏摘要；结束记录仅加入所选会话待发送；不读取聊天情境时不写入聊天。</p><div id="sc-game-roster">${chars.map(c=>`<label class="sc-game-choice"><input type="${game==='holdem'?'checkbox':'radio'}" name="game-character" value="${esc(c.id)}">${esc(c.name||'未命名角色')}<select data-role="${esc(c.id)}"><option value="">不读取聊天情境</option>${sessions.filter(s=>s.participantCharacterIds?.length===1&&s.participantCharacterIds[0]===c.id).map(s=>`<option value="${esc(s.id)}" ${s.id===(Chat.currentSessionId&&sessions.some(v=>v.id===Chat.currentSessionId&&v.participantCharacterIds?.[0]===c.id)?Chat.currentSessionId:sessions.find(v=>v.participantCharacterIds?.length===1&&v.participantCharacterIds[0]===c.id)?.id)?'selected':''}>${esc(s.title||'角色会话')}</option>`).join('')}</select></label>`).join('')||'<p>请先在角色页面建立角色卡。</p>'}</div><p id="sc-game-select-error" role="status"></p><button id="sc-game-enter" class="sc-primary">进入游戏</button>`,d=>{
       d.querySelector('#sc-game-enter').onclick=async()=>{const button=d.querySelector('#sc-game-enter');button.disabled=true;try{const ids=[...d.querySelectorAll('input:checked')].map(e=>e.value);if(!ids.length||ids.length>(game==='holdem'?3:1))throw Error('请选择正确数量的角色');const roles=[];for(const id of ids){const c=Character.normalizeCard(chars.find(c=>c.id===id)),select=[...d.querySelectorAll('select')].find(e=>e.dataset.role===id);roles.push({id,name:c.name,description:(c.description||'').slice(0,8000),scApiPresetId:chars.find(v=>v.id===id)?.scApiPresetId||null,sessionTitle:select.selectedOptions[0]?.textContent||'',avatar:Chat._sanitizeAvatarSrc(c.avatar||''),sessionId:select.value,recent:await this.recent(select.value)});}
       const maskId=Storage.get(CONFIG.STORAGE_KEYS.DEFAULT_MASK_ID),mask=maskId?await Storage.dbGet('masks',maskId):null;this.context={game,roles,user:{id:'user',name:'你',persona:mask?.name||'',avatar:Chat._sanitizeAvatarSrc(mask?.avatar||'')},key:game+'_'+roles.map(r=>r.id+'@'+r.sessionId).join('_'),night:document.documentElement.dataset.scMode==='night',configured:this.configured(roles)};d.close();this.mount(game);}catch(e){d.querySelector('#sc-game-select-error').textContent=e.message;button.disabled=false;}};
     });
@@ -63,6 +63,57 @@ const SCRecreation={
   leave(){history.back();},
   openLegacyNaval(){SCNaval.open();},
   read(key){return Storage.kvGet(key);},write(key,value){return Storage.kvSet(key,value);},
+  async queueResult(input) {
+    if (!this.titles[input.game] || !input.matchId || !Array.isArray(input.roles)) throw Error('对局记录无效');
+    const targets = new Map();
+    for (const role of input.roles) {
+      // 明确选择不读取聊天情境时，不回退寻找或新建会话。
+      if (!role.sessionId) continue;
+      const session = await Storage.dbGet('sessions', role.sessionId);
+      const ids = session?.participantCharacterIds || [session?.characterId];
+      if (session && ids.includes(role.id)) targets.set(session.id, session);
+    }
+    const changed = new Set();
+    for (const [sid, session] of targets) {
+      const id = 'sc_game_' + input.game + '_' + input.matchId + '_' + sid;
+      const content = [
+        '【游戏对局记录】' + this.titles[input.game],
+        '参与角色：' + input.roles.map(r => r.name).join('、'),
+        '场景：' + String(input.scene?.title || ''), String(input.scene?.text || ''),
+        '本局结果：' + String(input.result || ''),
+        input.closing ? '角色收场：' + input.closing : '',
+        '这是已经结束的对局，可在接下来的聊天中自然提及或回应本局结果。'
+      ].filter(Boolean).join('\n');
+      // 同一对局/会话共用一个消息ID，收场补充仅更新尚未发送的记录。
+      await new Promise((resolve, reject) => {
+        const tx = Storage.db.transaction(['messages', 'sessions'], 'readwrite');
+        tx.oncomplete = resolve; tx.onabort = () => reject(tx.error || Error('对局记录保存失败')); tx.onerror = () => {};
+        const store = tx.objectStore('messages'), request = store.get(id);
+        request.onsuccess = () => {
+          const existing = request.result;
+          if (existing && !existing.scGamePending) return;
+          changed.add(sid);
+          store.put({id, sessionId: sid, role: 'user', mode: session.mode || 0,
+            createdAt: existing?.createdAt || input.endedAt || Date.now(), content,
+            scGameRecord: {game: input.game, title: this.titles[input.game], matchId: input.matchId},
+            scGamePending: true, _pending: true});
+          const sessionRequest = tx.objectStore('sessions').get(sid);
+          sessionRequest.onsuccess = () => { if (sessionRequest.result) tx.objectStore('sessions').put({...sessionRequest.result, updatedAt: Date.now()}); };
+        };
+      });
+    }
+    if (changed.has(Chat.currentSessionId)) { Chat._forceFullRenderNext = true; await Chat.loadMessages(); }
+    Chat._scheduleChatListRefresh();
+  },
+  renderResultMessage(message) {
+    const card = document.createElement('details'); card.className = 'sc-audit sc-game-result'; card.dataset.msgId = message.id;
+    const summary = document.createElement('summary'), state = document.createElement('span');
+    summary.append(document.createTextNode((message.scGameRecord.title || '游戏') + ' · 对局结束 · '));
+    state.dataset.gameState = ''; state.textContent = message.scGamePending ? '待发送' : '已发送'; summary.append(state);
+    const time = document.createElement('small'); time.textContent = new Date(message.createdAt).toLocaleString();
+    const text = document.createElement('pre'); text.textContent = message.content;
+    card.append(summary, time, text); return card;
+  },
   async generate(input,signal){return this.json('match',input,signal);},
   async beat(input,closing,signal){return this.json(closing?'closing':'event',input,signal);}
 };

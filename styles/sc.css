@@ -34,3 +34,5 @@ body,button,input,select,textarea{font-family:Arial,'Microsoft YaHei',sans-serif
 }
 
 .sc-history-choice{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid #ddd;white-space:pre-wrap;overflow-wrap:anywhere}.sc-history-choice input{flex-shrink:0;margin-top:4px}#sc-moments-history{max-height:50vh;overflow:auto}#chat-scroll>[data-sc-audit]{display:block;margin:12px auto;max-width:100%;text-align:center}
+
+#chat-scroll>.sc-game-result{display:block;max-width:100%;border:1px solid var(--sc-line);color:var(--sc-ink)}.sc-game-result summary{cursor:pointer;font-size:13px;line-height:1.7}.sc-game-result small{display:block;margin-top:8px;opacity:.7}.sc-game-result pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:12px;line-height:1.8;margin:10px 0 0}
