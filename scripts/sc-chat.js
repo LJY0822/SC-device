@@ -19,7 +19,7 @@ const SCChat = {
     });
   },
   async run(userMessage,history,opts={}) {
-    const sid=String(Chat.currentSessionId||''); if(!sid||this.busy.has(sid)) return false;
+    const sid=String(opts.scSessionId||Chat.currentSessionId||''); if(!sid||this.busy.has(sid)) return false;
     this.busy.add(sid);
     try {
       if(!await this.review())return false;
@@ -27,6 +27,12 @@ const SCChat = {
       if(!s)return false;
       const key='sc_round_'+sid; const previous=await Storage.kvGet(key);
       if(previous && !previous.done) { Chat._toast('有未完成的群聊轮次，请到聊天设置继续或取消');return false; }
+      if(opts.scPatCharacterId) {
+        if(Number(s.mode)===1 || !(s.participantCharacterIds||[]).includes(opts.scPatCharacterId)) return false;
+        const round={id:State.generateId(),sessionId:sid,actorIds:[opts.scPatCharacterId],next:0,userMessage,history:history||[],pat:true,done:false};
+        await Storage.kvSet(key,round);
+        return await this.runRound(round);
+      }
       if(s.scGroupMode==='independent' && (s.participantCharacterIds||[]).length>1 && !opts.voiceCallRequest) {
         const round={id:State.generateId(),sessionId:sid,actorIds:[...s.participantCharacterIds],next:0,userMessage,history:history||[],userContentParts:opts.userContentParts||null,explicitVision:opts.explicitVision===true,done:false};
         await Storage.kvSet(key,round);return await this.runRound(round);
@@ -70,6 +76,7 @@ const SCChat = {
       messages.splice(1,0,{role:'system',content:`${this.rules.actor}\n当前角色：${actor.name}\n群成员：${(session.participantCharacterNames||[]).join('、')}\n${this.rules.money}`});
       const summary=Chat._buildSessionMemorySummarySystemForApi(session);if(summary)messages.splice(1,0,{role:'system',content:summary});
       messages.splice(1,0,{role:'system',content:await this.proactivePrompt(session,actor.id)});
+      if(round.pat)messages.splice(1,0,{role:'system',content:'用户刚刚拍了拍你。请按当前角色人设和近期对话，自然地主动开启一个话题。立即在本轮聊天中发言，无需定时，也不要只描述被拍的动作。'});
       const actorSession={...session,participantCharacterIds:[actor.id],participantCharacterNames:[actor.name]};
       if(typeof CalendarPage!=='undefined'){
         for(const block of [await CalendarPage.buildCycleStyleSystemForApi?.(),await CalendarPage.buildCalendarTimelineForParticipantsApi?.([actor.id])])if(block)messages.splice(1,0,{role:'system',content:block});

@@ -5766,13 +5766,32 @@ const Chat = {
     overlay.querySelector('.yd-voice-sheet__close')?.addEventListener('click', close);
   },
 
-  // 触发“拍了拍 xxx”（聊天内作为一条动作消息）
-  _triggerAvatarPat(name) {
-    const displayName = String(name || '').trim() || 'Ta';
-    console.log('[chat] pat-trigger', displayName);
-    Chat._queueUserMessage(`[动作]你拍了拍${displayName}`).catch(err => {
-      console.warn('[chat] pat queue failed', err);
-    });
+  // 拍一拍立即发起当前角色的对话，不依赖定时开关。
+  async _triggerAvatarPat(name, characterId) {
+    if (this._getCurrentSessionMode() === 1) return false;
+    const sid = String(this.currentSessionId || '');
+    if (!sid || this._avatarPatBusy || this._flushingPending || SCChat.busy.has(sid)) {
+      this._toast('正在回复中，请稍后再拍');
+      return false;
+    }
+    this._avatarPatBusy = true;
+    try {
+      if ((await Storage.kvGet('sc_round_' + sid))?.done === false) {
+        this._toast('请先继续或取消未完成的群聊轮次');
+        return false;
+      }
+      if (this.currentSessionId !== sid || this._getCurrentSessionMode() === 1) return false;
+      const id = await this._queueUserMessage('[动作]你拍了拍' + (String(name || '').trim() || 'Ta'));
+      if (!id || this.currentSessionId !== sid) return false;
+      await this._flushPendingMessages([id], { scPatCharacterId: characterId, scSessionId: sid });
+      return true;
+    } catch (error) {
+      console.warn('[chat] pat failed', error);
+      this._toast('拍一拍未完成，请稍后重试');
+      return false;
+    } finally {
+      this._avatarPatBusy = false;
+    }
   },
 
   // 从聊天进入角色详情（返回页仍为聊天）
@@ -5814,22 +5833,6 @@ const Chat = {
     } catch (e2) {}
   },
 
-  _openTaExperienceFromChat(characterId) {
-    const cid = String(characterId || '').trim();
-    if (!cid) return;
-    try {
-      // 与 ta-experience.js 保持一致：TaExperience.STORAGE_KEY_CHARACTER = 'ta_experience_character_id_v1'
-      Storage.set('ta_experience_character_id_v1', cid);
-    } catch (e) {}
-    try {
-      State.taFeatureReturnPage = 'page-chat';
-      State.taFeatureReturnSessionId = String(this.currentSessionId || '');
-    } catch (e1) {}
-    try {
-      State.switchPage('page-ta-experience');
-    } catch (e2) {}
-  },
-
   _openTaDiaryFromChat(characterId) {
     const cid = String(characterId || '').trim();
     if (!cid) return;
@@ -5866,7 +5869,7 @@ const Chat = {
     }
   },
 
-  // 点击角色头像：弹出小操作窗（角色详情 / 拍一拍 / 查手机 / 查日程 / 查日记）
+  // 角色头像：线上可拍一拍，线下仅保留角色详情。
   _showAvatarQuickActions(options = {}) {
     const anchorEl = options.anchorEl || null;
     const roleId = String(options.roleId || '').trim();
@@ -5881,8 +5884,7 @@ const Chat = {
     overlay.innerHTML = `
       <div class="yd-chat-avatar-actions__menu" role="menu" aria-label="角色操作">
         <button type="button" class="yd-chat-avatar-actions__item" data-act="detail" role="menuitem">角色详情</button>
-        <button type="button" class="yd-chat-avatar-actions__item" data-act="ta-exp" role="menuitem">查日程</button>
-        <button type="button" class="yd-chat-avatar-actions__item" data-act="pat" role="menuitem">拍一拍 ta</button>
+        ${this._getCurrentSessionMode() === 1 ? '' : '<button type="button" class="yd-chat-avatar-actions__item" data-act="pat" role="menuitem">拍一拍</button>'}
       </div>
     `;
     document.body.appendChild(overlay);
@@ -5934,19 +5936,13 @@ const Chat = {
       evt.preventDefault();
       evt.stopPropagation();
       close();
-      this._triggerAvatarPat(roleName);
+      void this._triggerAvatarPat(roleName, roleId);
     });
     overlay.querySelector('[data-act="ta-phone"]')?.addEventListener('click', (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       close();
       this._openTaPhoneFromChat(roleId);
-    });
-    overlay.querySelector('[data-act="ta-exp"]')?.addEventListener('click', (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-      close();
-      this._openTaExperienceFromChat(roleId);
     });
     overlay.querySelector('[data-act="ta-diary"]')?.addEventListener('click', (evt) => {
       evt.preventDefault();

@@ -97,9 +97,6 @@
     }
     Mask.init();
 
-    if (typeof TaExperience !== 'undefined' && TaExperience.init) {
-      TaExperience.init();
-    }
     if (typeof TaDiary !== 'undefined' && TaDiary.init) {
       TaDiary.init();
     }

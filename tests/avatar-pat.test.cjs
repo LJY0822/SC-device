@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const kv=new Map();let mode=0,queued=0,flushed,round,seq=0,toast='';
+const session={id:'s',mode:0,participantCharacterIds:['a','b'],scGroupMode:'independent'};
+const context=vm.createContext({console,Set,Map,Promise,Date,alert(){},window:{},document:{addEventListener(){},getElementById(){return null;}},State:{generateId:()=>String(++seq)},Storage:{kvGet:async k=>kv.get(k),kvSet:async(k,v)=>kv.set(k,v),dbGet:async()=>session}});
+for(const file of ['chat.js','sc-chat.js'])vm.runInContext(fs.readFileSync('scripts/'+file,'utf8'),context);
+const run=code=>vm.runInContext(code,context);
+context.getMode=()=>mode;context.queue=async text=>{queued++;assert.match(text,/拍了拍/);return 'pat';};context.flush=async(ids,opts)=>{flushed={ids:[...ids],opts};};context.toast=text=>toast=text;
+run('Chat.currentSessionId="s";Chat._getCurrentSessionMode=getMode;Chat._queueUserMessage=queue;Chat._flushPendingMessages=flush;Chat._toast=toast');
+(async()=>{
+ assert.equal(await run('Chat._triggerAvatarPat("A","a")'),true);assert.equal(queued,1);assert.deepEqual(flushed.ids,['pat']);assert.equal(flushed.opts.scPatCharacterId,'a');
+ mode=1;assert.equal(await run('Chat._triggerAvatarPat("A","a")'),false);assert.equal(queued,1);
+ mode=0;run('SCChat.busy.add("s")');assert.equal(await run('Chat._triggerAvatarPat("A","a")'),false);run('SCChat.busy.clear()');assert.match(toast,/正在回复/);
+ kv.set('sc_round_s',{done:false});assert.equal(await run('Chat._triggerAvatarPat("A","a")'),false);assert.equal(queued,1);kv.clear();
+ context.capture=async r=>{round=r;return true;};run('SCChat.review=async()=>true;SCChat.runRound=capture;Chat._clearTypingIfMatches=()=>{}');
+ assert.equal(await run('SCChat.run("[动作]你拍了拍A",[],{scPatCharacterId:"a"})'),true);assert.deepEqual([...round.actorIds],['a']);assert.equal(round.pat,true);assert.equal(kv.get('sc_round_s').done,false,'failed rounds remain resumable');
+ kv.clear();session.mode=1;assert.equal(await run('SCChat.run("pat",[],{scPatCharacterId:"a"})'),false);assert.equal(kv.size,0);
+ session.mode=0;assert.equal(await run('SCChat.run("pat",[],{scPatCharacterId:"outsider"})'),false);assert.equal(kv.size,0);
+ const html=fs.readFileSync('index.html','utf8'),worker=fs.readFileSync('sw.js','utf8');assert.ok(!fs.existsSync('scripts/ta-experience.js'));assert.ok(!html.includes('scripts/ta-experience.js'));assert.ok(!worker.includes('scripts/ta-experience.js'));assert.ok(!fs.readFileSync('scripts/chat.js','utf8').includes('data-act="ta-exp"'));
+ console.log('PASS avatar pat: immediate flush, targeted actor, offline/busy/unfinished-round guards, recovery state, retired schedule module absent');
+})().catch(e=>{console.error(e);process.exitCode=1;});

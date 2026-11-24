@@ -3,7 +3,7 @@ const fs=require('node:fs');const vm=require('node:vm');
 const messages=[{id:'old',createdAt:1,content:'old'},{id:'new',createdAt:2,content:'new'}];
 let writes=0;
 let savedNight=true;
-const document={documentElement:{dataset:{}},getElementById(){return {classList:{toggle(){}}};},querySelectorAll(){return [];}};
+const document={addEventListener(){},documentElement:{dataset:{}},getElementById(){return {classList:{toggle(){}}};},querySelectorAll(){return [];}};
 const context=vm.createContext({console,Date,Promise,document,setInterval(){},window:{addEventListener(){}},SCUI:{},Storage:{
   get(){return savedNight;},set(key,value){savedNight=value;},
   db:{transaction(){return {objectStore(){return {index(){return {getAll(){const request={};queueMicrotask(()=>{request.result=messages.map(m=>({...m}));request.onsuccess();});return request;}};}};}};}},

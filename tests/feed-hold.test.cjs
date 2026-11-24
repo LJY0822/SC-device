@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const events={},intervals=[],globalEvents={};let steps=0,hover=true,fineHover=false;
+const control={addEventListener(){},focus(){}};
+const card={dataset:{},addEventListener(name,fn){events[name]=fn;},setPointerCapture(){},setAttribute(){},querySelector(){return control;},querySelectorAll(){return [];},matches(){return hover;},contains(){return false;}};
+const context=vm.createContext({console,Date,Map,setInterval(fn,ms){intervals.push({fn,ms});},matchMedia:q=>({matches:q==='(hover: hover)'?fineHover:false}),document:{hidden:false,activeElement:null,documentElement:{dataset:{}},getElementById:()=>card,querySelectorAll:()=>[],addEventListener(n,fn){globalEvents[n]=fn;}},window:{addEventListener(n,fn){globalEvents[n]=fn;}},State:{currentPage:'page-homescreen'},Storage:{get(){},db:null},CONFIG:{STORAGE_KEYS:{API_KEY:"key"}},SCUI:{escape:x=>x},SCDaily:{status:'idle',pending:false},Weather:{rows:()=>[]}});
+vm.runInContext(fs.readFileSync('scripts/sc-terminal.js','utf8'),context);const run=s=>vm.runInContext(s,context);
+context.step=()=>steps++;run('SCTerminal.category="menu";SCTerminal.daily={menu:[{title:"A",body:"B"},{title:"C",body:"D"}]};SCTerminal.renderFeed();SCTerminal.step=step');
+const tick=intervals.find(r=>r.ms===8000).fn;
+const prose={closest:s=>s==='button, a, input, select, textarea'?null:{}};
+const pointer=id=>({target:prose,pointerId:id,pointerType:'touch',button:0});
+tick();assert.equal(steps,1,'sticky touch hover must not block rotation');events.pointerdown(pointer(1));tick();assert.equal(steps,1,'hold pauses');events.pointerup(pointer(1));tick();assert.equal(steps,2,'release resumes');
+events.pointerdown(pointer(2));events.pointercancel(pointer(2));tick();assert.equal(steps,3,'scroll cancellation releases hold');
+events.pointerdown(pointer(3));events.lostpointercapture(pointer(3));tick();assert.equal(steps,4);
+run('SCTerminal.paused=true');events.pointerdown(pointer(4));events.pointerup(pointer(4));tick();assert.equal(steps,4,'release cannot override manual pause');run('SCTerminal.paused=false');
+events.pointerdown(pointer(5));globalEvents.blur();tick();assert.equal(steps,5,'blur clears abandoned touch');fineHover=true;tick();assert.equal(steps,5,'desktop hover still pauses');
+card.contains=()=>true;context.document.activeElement={matches:()=>true};fineHover=false;tick();assert.equal(steps,5,'keyboard-visible focus pauses');context.document.activeElement={matches:()=>false};tick();assert.equal(steps,6,'pointer focus must resume');
+console.log('PASS feed hold: touch pause/release/cancel/capture loss, blur recovery, sticky hover, independent manual pause, desktop hover');

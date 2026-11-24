@@ -1922,43 +1922,13 @@
     <!-- Ta 的手机 -->
     
 
-    <!-- Ta 的经历 -->
+    <!-- 新日程功能预留入口 -->
     <div id="page-ta-experience" class="yd-page">
       <div class="yd-page-header yd-settings-nav">
-        <button class="yd-header-btn yd-header-btn--circle" id="ta-exp-back" aria-label="返回">
-          <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div class="yd-page-header__center yd-forum-title">
-          <div class="yd-forum-title__name">ta的世界线</div>
-          <div class="yd-forum-title__status">
-            <span class="yd-forum-title__icon" aria-hidden="true">
-              <svg viewBox="0 0 1391 1024" width="13" height="13" fill="currentColor" aria-hidden="true">
-                <path d="M1359.819487 306.333538c-21.293949-78.821744-115.580718-130.363077-246.311384-151.578256 18.248205 24.234667 36.49641 48.49559 51.672615 75.776 72.992821 21.215179 121.645949 54.560821 133.802667 93.997949 6.091487 24.234667 0 51.515077-18.248206 81.841231-18.248205 33.345641-54.718359 69.710769-103.371487 109.121641v-6.038975C1177.337436 242.661744 958.411487 24.392205 690.806154 24.392205 429.318564 21.346462 210.392615 239.642256 210.392615 506.407385c0 81.867487 21.293949 160.689231 57.764103 227.380512-97.28-18.195692-161.13559-57.606564-176.338051-103.082666-6.091487-24.260923 0-51.541333 18.248205-81.841231 9.110974-18.195692 24.313436-36.391385 39.515897-54.587077 0-30.299897 3.045744-63.645538 9.137231-90.952205-97.306256 78.821744-149.005128 166.728205-127.711179 242.530461 24.313436 84.886974 130.756923 139.474051 279.735794 157.643488 91.214769 115.213128 228.063179 187.969641 386.179282 187.969641 237.174154 0 437.851897-172.793436 477.394052-397.154462 136.822154-90.925949 212.834462-197.054359 185.475282-287.980308zM696.897641 930.842256c-115.528205 0-221.971692-45.476103-298.010256-121.278359h30.431179c106.417231 0 225.017436-15.149949 346.637128-45.476102 121.619692-30.299897 231.082667-75.776 322.323693-124.297846-51.725128 169.773949-212.860718 291.052308-401.381744 291.052307zM1119.573333 557.948718c-88.169026 54.560821-209.788718 109.147897-355.774359 145.513026-112.482462 30.326154-228.036923 45.476103-331.434666 45.476102-30.404923 0-57.764103-3.019487-85.123282-3.019487-48.653128-69.737026-76.012308-151.604513-76.012308-239.510974 0-233.419487 191.566769-424.408615 425.695179-424.408616 234.12841 0 425.695179 190.989128 425.69518 424.408616 0 18.195692 0 33.345641-3.045744 51.541333z"></path>
-              </svg>
-            </span>
-            <span class="yd-forum-title__status-text" id="ta-exp-role-name">未选择角色</span>
-          </div>
-        </div>
-        <button class="yd-header-btn yd-header-btn--circle" id="ta-exp-switch-top" type="button" aria-label="切换角色">
-          <svg class="yd-forum-switch-icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
-            <path d="M96 416h832c0.32 0 0.576-0.192 0.896-0.192a30.656 30.656 0 0 0 30.976-30.976c-0.064-0.256 0.128-0.512 0.128-0.832a31.424 31.424 0 0 0-14.912-26.368l-188.48-188.48a30.72 30.72 0 1 0-43.456 43.456L852.544 352H96a32 32 0 0 0 0 64z m832 192H96c-0.32 0-0.576 0.192-0.896 0.192a30.528 30.528 0 0 0-30.976 30.976c0.064 0.256-0.128 0.512-0.128 0.832 0 11.264 6.144 20.672 14.912 26.368l188.48 188.48a30.72 30.72 0 1 0 43.456-43.456L171.456 672H928a32 32 0 0 0 0-64z"></path>
-          </svg>
-        </button>
+        <button class="yd-header-btn yd-header-btn--circle" type="button" aria-label="返回" onclick="State.switchPage('page-homescreen')">‹</button>
+        <div class="yd-page-header__center yd-settings-nav__title">查日程</div>
       </div>
-      <div class="yd-page-content yd-ta-exp-page">
-        <div class="yd-ta-exp-gate" id="ta-exp-gate">
-        </div>
-        <div class="yd-ta-exp-list" id="ta-exp-list" hidden>
-          <div id="ta-exp-list-inner"></div>
-          <div class="yd-moments-updatebar" id="ta-exp-updatebar" hidden>
-            <button type="button" class="yd-moments-updatebar__btn" id="ta-exp-update-btn">
-              <span class="yd-moments-updatebar__text">有新内容更新</span>
-              <span class="yd-moments-updatebar__badge" id="ta-exp-update-badge" hidden>1</span>
-              <span class="yd-ta-exp-update-spinner" id="ta-exp-update-spinner" hidden aria-hidden="true"></span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <div class="yd-page-content"><p>日程功能待接入。</p></div>
     </div>
 
     <!-- Ta 的日记 -->
@@ -2667,7 +2637,6 @@
   <script src="scripts/card-assistant-page.js"></script>
   <script src="scripts/mask.js"></script>
   <script src="scripts/ta.js"></script>
-  <script src="scripts/ta-experience.js"></script>
   <script src="scripts/sc-ui.js"></script>
   <script src="scripts/sc-chat.js"></script>
   <script src="scripts/sc-moments.js"></script>
