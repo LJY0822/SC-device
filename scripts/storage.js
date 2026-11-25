@@ -594,6 +594,7 @@ const Storage = {
 
   // IndexedDB操作
   async dbAdd(storeName, data) {
+    if(typeof SCSync!=='undefined'&&(SCSync.STORES.includes(storeName)||(storeName==='kv'&&SCSync.sharedKv(data?.key))))data={...data,_syncAt:Date.now()};
     const tx = this.db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
     return new Promise((resolve, reject) => {
@@ -603,7 +604,8 @@ const Storage = {
     });
   },
   
-  async dbPut(storeName, data) {
+  async dbPut(storeName, data, options = {}) {
+    if(!options.syncImport&&typeof SCSync!=='undefined'&&(SCSync.STORES.includes(storeName)||(storeName==='kv'&&SCSync.sharedKv(data?.key))))data={...data,_syncAt:Date.now()};
     const tx = this.db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
     return new Promise((resolve, reject) => {

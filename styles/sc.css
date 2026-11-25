@@ -40,3 +40,5 @@ body,button,input,select,textarea{font-family:Arial,'Microsoft YaHei',sans-serif
 #aux-api-form input{max-width:62%;min-width:0;background:var(--sc-soft);color:var(--sc-ink);border:1px solid var(--sc-line);padding:8px;border-radius:6px}
 
 .aux-api-help{margin:14px 20px;font-size:12px;line-height:1.8;color:var(--sc-muted)}
+
+.sc-game-result{position:relative}.sc-game-result summary{padding-right:34px}.sc-game-result-actions{position:absolute;right:8px;top:6px;min-width:32px;min-height:32px;border:0;background:transparent;color:inherit;font-size:20px;cursor:pointer}.sc-game-result pre{cursor:pointer}

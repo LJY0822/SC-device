@@ -48,7 +48,7 @@ const SCDaily = {
       const tx=Storage.db.transaction(['characters','kv'],'readwrite');
       tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error || new Error('角色设置保存失败'));tx.onerror=()=>{};
       tx.objectStore('characters')[isNew?'add':'put'](character);
-      tx.objectStore('kv').put({key:this.roleKey(character.id),value:{assistant:assistant.checked,focus:focus.checked,autoMoments:!assistant.checked&&document.getElementById('char-auto-moments')?.checked===true}});
+      tx.objectStore('kv').put({key:this.roleKey(character.id),_syncAt:Date.now(),value:{assistant:assistant.checked,focus:focus.checked,autoMoments:!assistant.checked&&document.getElementById('char-auto-moments')?.checked===true}});
     });
     window.dispatchEvent(new CustomEvent('sc:roles-updated'));
   },
@@ -104,7 +104,7 @@ const SCDaily = {
     await new Promise((resolve,reject)=>{
       const tx=Storage.db.transaction(threads.length?['kv','threads']:['kv'],'readwrite');
       tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error || new Error('每日内容保存失败'));tx.onerror=()=>{};
-      tx.objectStore('kv').put({key:this.dayKey(date),value});
+      tx.objectStore('kv').put({key:this.dayKey(date),value,_syncAt:Date.now()});
       for(const thread of threads){const store=tx.objectStore('threads');const request=store.get(thread.id);request.onsuccess=()=>{if(!request.result)store.add(thread);};}
     });
     window.dispatchEvent(new CustomEvent('sc:daily-updated',{detail:{date}}));

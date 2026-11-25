@@ -16,9 +16,8 @@ const SCNaval = {
       try{
         const session=sessions.find(s=>s.id===select.value);
         const character=Character.normalizeCard(await Storage.dbGet('characters',session.participantCharacterIds[0]));
-        const messages=await new Promise((resolve,reject)=>{const req=Storage.db.transaction('messages','readonly').objectStore('messages').index('sessionId').getAll(session.id);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
-        const recent=messages.filter(m=>['user','assistant'].includes(m.role)&&typeof m.content==='string').sort((a,b)=>(Number(a.createdAt)||0)-(Number(b.createdAt)||0)).slice(-10).map(m=>({role:m.role,text:m.content.slice(0,1000)}));
-        window.SCNavalContext={sessionId:session.id,recent,character:{name:character.name,description:character.description||''},night:document.documentElement.dataset.scMode==='night'};
+        const recent=await SCRecreation.recent(session.id);
+        window.SCNavalContext={sessionId:session.id,recent,character:{name:character.name,description:String(character.description||'').slice(0,8000)},night:document.documentElement.dataset.scMode==='night'};
         box.close();this.mount();
       }catch{start.disabled=false;label.textContent='会话读取失败，请重试。';}
     };
@@ -38,7 +37,7 @@ const SCNaval = {
   },
   async generateScene(context){
     const c=window.SCNavalContext.character;
-    const result=await SCRecreation.json('navalScene',{role:c,recent:window.SCNavalContext.recent,context:context||'延续最近情景，两人准备开始。'},AbortSignal.timeout(15000));
+    const result=await SCRecreation.json('navalScene',{role:c,sessionId:window.SCNavalContext.sessionId,recent:window.SCNavalContext.recent,context:context||'延续最近情景，两人准备开始。'},AbortSignal.timeout(15000));
     if(typeof result.text!=='string'||!result.text.trim())throw Error('场景为空');return result;
   }
 };

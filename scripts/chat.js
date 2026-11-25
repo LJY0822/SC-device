@@ -321,7 +321,7 @@ const Chat = {
                   nextContent = rawContent.slice(0, pos) + nextText + rawContent.slice(pos + seed.length);
                 }
               }
-              const next = { ...row, content: nextContent };
+              const next = { ...row, content: nextContent, ...(row.scGameRecord?{scGameEdited:true}: {}) };
               await Storage.dbPut('messages', next);
               const idx = this.messages.findIndex(m => m && String(m.id) === String(msg.id));
               if (idx >= 0) this.messages[idx].content = nextContent;
@@ -419,6 +419,7 @@ const Chat = {
           (Array.isArray(this.messages) ? this.messages.find((m) => String(m?.id || '') === keyStr) : null) ||
           (Array.isArray(this._sessionAllMessages) ? this._sessionAllMessages.find((m) => String(m?.id || '') === keyStr) : null);
         const keyRaw = row && row.id != null ? row.id : keyStr;
+        if(row?.scGameRecord)await Storage.kvSet('sc_game_chat_deleted_'+String(keyRaw),true);
         try { await Storage.dbDelete('messages', keyRaw); } catch (e) {}
         if (keyStr !== String(keyRaw)) {
           try { await Storage.dbDelete('messages', keyStr); } catch (e2) {}
@@ -651,6 +652,7 @@ const Chat = {
         </div>
       `;
       document.body.appendChild(overlay);
+      if(msg.scGameRecord)overlay.querySelector('[data-act="redo"]')?.remove();
 
       const panel = overlay.querySelector('.yd-chat-msg-actions__panel');
       const rect = anchorEl.getBoundingClientRect();
@@ -728,6 +730,7 @@ const Chat = {
         e.preventDefault();
         e.stopPropagation();
         close();
+        if(msg.scGameRecord){if(window.confirm('删除这条对局记录？'))void this._deleteSingleMessage(msg);return;}
         this._enterBulkDeleteMode(msg);
       });
     } catch (e) {}

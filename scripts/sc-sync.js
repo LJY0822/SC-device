@@ -1,6 +1,6 @@
 // SC 增量接力同步：只传上次同步之后的变更，靠记录 ID（全局随机唯一）做并集合并。
 // 设计要点：
-// 1) 不同步 kv 表 —— API 密钥、壁纸、主题等设置各端应互相独立，同步会互相覆盖。
+// 1) 数据表按时间同步；API与社交设置仅按白名单补充，保留接收端当前API选择。
 // 2) 游标带安全窗 —— 每次导出包含「上次游标 - 24h」之后的变更；万一某次包没导入成功，
 //    24 小时内再导一次仍能补回；首次同步游标为 0，自动退化为全量。
 // 3) 删除靠墓碑（tombstone）—— 直接删掉对端无法区分「本端删除」与「对端新增」，
@@ -16,7 +16,7 @@ const SCSync = {
     LAST_EXPORT: '__sc_sync_last_export_v1',
     LAST_IMPORT: '__sc_sync_last_import_v1'
   },
-  // 参与同步的表；kv（设置）与 fontCache（缓存）刻意不同步
+  // 参与同步的数据表；kv与本地设置仅通过白名单快照同步，缓存不参与
   STORES: [
     'sessions', 'messages', 'characters', 'masks', 'notes',
     'threads', 'moments', 'themes', 'album', 'tracks', 'widgetResources'
@@ -25,6 +25,51 @@ const SCSync = {
   TOMB_KEEP_MS: 90 * 24 * 60 * 60 * 1000,
   TOMB_MAX: 5000,
   _busy: false,
+  SOCIAL_SEED:'__sc_sync_social_seed_v2',
+  apiKeyNames(){const keys=typeof CONFIG!=='undefined'?CONFIG.STORAGE_KEYS:{};return [...new Set([...Object.entries(keys||{}).filter(([name])=>/^(API_|IMAGE_GEN_|CURRENT_API_CONFIG$|CURRENT_IMAGE_GEN_CONFIG$|BASE_URL$|CHAT_ROUNDS$|CHAT_AUTO_VISION$|AUX_API_|VOICE_)/.test(name)).map(([,value])=>value),'api_key','base_url','api_model','api_config_presets','sc_aux_api_v1','sc_aux_api_profiles_v1','image_gen_base_url','image_gen_api_key','image_gen_model','image_gen_config_presets'])];},
+  sharedKv(key){return typeof key==='string'&&(/^(forum_|moments_|sc_terminal_role_v1_|sc_game_chat_deleted_)/.test(key)||key==='sc_terminal_news_forum_id_v1'||/^sc_terminal_daily_v1_\d{4}-\d{2}-\d{2}$/.test(key));},
+  async settingsSnapshot(){
+    const local=[];if(typeof Storage.get==='function')for(const key of [...this.apiKeyNames(),'forum_forums','forum_current_forum_id']){const value=Storage.get(key);if(value!==null&&value!==undefined)local.push({key,value});}
+    let rows;
+    if(Storage.db?.transaction){const keys=(await this._allKeys('kv')).filter(key=>this.sharedKv(key));rows=(await Promise.all(keys.map(key=>Storage.dbGet('kv',key)))).filter(Boolean);}else rows=(await Storage.dbGetAll('kv')||[]).filter(r=>this.sharedKv(r.key));
+    const latest=rows.filter(r=>r.key.startsWith('sc_terminal_daily_v1_')).sort((a,b)=>b.key.localeCompare(a.key))[0]?.key;
+    return {local,kv:rows.filter(r=>!r.key.startsWith('sc_terminal_daily_v1_')||r.key===latest).map(r=>({key:r.key,value:r.value,modifiedAt:Number(r._syncAt||r.updatedAt)||0}))};
+  },
+  mergePresets(local,incoming,device){
+    const array=Array.isArray(local)||Array.isArray(incoming),entries=v=>Array.isArray(v)?v.filter(r=>r&&r.id).map(r=>[r.id,r]):Object.entries(v&&typeof v==='object'?v:{});
+    const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
+    const fingerprint=row=>JSON.stringify(canonical(row&&typeof row==='object'?Object.fromEntries(Object.entries(row).filter(([k])=>!['id','name'].includes(k))):row));
+    const map=new Map(entries(local)),ids={};
+    for(const [id,row] of entries(incoming)){
+      const value=fingerprint(row);let target=id;
+      if(String(id).startsWith('sync_')){const prior=[...map].find(([,p])=>fingerprint(p)===value);if(prior){ids[id]=prior[0];continue;}}
+      if(map.has(id)&&fingerprint(map.get(id))!==value){let hash=2166136261;for(const ch of value)hash=Math.imul(hash^ch.charCodeAt(0),16777619);const base='sync_'+device+'_'+id+'_'+(hash>>>0).toString(16);target=base;let n=1;while(map.has(target)&&fingerprint(map.get(target))!==value)target=base+'_'+n++;}
+      ids[id]=target;if(!map.has(target))map.set(target,row&&typeof row==='object'?{...row,...('id'in row?{id:target}:{}),...(target!==id&&typeof row.name==='string'?{name:row.name+'（同步）'}:{})}:row);
+    }
+    return {value:array?[...map.values()]:Object.fromEntries(map),ids};
+  },
+  async applySettings(settings,device){
+    if(!settings||typeof settings!=='object')return 0;let changed=0;
+    const allowed=new Set([...this.apiKeyNames(),'forum_forums','forum_current_forum_id']),rows=(Array.isArray(settings.local)?settings.local:[]).filter(r=>r&&allowed.has(r.key));
+    const get=key=>typeof Storage.get==='function'?Storage.get(key):null;
+    const locked={chat:!!get('api_key'),image:!!(get('image_gen_api_key')&&get('image_gen_base_url')&&get('image_gen_model')),aux:!!(get('sc_aux_api_v1')?.apiKey&&get('sc_aux_api_v1')?.baseUrl&&get('sc_aux_api_v1')?.model),voice:!!get('voice_api_key')};
+    const group=key=>key.startsWith('image_gen_')||key==='current_image_gen_config'?'image':key.startsWith('sc_aux_')?'aux':key.startsWith('voice_')?'voice':'chat';
+    const idMaps={};
+    for(const row of rows.filter(r=>['api_config_presets','image_gen_config_presets'].includes(r.key))){const merged=this.mergePresets(get(row.key),row.value,device);Storage.set(row.key,merged.value);idMaps[row.key]=merged.ids;changed++;}
+    const aux=rows.find(r=>r.key==='sc_aux_api_profiles_v1');if(aux?.value&&Array.isArray(aux.value.items)){
+      const prior=get(aux.key)||(get('sc_aux_api_v1')?{activeId:'default',items:[{id:'default',name:'默认',config:get('sc_aux_api_v1')}]}:{items:[]});const merged=this.mergePresets(prior.items,aux.value.items,device);Storage.set(aux.key,{items:merged.value,activeId:locked.aux?prior.activeId:(merged.ids[aux.value.activeId]||aux.value.activeId)});changed++;
+    }
+    for(const row of rows){
+      if(['api_config_presets','image_gen_config_presets','sc_aux_api_profiles_v1'].includes(row.key))continue;
+      if(row.key==='forum_forums'){if(!Array.isArray(row.value))continue;const map=new Map((Array.isArray(get(row.key))?get(row.key):[]).filter(r=>r?.id).map(r=>[r.id,r]));for(const forum of row.value)if(forum?.id)map.set(forum.id,forum);Storage.set(row.key,[...map.values()]);changed++;continue;}
+      if(row.key==='forum_current_forum_id'){if(!get(row.key)){Storage.set(row.key,row.value);changed++;}continue;}
+      if(locked[group(row.key)])continue;
+      let value=row.value;if(row.key==='current_api_config')value=idMaps.api_config_presets?.[value]||value;if(row.key==='current_image_gen_config')value=idMaps.image_gen_config_presets?.[value]||value;
+      Storage.set(row.key,value);changed++;
+    }
+    for(const row of Array.isArray(settings.kv)?settings.kv:[]){if(!row||!this.sharedKv(row.key))continue;const prior=await Storage.dbGet('kv',row.key);if(!prior||Number(row.modifiedAt||0)>=Number(prior._syncAt||prior.updatedAt||0)){await Storage.dbPut('kv',{key:row.key,value:row.value,_syncAt:Number(row.modifiedAt)||0},{syncImport:true});changed++;}}
+    return changed;
+  },
 
   // 记录的时间戳：取修改时间、创建时间、本地入库戳的最大值
   _time(row) {
@@ -56,13 +101,16 @@ const SCSync = {
 
   // 分块读取并按时间筛选：相册、音乐里是 Blob，整表 getAll 会把几百兆图片一次性读进内存
   async _pickChanged(name, since) {
+    const seed=['threads','moments'].includes(name)&&!await Storage.kvGet(this.SOCIAL_SEED);
+    const tx=Storage.db.transaction(name,'readonly'),store=tx.objectStore(name);
+    if(typeof store.openCursor==='function')return new Promise((resolve,reject)=>{const picked=[],request=store.openCursor();request.onerror=()=>reject(request.error);request.onsuccess=()=>{const cursor=request.result;if(!cursor){resolve(picked);return;}const row=cursor.value;if(row&&(seed||this._time(row)>since))picked.push(row);cursor.continue();};});
     const keys = await this._allKeys(name);
     const picked = [];
     const CHUNK = 40;
     for (let i = 0; i < keys.length; i += CHUNK) {
       const slice = keys.slice(i, i + CHUNK);
       const rows = await Promise.all(slice.map((k) => Storage.dbGet(name, k)));
-      for (const r of rows) if (r && this._time(r) > since) picked.push(r);
+      for (const r of rows) if (r && (seed||this._time(r) > since)) picked.push(r);
     }
     return picked;
   },
@@ -121,6 +169,7 @@ const SCSync = {
       const rows = await this._pickChanged(name, since);
       if (rows.length) { result.counts[name] = rows.length; result.total += rows.length; }
     }
+    const settings=await this.settingsSnapshot();const count=settings.local.length+settings.kv.length;if(count){result.counts.settings=count;result.total+=count;}
     const tombs = await this._tombstones();
     result.tombstones = tombs.filter((t) => Number(t.deletedAt) > since).length;
     result.total += result.tombstones;
@@ -133,8 +182,7 @@ const SCSync = {
     const data = {};
     let total = 0;
     for (const name of this.STORES) {
-      const rows = await Storage.dbGetAll(name);
-      const picked = (rows || []).filter((r) => this._time(r) > since);
+      const picked = await this._pickChanged(name,since);
       if (!picked.length) continue;
       // 只对确实含 Blob 的行做编码，避免 3 万多条纯文本消息走递归慢路径
       const needsEncode = picked.some((r) => Object.values(r).some((v) => v instanceof Blob));
@@ -152,6 +200,7 @@ const SCSync = {
       cursor: now,
       since,
       data,
+      settings:await SCBackup.encode(await this.settingsSnapshot()),
       tombstones
     };
   },
@@ -175,8 +224,9 @@ const SCSync = {
         );
         // 游标推进到本次导出时刻；因带 24h 安全窗，短期重复导出会含少量冗余但不会漏
         await Storage.kvSet(this.KV.CURSOR, delta.cursor);
+        await Storage.kvSet(this.SOCIAL_SEED,true);
         await Storage.kvSet(this.KV.LAST_EXPORT, delta.cursor);
-        const count = Object.values(delta.data).reduce((s, arr) => s + arr.length, 0);
+        const count = Object.values(delta.data).reduce((s, arr) => s + arr.length, 0)+(delta.settings?.local?.length||0)+(delta.settings?.kv?.length||0);
         return { count, tombstones: delta.tombstones.length, bytes: (gzip || blob).size };
       } finally {
         Storage._hideExportWait();
@@ -192,11 +242,12 @@ const SCSync = {
     if (!Array.isArray(rows) || !rows.length) return { added: 0, updated: 0 };
     const all = await Storage.dbGetAll(name);
     const local = new Map((all || []).map((r) => [r.id, r]));
+    const deletions=new Map((await this._tombstones()).filter(t=>t.store===name).map(t=>[t.id,t.deletedAt]));
     const puts = [];
     let added = 0;
     let updated = 0;
     for (const row of rows) {
-      if (!row || typeof row.id !== 'string' || !row.id) continue;
+      if (!row || typeof row.id !== 'string' || !row.id || Number(deletions.get(row.id)||0)>=this._time(row)&&deletions.has(row.id)) continue;
       const cur = local.get(row.id);
       if (!cur) {
         puts.push({ ...row, _syncAt: now });
@@ -259,6 +310,8 @@ const SCSync = {
     // 墓碑不清理：对端或第三台设备可能尚未收到这次删除，需继续随增量包传播；
     // 过期由 _saveTombstones 内的 90 天窗口与总量上限统一收敛。
 
+    result.settings=await this.applySettings(SCBackup.decode(pkg.settings),String(pkg.deviceId||'peer'));
+
     // 游标推进到对端导出时刻，本端下次只传这之后的内容
     const peerCursor = Number(pkg.cursor) || now;
     const localCursor = Number(await Storage.kvGet(this.KV.CURSOR)) || 0;
@@ -288,6 +341,7 @@ const SCSync = {
   // 重置游标：下次导出包含全部历史（用于首次或兜底修数据）
   async resetCursor() {
     await Storage.kvSet(this.KV.CURSOR, 0);
+    await Storage.kvSet(this.SOCIAL_SEED,false);
   },
 
   async status() {
@@ -314,7 +368,7 @@ const SCSync = {
     const storeLabel = {
       sessions: '会话', messages: '消息', characters: '角色', masks: '面具',
       notes: '笔记', threads: '论坛', moments: '朋友圈', themes: '主题',
-      album: '相册', tracks: '音乐', widgetResources: '组件'
+      album: '相册', tracks: '音乐', widgetResources: '组件', settings:'API与社交设置'
     };
     const detail = Object.entries(st.counts)
       .map(([k, v]) => `${storeLabel[k] || k} ${v}`)
@@ -330,7 +384,7 @@ const SCSync = {
         </div>
         <div style="font-size:12px;line-height:1.8;color:var(--yd-text-secondary,#888);">
           ${st.firstTime ? '尚未同步过：首次导出会包含全部历史，体积较大，之后只传变化。' : ''}
-          聊天与媒体会同步，API 密钥、壁纸等设置各端独立、不参与同步。
+          聊天、媒体、论坛、朋友圈、最近驻地简报与API预设会同步。保留本机当前API；本机未配置时采用导入配置。包内包含API密钥，仅在自己的设备间传递；壁纸与同步锁不参与。
         </div>
         <div class="sc-dialog-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
           <button id="sc-sync-export" class="sc-primary">导出增量</button>

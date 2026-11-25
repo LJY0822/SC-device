@@ -53,7 +53,7 @@ header{position:sticky;top:0;z-index:15}.hero{position:sticky;top:58px;z-index:8
 <form id="scene-form">
 <div class="bar"><h2 id="preview-title">开局预览</h2></div>
 <div class="dialog-body">
-<img class="art" id="preview-art" alt=""><label>近期 RP 情境（选填）<input id="rp" maxlength="180" placeholder="例如：两人刚上末班车，周围很安静"></label><button id="generate" type="button">根据情境生成开局</button><label>场景<select id="scene-choice"><option value="quiet">值班室 · 夜间</option><option value="rain">休息室 · 雨夜</option><option value="rowdy">休息室 · 散场后</option><option value="bar">酒吧 · 靠窗座位</option><option value="train">列车 · 在途</option><option value="dark">暗处 · 手机微光</option><option value="tent">帐篷 · 雨幕</option><option value="mess">餐厅 · 午后</option><option value="custom">自定义场景</option></select></label>
+<img class="art" id="preview-art" alt=""><label>近期 RP 情境（选填）<input id="rp" maxlength="180" placeholder="例如：两人刚上末班车，周围很安静"></label><button id="generate" type="button">根据情境生成开局</button><label>场景<select id="scene-choice"><option value="quiet">通讯终端 · 线上对决</option><option value="rain">休息室 · 雨夜</option><option value="rowdy">休息室 · 散场后</option><option value="bar">酒吧 · 靠窗座位</option><option value="train">列车 · 在途</option><option value="dark">暗处 · 手机微光</option><option value="tent">帐篷 · 雨幕</option><option value="mess">餐厅 · 午后</option><option value="custom">自定义场景</option></select></label>
 <label>对手名称<input id="scene-character" maxlength="30" required></label>
 <label id="custom-wrap" hidden>自定义场景<textarea id="scene-custom" maxlength="500" placeholder="例如：两人刚喝完酒，把棋盘搬到空桌上。"></textarea></label>
 <div class="preview"><h3 id="preview-scene"></h3><p id="preview-text"></p><p id="preview-chaos"></p></div>
@@ -162,7 +162,7 @@ const rules = NavalRules;
 const hostContext = window.parent !== window ? window.parent.SCNavalContext : null;
 const key = "sc.naval-grid.v2." + (hostContext?.sessionId || "offline");
 const scenes = {
-  quiet: { title: "值班室 · 夜间", text: "值班室只剩下桌灯亮着。Graves 把折叠棋盘摊开，把装着标记的盒子向你推了推。走廊里偶尔传来脚步声。", chaos: 1 },
+  quiet: { title: "通讯终端 · 线上对决", text: "你与角色身处不同地点，各自打开通讯终端，在线连接同一场海上对弈。双方通过终端消息交流，没有面对面见面。", chaos: 1 },
   rain: { title: "休息室 · 雨夜", text: "雨声敲着休息室的窗。Graves 擦掉桌上的水痕，把棋盘挪到干燥的一边。背景广播正断断续续地响着。", chaos: 2 },
   rowdy: { title: "休息室 · 散场后", text: "聚会刚散，桌上还有几只没收走的杯子。Graves 从桌角捞起棋盒。隔壁的人聊到兴头上，笑声隔着门也听得见。", chaos: 3 },
   bar:{title:"酒吧 · 靠窗座位",text:"Graves 把杯垫叠在一旁，腾出能放下棋盘的那半张桌子。吧台后有人开始收杯。",chaos:3},
