@@ -770,7 +770,7 @@ const Moments = {
 
       const avatarHtml = authorAvatar
         ? `<img src="${this._esc(authorAvatar)}" alt="${this._esc(authorName)}">`
-        : '👤';
+        : ((m.scImageCharacterIds?.length || (authorName!==myName&&authorName!=='我')) ? '<img src="assets/default-role-avatar.svg" alt="默认角色头像">' : '👤');
 
       const imgsHtml = images.length
         ? `<div class="yd-moment__images${images.length === 1 ? ' yd-moment__images--single' : ''}">${images.map(src => `

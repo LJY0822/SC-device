@@ -266,6 +266,7 @@ const CONFIG = {
   // 存储键名
   STORAGE_KEYS: {
     AUX_API_CONFIG: 'sc_aux_api_v1',
+    AUX_API_PROFILES: 'sc_aux_api_profiles_v1',
     API_KEY: 'api_key',
     BASE_URL: 'base_url',
     /** 多模态自动识图：on | off，与 API 设置页开关一致 */

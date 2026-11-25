@@ -2596,7 +2596,7 @@ const Character = {
       let cardContent = `
         <div class="yd-character-card__header">
           <div class="yd-character-card__avatar">
-            ${avatarSrc ? `<img src="${this.escapeHtml(avatarSrc)}" alt="${this.escapeHtml(normalized.name || '角色头像')}" class="yd-character-card__avatar-img">` : '👤'}
+            ${avatarSrc ? `<img src="${this.escapeHtml(avatarSrc)}" alt="${this.escapeHtml(normalized.name || '角色头像')}" class="yd-character-card__avatar-img">` : '<img src="assets/default-role-avatar.svg" alt="默认角色头像" class="yd-character-card__avatar-img">'}
           </div>
           <div class="yd-character-card__info">
             <div class="yd-character-card__name">${this.escapeHtml(normalized.name)}</div>

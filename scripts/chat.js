@@ -6153,7 +6153,7 @@ const Chat = {
           if (c && c.avatar) {
             avatarHtml = `<img class="yd-chat-avatar-img" alt="${this.escapeHtml(c.name || '角色头像')}" src="${this.escapeHtml(c.avatar)}">`;
           } else {
-            avatarHtml = '👤';
+            avatarHtml = '<img src="assets/default-role-avatar.svg" class="yd-chat-avatar-img" alt="默认角色头像">';
           }
         } else if (participantIds.length > 1) {
           // 宫格群头像：第 1 格为「我」（面具），其余为角色，最多 4 格
@@ -6421,7 +6421,7 @@ const Chat = {
 
         const avatarHtml = char.avatar
           ? `<img class="yd-chat-avatar-img" alt="${this.escapeHtml(char.name)}" src="${this.escapeHtml(char.avatar)}">`
-          : '👤';
+          : '<img src="assets/default-role-avatar.svg" class="yd-chat-avatar-img" alt="默认角色头像">';
 
         item.innerHTML = `
           <div class="yd-list-item__avatar">${avatarHtml}</div>
@@ -10031,6 +10031,7 @@ const Chat = {
         if (avatarSrc) {
           return `<img class="yd-chat-avatar-img" alt="${this.escapeHtml(displayName || '角色头像')}" src="${this.escapeHtml(avatarSrc)}">`;
         }
+        if(!isUser)return '<img src="assets/default-role-avatar.svg" class="yd-chat-avatar-img" alt="默认角色头像">';
         const letter = this._getInitialLetter(displayName || 'Foxhole & Acorn Box', '云');
         return `<span class="yd-message__avatar-fallback">${this.escapeHtml(letter)}</span>`;
       };

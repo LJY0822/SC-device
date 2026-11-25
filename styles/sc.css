@@ -38,3 +38,5 @@ body,button,input,select,textarea{font-family:Arial,'Microsoft YaHei',sans-serif
 #chat-scroll>.sc-game-result{display:block;max-width:100%;border:1px solid var(--sc-line);color:var(--sc-ink)}.sc-game-result summary{cursor:pointer;font-size:13px;line-height:1.7}.sc-game-result small{display:block;margin-top:8px;opacity:.7}.sc-game-result pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:12px;line-height:1.8;margin:10px 0 0}
 
 #aux-api-form input{max-width:62%;min-width:0;background:var(--sc-soft);color:var(--sc-ink);border:1px solid var(--sc-line);padding:8px;border-radius:6px}
+
+.aux-api-help{margin:14px 20px;font-size:12px;line-height:1.8;color:var(--sc-muted)}
