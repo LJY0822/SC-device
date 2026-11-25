@@ -3,15 +3,15 @@ const SCRecreation={
   titles:{naval:'海上对弈',holdem:'德州扑克',gomoku:'五子棋',mastermind:'代码破解',miner:'双人黄金矿工'},context:null,audits:[],
   async prompts(){return this.templates??=(async()=>{const r=await fetch('prompts/game-prompts.json');if(!r.ok)throw Error('提示词文件无法加载');return r.json();})();},
   resolveApi(actor=null){
-    const cfg=typeof SCChat!=='undefined'?SCChat.configFor(actor):{apiKey:Storage.get(CONFIG.STORAGE_KEYS.API_KEY),baseUrl:Storage.get(CONFIG.STORAGE_KEYS.BASE_URL),model:Storage.get(CONFIG.STORAGE_KEYS.API_MODEL)};
+    const cfg=SCAuxAPI.requireConfig();
     const base=String(cfg.baseUrl||'https://api.openai.com/v1').trim().replace(/\/+$/,'').replace(/\/chat\/completions$/i,'');
     return {...cfg,baseUrl:base,model:cfg.model||'gpt-3.5-turbo'};
   },
   configured(roles=this.context?.roles||[]){return (roles.length?roles:[null]).some(r=>{try{return !!this.resolveApi(r).apiKey;}catch{return false;}});},
   timeout(kind='scene'){return kind==='scene'?Math.min(180000,Chat._getApiChatTimeoutMs()):Math.min(90000,Chat._getApiChatTimeoutMs());},
   async request(messages,signal,actor=null){
-    const cfg=this.resolveApi(actor);if(!cfg.apiKey)throw Error('所选角色和全局设置都没有可用的文字 API');
-    const stream=Chat._isApiStreamEnabled(),max=Chat._getApiMaxTokensForRequest();
+    const cfg=this.resolveApi(actor);if(!cfg.apiKey)throw Error('请先配置辅助 API');
+    const stream=false,max=cfg.maxTokens;
     const payload={model:cfg.model,messages,stream,temperature:Chat._getApiTemperatureForRequest(),...(max?{max_tokens:max}:{})};
     try{
       const response=await fetch(cfg.baseUrl+'/chat/completions',{method:'POST',signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+String(cfg.apiKey).trim()},body:JSON.stringify(payload)});

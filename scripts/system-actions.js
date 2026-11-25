@@ -31,15 +31,16 @@ window.SystemActions = {
       const text = textParts.join('\n').trim();
       if (!text) return;
 
+      const characterId=String(ctx?.characterId||'');
       let images = [];
-      if (imageDesc && typeof Moments !== 'undefined' && Moments._isImageGenAutoMomentsEnabled && Moments._isImageGenAutoMomentsEnabled()) {
+      if (imageDesc && typeof Moments !== 'undefined' && characterId && await Moments._canAutoGenerateMomentImages(characterId) && Moments._isImageGenAutoMomentsEnabled && Moments._isImageGenAutoMomentsEnabled()) {
         if (typeof Moments._buildMomentImagesFromImageDesc === 'function') {
           try {
             const raced = await Promise.race([
-              Moments._buildMomentImagesFromImageDesc(imageDesc),
+              Moments._buildMomentImagesFromImageDesc(imageDesc,[characterId],true),
               new Promise((resolve) => setTimeout(() => resolve({ images: [] }), 15000))
             ]);
-            images = raced && Array.isArray(raced.images) ? raced.images : [];
+            images = Array.isArray(raced) ? raced : raced && Array.isArray(raced.images) ? raced.images : [];
           } catch (e) {
             images = [];
           }
@@ -49,6 +50,7 @@ window.SystemActions = {
       const now = Date.now();
       const moment = {
         id: (typeof State !== 'undefined' && State.generateId) ? State.generateId() : (now + Math.random()).toString(36),
+        scImageCharacterIds: characterId ? [characterId] : [],
         authorName: (ctx && ctx.characterName) ? String(ctx.characterName) : '我',
         authorAvatar: (ctx && ctx.characterAvatar) ? String(ctx.characterAvatar) : '',
         text,

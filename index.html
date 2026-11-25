@@ -1024,12 +1024,13 @@
         <div class="yd-settings-group">
           <a href="javascript:void(0)" class="yd-settings-row" id="settings-api">
             <span class="yd-settings-row__icon yd-settings-row__icon--api" aria-hidden="true"></span>
-            <span class="yd-settings-row__label">API 设置</span>
+            <span class="yd-settings-row__label">对话 API 设置</span>
             <span class="yd-settings-row__chevron" aria-hidden="true"></span>
           </a>
+          <a href="javascript:void(0)" class="yd-settings-row" id="settings-aux-api"><span class="yd-settings-row__icon yd-settings-row__icon--api" aria-hidden="true"></span><span class="yd-settings-row__label">辅助 API 设置</span><span class="yd-settings-row__chevron" aria-hidden="true"></span></a>
           <a href="javascript:void(0)" class="yd-settings-row" id="settings-image-gen">
             <span class="yd-settings-row__icon yd-settings-row__icon--image-gen" aria-hidden="true"></span>
-            <span class="yd-settings-row__label">生图设置</span>
+            <span class="yd-settings-row__label">生图 API 设置</span>
             <span class="yd-settings-row__chevron" aria-hidden="true"></span>
           </a>
         </div>
@@ -1138,7 +1139,7 @@
         <button class="yd-header-btn yd-header-btn--circle" id="settings-api-back" aria-label="返回">
           <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div class="yd-page-header__center yd-settings-nav__title">API 设置</div>
+        <div class="yd-page-header__center yd-settings-nav__title">对话 API 设置</div>
         <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="api-config-add" aria-label="新增 API 配置">+</button>
       </div>
       <div class="yd-page-content yd-settings-detail-content">
@@ -1246,7 +1247,7 @@
         <button class="yd-header-btn yd-header-btn--circle" id="settings-image-gen-back" aria-label="返回">
           <svg class="yd-settings-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div class="yd-page-header__center yd-settings-nav__title">生图设置</div>
+        <div class="yd-page-header__center yd-settings-nav__title">生图 API 设置</div>
         <button class="yd-header-btn yd-header-btn--circle yd-header-btn--add" id="image-gen-config-add" aria-label="新增生图配置">+</button>
       </div>
       <div class="yd-page-content yd-settings-detail-content">
@@ -1776,6 +1777,7 @@
         <div class="yd-character-form">
           <section class="terminal-role-options" aria-label="首页角色设置">
             <label><span>加入首页助手<small>手动刷新生成不超过100字的助手留言，不写入聊天主线</small></span><input type="checkbox" id="char-home-assistant"></label>
+            <label><span>朋友圈自动生图<small>勾选后，朋友圈发出的内容会自动生图</small><small>需同时开启生图设置的自动生图并提供角色参考图；AI 助手禁用。DM 请保持不勾选。</small></span><input type="checkbox" id="char-auto-moments"></label>
             <label><span>加入特别关注<small>在首页未读中优先关注该角色的消息</small></span><input type="checkbox" id="char-special-focus"></label>
           </section>
           <div class="yd-character-section">
@@ -2650,6 +2652,7 @@
   <script src="scripts/sc-sync.js"></script>
   <script src="scripts/sc-backup-volumes.js"></script>
   <script src="scripts/sc-edc.js"></script>
+  <script src="scripts/sc-aux-api.js"></script>
   <script src="scripts/sc-daily.js"></script>
   <script src="scripts/sc-appearance.js"></script>
   <script src="scripts/sc-terminal.js"></script>

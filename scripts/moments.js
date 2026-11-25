@@ -244,7 +244,14 @@ const Moments = {
    * 根据「配图描述」调用设置中的生图 API（/v1/images/generations），返回可写入 moment.images 的地址列表。
    * 未配置完整生图设置或调用失败时返回空数组，不阻断发朋友圈文。
    */
-  async _buildMomentImagesFromImageDesc(desc, characterIds = []) {
+  async _canAutoGenerateMomentImages(id) {
+    const prefs=await Storage.kvGet(SCDaily.roleKey(id))||{};
+    const character=await Storage.dbGet('characters',id);
+    const avatar=character?.avatar||character?.data?.avatar||'';
+    return prefs.autoMoments===true&&!prefs.assistant&&/^data:image\/|^https?:\/\//i.test(avatar);
+  },
+
+  async _buildMomentImagesFromImageDesc(desc, characterIds = [], automatic = false) {
     const d = String(desc || '').trim();
     if (!d) return [];
     if (typeof ImageGenerationApi === 'undefined' || typeof ImageGenerationApi.generateFromDescription !== 'function') {
@@ -258,7 +265,8 @@ const Moments = {
       return [];
     }
     try {
-      const {refs}=await SCMoments.references(characterIds);
+      const {refs,missing}=await SCMoments.references(characterIds);
+      if(automatic && ((!refs.length)||(missing||[]).length||!(await Promise.all(characterIds.map(id=>this._canAutoGenerateMomentImages(id)))).every(Boolean)))return [];
       const prompt=d+(refs.length?'\n'+refs.map((r,i)=>`Reference image ${i+1} depicts ${r.name}; preserve facial identity.`).join('\n'):'');
       const { images } = refs.length ? await ImageGenerationApi.editFromPromptAndImageUrls(prompt,refs.map(r=>r.src)) : await ImageGenerationApi.generateFromDescription(prompt);
       const enriched=await MomentsImageStudio._enrichImagesForStorage(images||[]);
@@ -485,7 +493,7 @@ const Moments = {
       parse: (raw) => String(raw || '').replace(/\s+/g, ' ').trim()
     });
 
-    const { parsed } = await TaPages._runAiFeatureTask(spec);
+    const { parsed } = await SCAuxAPI.feature(spec);
     const reply = String(parsed || '').trim();
     if (!reply) return null;
     if (reply.length > 90) return reply.slice(0, 90) + '…';
@@ -563,8 +571,8 @@ const Moments = {
         const publishAt = this._parseMomentPublishTime(publishTimeRaw, now);
 
         let images = [];
-        if (mergedImageDesc && this._isImageGenAutoMomentsEnabled()) {
-          images = await this._buildMomentImagesFromImageDesc(mergedImageDesc,[selectedOne.characterId]);
+        if (mergedImageDesc && this._isImageGenAutoMomentsEnabled() && await this._canAutoGenerateMomentImages(selectedOne.characterId)) {
+          images = await this._buildMomentImagesFromImageDesc(mergedImageDesc,[selectedOne.characterId],true);
         }
 
         const moment = {
@@ -676,7 +684,7 @@ const Moments = {
       extraPayload: { temperature: 0.75 },
       parse: (r) => String(r || '')
     });
-    const { raw } = await TaPages._runAiFeatureTask(spec);
+    const { raw } = await SCAuxAPI.feature(spec);
     const normalized = this._normalizeApiContent(raw);
     const parsed = this._safeParseJson(normalized);
     const row = Array.isArray(parsed) ? parsed[0] : parsed;
@@ -1502,7 +1510,7 @@ const Moments = {
       candidates.forEach((c) => { c._allMessages = allMessages; });
       const task = this._buildMomentEngagementTask(m, candidates);
       if (!task) return;
-      const { raw } = await TaPages._runAiFeatureTask(task.spec);
+      const { raw } = await SCAuxAPI.feature(task.spec);
       let rawContent = this._normalizeApiContent(raw);
       rawContent = String(rawContent || '').trim();
       if (rawContent.startsWith('```')) {

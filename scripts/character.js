@@ -20,7 +20,7 @@ const Character = {
   },
 
   setupFormDirtyListeners() {
-    const ids = ['char-name', 'char-description', 'char-home-assistant', 'char-special-focus'];
+    const ids = ['char-name', 'char-description', 'char-home-assistant', 'char-special-focus', 'char-auto-moments'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) {

@@ -464,7 +464,7 @@ const Forum = {
     ) {
       throw new Error('通用 AI 执行器不可用');
     }
-    return TaPages._runAiFeatureTask(spec);
+    return SCAuxAPI.feature(spec);
   },
 
   _buildForumThreadsTask(options = {}) {
